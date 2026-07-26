@@ -203,9 +203,12 @@ MasrLab.Application/
 │   │   └── AccountDrawerDto.cs
 │   ├── Mappings/                                ← تحويلات Entity ↔ DTO
 │   │   └── MappingProfile.cs
-│   └── Behaviors/                               ← سلوكيات عامة (Validation, Logging)
-│       ├── ValidationBehavior.cs
-│       └── AuditBehavior.cs                     ← تسجيل تلقائي في AuditLog (القسم 7.2)
+│   ├── Behaviors/                               ← سلوكيات عامة (Validation, Logging)
+│   │   ├── ValidationBehavior.cs
+│   │   └── AuditBehavior.cs                     ← تسجيل تلقائي في AuditLog (القسم 7.2)
+│   └── Helpers/                                 ← مساعدات طبقة التطبيق
+│       └── LabIdGenerator.cs                    ← توليد Lab ID الفريد (يعتمد على IPatientRepository)
+│                                                   نُقل إلى Application بقرار DD-08
 │
 ├── Features/                                    ← الوظائف مقسّمة حسب الموديولات (مطابقة للقسم 1)
 │   │
@@ -351,6 +354,8 @@ MasrLab.Application/
 - كل مجلد في `Features/` يطابق موديولاً واحداً من القسم 1 في المواصفات، مما يسهّل التتبع والصيانة.
 - نمط CQRS (Command/Query) يفصل عمليات الكتابة (Commands) عن القراءة (Queries)، مما يتوافق مع طبيعة النظام (إدخال بيانات + تقارير).
 - الموديولات المالية (17–19) مجمعة في `Accounting/` لأنها تشترك في نفس الكيانات المالية (Account, CashTransaction, Receipt).
+- `Common/Helpers/` يستضيف المساعدات التي تحتاج تبعيات على عقود المستودعات (Repository Contracts)
+  ولا تصلح كدوال صرفة في Domain — أولها `LabIdGenerator` (قرار **DD-08**).
 
 ---
 
@@ -640,10 +645,6 @@ MasrLab.Presentation/
 │   └── RtlBehavior.cs                           ← سلوك RTL (متطلب 1) — Attached Property بـ WPF القياسي
 │                                                   (بلا اعتماد على Microsoft.Xaml.Behaviors)
 │
-├── Helpers/                                     ← مساعدات
-│   ├── LabIdGenerator.cs                        ← توليد Lab ID الفريد
-│   └── AgeCalculator.cs                         ← حساب السن (سنوات/أشهر/أيام)
-│
 ├── appsettings.json                             ← ملف التهيئة (ConnectionStrings + LabSettings)
 │                                                   — يبقى في طبقة العرض بقرار DD-09 (نقطة الدخول تقرأ التهيئة)
 │
@@ -662,6 +663,10 @@ MasrLab.Presentation/
 - ⛔ **قاعدة مُلزِمة لأي وكيل أو مطوّر لاحق:** أي اقتراح بدمج مجلدات ViewModels/Views موضوعياً
   **مرفوض مسبقاً** ولا يُعاد طرحه.
 - التطابق العددي: 19 مجلد موديول في `ViewModels/` = 19 مجلد موديول في `Views/` = 19 مجلداً في `Application/Features/`.
+- ⚠️ لا يوجد مجلد `Helpers/` في طبقة العرض بقرار **DD-08**:
+  `LabIdGenerator` → `MasrLab.Application/Common/Helpers/` (يعتمد على IPatientRepository)，
+  و`AgeCalculator` → `MasrLab.Domain/Common/` (دالة صرفة بلا تبعيات).
+  طبقة العرض لا تستضيف منطق نطاق أو تطبيق.
 - `Controls/` يحتوي عناصر تحكم مخصصة قابلة لإعادة الاستخدام (مثل TestSelector ثنائي اللوح المذكور في القسم 7.14).
 - `Printing/` مفصول كمجلد مستقل لأن النظام يعتمد كلياً على الطباعة المباشرة (لا تصدير PDF/Word) وله 20 تقريراً و4 طابعات مستقلة.
 - `Navigation/` مفصول لدعم التنقل بالأيقونات المذكور في القسم 7.14.
