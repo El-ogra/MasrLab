@@ -1,0 +1,7 @@
+using MasrLab.Domain.Entities.Culture;
+
+namespace MasrLab.Domain.Interfaces;
+
+public interface ICultureRepository : IRepository<Culture>
+{
+}
