@@ -420,7 +420,9 @@ MasrLab.Infrastructure/
 │   │   ├── AuditableEntityInterceptor.cs        ← ملء CreatedAt/UpdatedAt/CreatedByUserId تلقائياً
 │   │   └── SoftDeleteInterceptor.cs             ← اعتراض Delete وتحويله لـ Soft Delete
 │   │
-│   ├── Migrations/                              ← EF Core Migrations
+│   ├── Migrations/                              ← EF Core Migrations (مجلد محجوز — يحتوي .gitkeep فقط)
+│   │                                               لم يُولَّد أي Migration بعد — مؤجَّل بقرار DD-06
+│   │                                               حتى اكتمال جميع Fluent API Configurations
 │   │
 │   └── Seeding/                                 ← بيانات أولية
 │       ├── DefaultAdminSeeder.cs                ← المدير الافتراضي (كلمة مرور: 123)
@@ -464,14 +466,16 @@ MasrLab.Presentation/
 │   │   ├── DataGridStyles.xaml
 │   │   └── Colors.xaml                          ← ألوان النظام (قابلة للتخصيص — متطلب 20)
 │   ├── Icons/                                   ← أيقونات الشاشة الرئيسية (9 أيقونات — القسم 7.14)
+│   │                                               مجلد محجوز حالياً (.gitkeep) — الأصول تُضاف في مرحلة الواجهة
 │   ├── Images/                                  ← صور (الشعار، رأس التقرير)
+│   │                                               مجلد محجوز حالياً (.gitkeep)
 │   ├── Converters/                              ← محولات القيم (Value Converters)
 │   │   ├── GenderConverter.cs                   ← ذكر/أنثى → نص عربي
 │   │   ├── AccountTypeConverter.cs
 │   │   ├── VisitStatusConverter.cs
 │   │   ├── BooleanToVisibilityConverter.cs      ← الاسم المعتمد بقرار DD-04 (بلا اختصار)
 │   │   └── HighLowStatusConverter.cs            ← تلوين High/Low
-│   └── Fonts/                                   ← خطوط عربية
+│   └── Fonts/                                   ← خطوط عربية — مجلد محجوز حالياً (.gitkeep)
 │
 ├── Navigation/                                  ← نظام التنقل
 │   ├── INavigationService.cs
