@@ -63,6 +63,8 @@ MasrLab.sln
 │   ├── MasrLab.Application/                     ← طبقة التطبيق (Application Layer)
 │   ├── MasrLab.Infrastructure/                  ← طبقة البنية التحتية (Infrastructure Layer)
 │   └── MasrLab.Presentation/                    ← طبقة العرض (Presentation Layer — WPF)
+│       └── MasrLab.csproj                       ← اسم ملف المشروع واسم الـ Assembly الناتج = MasrLab
+│                                                   (مُعتمَد بقرار DD-01 — اسم المجلد فقط هو MasrLab.Presentation)
 │
 └── tests/
     ├── MasrLab.Domain.Tests/                    ← اختبارات طبقة النطاق
@@ -194,6 +196,7 @@ MasrLab.Application/
 │   │   ├── ReceiptDto.cs
 │   │   ├── CultureResultDto.cs
 │   │   ├── PatientHistoryDto.cs                 ← DTO للكيان المشتق (Entity 3 — SQL View)
+│   │   ├── SampleDto.cs                         ← DTO للعينة (Entity 9: Sample) — مُعتمَد بقرار DD-02
 │   │   ├── StatisticsDto.cs
 │   │   ├── WorkSheetDto.cs
 │   │   ├── AttendanceDto.cs
@@ -466,7 +469,7 @@ MasrLab.Presentation/
 │   │   ├── GenderConverter.cs                   ← ذكر/أنثى → نص عربي
 │   │   ├── AccountTypeConverter.cs
 │   │   ├── VisitStatusConverter.cs
-│   │   ├── BoolToVisibilityConverter.cs
+│   │   ├── BooleanToVisibilityConverter.cs      ← الاسم المعتمد بقرار DD-04 (بلا اختصار)
 │   │   └── HighLowStatusConverter.cs            ← تلوين High/Low
 │   └── Fonts/                                   ← خطوط عربية
 │
@@ -514,18 +517,28 @@ MasrLab.Presentation/
 │   ├── OutsourcedSamples/                       ← Module 9
 │   │   └── OutsourcedSamplesViewModel.cs
 │   │
-│   ├── MasterData/                              ← Modules 10–14 (البيانات الرئيسية)
-│   │   ├── TestsMasterDataViewModel.cs          ← Module 10
-│   │   ├── PriceListsViewModel.cs               ← Module 11
-│   │   ├── FixedCommentsViewModel.cs            ← Module 12
-│   │   ├── TestGroupsViewModel.cs               ← Module 13
-│   │   └── DoctorsReferralsViewModel.cs         ← Module 14
+│   ├── TestsMasterData/                         ← Module 10
+│   │   └── TestsMasterDataViewModel.cs
 │   │
-│   ├── Administration/                          ← Modules 15–16 (الإدارة)
-│   │   ├── UsersPermissionsViewModel.cs         ← Module 15
-│   │   └── AttendanceAuditViewModel.cs          ← Module 16
+│   ├── PriceLists/                              ← Module 11
+│   │   └── PriceListsViewModel.cs
 │   │
-│   ├── Financial/                               ← Modules 17–19 (المالية)
+│   ├── FixedComments/                           ← Module 12
+│   │   └── FixedCommentsViewModel.cs
+│   │
+│   ├── TestGroups/                              ← Module 13
+│   │   └── TestGroupsViewModel.cs
+│   │
+│   ├── DoctorsAndReferrals/                     ← Module 14
+│   │   └── DoctorsReferralsViewModel.cs
+│   │
+│   ├── UsersAndPermissions/                     ← Module 15
+│   │   └── UsersPermissionsViewModel.cs
+│   │
+│   ├── AttendanceAndAudit/                      ← Module 16
+│   │   └── AttendanceAuditViewModel.cs
+│   │
+│   ├── Accounting/                              ← Modules 17–19 (الأدراج المالية)
 │   │   ├── PeriodDrawerViewModel.cs             ← Module 17
 │   │   ├── DoctorReferralDrawerViewModel.cs     ← Module 18
 │   │   └── AccountTypeDrawerViewModel.cs        ← Module 19
@@ -533,7 +546,7 @@ MasrLab.Presentation/
 │   ├── Statistics/                              ← Module 20
 │   │   └── StatisticsViewModel.cs
 │   │
-│   └── Settings/                                ← Module 21
+│   └── SystemSettings/                          ← Module 21
 │       └── SystemSettingsViewModel.cs
 │
 ├── Views/                                       ← الشاشات (XAML) — نفس هيكل ViewModels
@@ -565,22 +578,27 @@ MasrLab.Presentation/
 │   │   └── SampleCollectionView.xaml
 │   ├── OutsourcedSamples/
 │   │   └── OutsourcedSamplesView.xaml
-│   ├── MasterData/
-│   │   ├── TestsMasterDataView.xaml
-│   │   ├── PriceListsView.xaml
-│   │   ├── FixedCommentsView.xaml
-│   │   ├── TestGroupsView.xaml
+│   ├── TestsMasterData/
+│   │   └── TestsMasterDataView.xaml
+│   ├── PriceLists/
+│   │   └── PriceListsView.xaml
+│   ├── FixedComments/
+│   │   └── FixedCommentsView.xaml
+│   ├── TestGroups/
+│   │   └── TestGroupsView.xaml
+│   ├── DoctorsAndReferrals/
 │   │   └── DoctorsReferralsView.xaml
-│   ├── Administration/
-│   │   ├── UsersPermissionsView.xaml
+│   ├── UsersAndPermissions/
+│   │   └── UsersPermissionsView.xaml
+│   ├── AttendanceAndAudit/
 │   │   └── AttendanceAuditView.xaml
-│   ├── Financial/
+│   ├── Accounting/
 │   │   ├── PeriodDrawerView.xaml
 │   │   ├── DoctorReferralDrawerView.xaml
 │   │   └── AccountTypeDrawerView.xaml
 │   ├── Statistics/
 │   │   └── StatisticsView.xaml
-│   └── Settings/
+│   └── SystemSettings/
 │       └── SystemSettingsView.xaml
 │
 ├── Controls/                                    ← عناصر تحكم مخصصة (Reusable)
@@ -615,11 +633,24 @@ MasrLab.Presentation/
 │   ├── LabIdGenerator.cs                        ← توليد Lab ID الفريد
 │   └── AgeCalculator.cs                         ← حساب السن (سنوات/أشهر/أيام)
 │
+├── appsettings.json                             ← ملف التهيئة (ConnectionStrings + LabSettings)
+│                                                   — يبقى في طبقة العرض بقرار DD-09 (نقطة الدخول تقرأ التهيئة)
+│
 └── DependencyInjection.cs                       ← تسجيل خدمات العرض في DI
 ```
 
 **تبرير التصنيف:**
-- `ViewModels/` و `Views/` يتبعان نفس الهيكل التنظيمي المقسّم حسب الموديولات لتسهيل التنقل.
+- `ViewModels/` و `Views/` يتبعان سياسة **Feature-per-Module** الصارمة: مجلد مستقل لكل موديول،
+  بتسمية مطابقة حرفياً لتسميات `MasrLab.Application/Features/`، **بلا أي تجميع موضوعي**
+  (لا `MasterData/` ولا `Administration/` ولا `Financial/` ولا `Settings/`) — مُعتمَد بقرار **DD-05**.
+- **المبرر المعماري لـ DD-05:** النافذة الرئيسية تعمل بمنطق تصفّح على مستويين مستقلَّين:
+  (1) الضغط على أيقونة في الشريط العلوي يُظهر قائمة أزرار في المنطقة المركزية فقط (تنقّل بسيط لا يستدعي دمج ViewModels)，
+  (2) الضغط على أي زر يفتح **نافذة مستقلة تماماً** خاصة بذلك الموديول وحده، مع إخفاء كامل للنافذة الرئيسية والشريط العلوي.
+  وبما أنه لا توجد شاشة تجميعية ولا تبويبات مشتركة تجمع عدة موديولات في View واحد，
+  فإن استقلال كل موديول بـ View/ViewModel خاص هو الانعكاس الصحيح الوحيد لهذا السلوك.
+- ⛔ **قاعدة مُلزِمة لأي وكيل أو مطوّر لاحق:** أي اقتراح بدمج مجلدات ViewModels/Views موضوعياً
+  **مرفوض مسبقاً** ولا يُعاد طرحه.
+- التطابق العددي: 19 مجلد موديول في `ViewModels/` = 19 مجلد موديول في `Views/` = 19 مجلداً في `Application/Features/`.
 - `Controls/` يحتوي عناصر تحكم مخصصة قابلة لإعادة الاستخدام (مثل TestSelector ثنائي اللوح المذكور في القسم 7.14).
 - `Printing/` مفصول كمجلد مستقل لأن النظام يعتمد كلياً على الطباعة المباشرة (لا تصدير PDF/Word) وله 20 تقريراً و4 طابعات مستقلة.
 - `Navigation/` مفصول لدعم التنقل بالأيقونات المذكور في القسم 7.14.
