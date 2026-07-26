@@ -411,8 +411,9 @@ MasrLab.Infrastructure/
 │   │   ├── StatisticsRepository.cs              ← استعلامات إحصائية مُحسَّنة
 │   │   └── AuditLogRepository.cs
 │   │
-│   ├── Views/                                   ← SQL Views
-│   │   └── PatientHistoryView.sql               ← Entity 3 — SQL View للتاريخ المرضي
+│   ├── Views/                                   ← الكيان المشتق PatientHistory (Entity 3) — طبقتان بقرار DD-03
+│   │   ├── PatientHistoryView.sql               ← تعريف الـ SQL View (Placeholder — 16 حقلاً حسب المواصفات)
+│   │   └── PatientHistoryView.cs                ← Keyless Entity لاستهلاك الـ View عبر EF Core
 │   │
 │   ├── UnitOfWork.cs                            ← تطبيق وحدة العمل
 │   │
@@ -443,7 +444,10 @@ MasrLab.Infrastructure/
 - `Persistence/` مفصول عن `Services/` لأن الوصول للبيانات يختلف عن الخدمات الخارجية (طباعة، باركود).
 - `Configurations/` تتبع نفس تصنيف `Entities/` في Domain للاتساق.
 - `Interceptors/` يستخدم EF Core SaveChanges Interceptor لتطبيق سياسة أعمدة التدقيق والحذف المنطقي تلقائياً (بدلاً من كتابتها يدوياً في كل مكان).
-- `Views/` يحتوي SQL View للكيان المشتق PatientHistory (Entity 3).
+- `Views/` يحتوي طبقتي الكيان المشتق PatientHistory (Entity 3) معاً بقرار **DD-03**:
+  ملف `.sql` يعرّف الـ View على مستوى قاعدة البيانات، وملف `.cs` كـ keyless entity تستهلكه EF Core.
+  المبرر: المواصفات (الجزء الثالث — قرارات سد الفجوات) تنص أن PatientHistory كيان مُشتق غير مخزَّن，
+  وحقل `ComparisonFlag` يحتاج استعلاماً/حساباً من طبقة التطبيق — ما يستلزم الطبقتين معاً.
 - `Seeding/` يحتوي البيانات الأولية المطلوبة صراحة في المواصفات (المدير الافتراضي بكلمة مرور 123، العملة EGP).
 
 ---
