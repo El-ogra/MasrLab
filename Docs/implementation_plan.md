@@ -459,12 +459,14 @@ MasrLab.Presentation/
 ├── MainWindow.xaml / MainWindow.xaml.cs          ← النافذة الرئيسية (Shell)
 │
 ├── Resources/                                   ← موارد التطبيق
-│   ├── Styles/                                  ← أنماط CSS/XAML العامة
+│   ├── Styles/                                  ← أنماط XAML العامة
+│   │   │                                           جميعها ResourceDictionary فارغة (Skeleton) بقرار DD-07،
+│   │   │                                           ومُسجَّلة في App.xaml بترتيب: Colors → Global → Button → TextBox → DataGrid
+│   │   ├── Colors.xaml                          ← ألوان النظام (قابلة للتخصيص — متطلب 20)
 │   │   ├── GlobalStyles.xaml                    ← الأنماط العامة (RTL, Fonts)
 │   │   ├── ButtonStyles.xaml                    ← أنماط الأزرار القياسية (إضافة/حفظ/تعديل/طباعة)
-│   │   ├── TextBoxStyles.xaml
-│   │   ├── DataGridStyles.xaml
-│   │   └── Colors.xaml                          ← ألوان النظام (قابلة للتخصيص — متطلب 20)
+│   │   ├── TextBoxStyles.xaml                   ← أنماط حقول الإدخال
+│   │   └── DataGridStyles.xaml                  ← أنماط جداول العرض
 │   ├── Icons/                                   ← أيقونات الشاشة الرئيسية (9 أيقونات — القسم 7.14)
 │   │                                               مجلد محجوز حالياً (.gitkeep) — الأصول تُضاف في مرحلة الواجهة
 │   ├── Images/                                  ← صور (الشعار، رأس التقرير)

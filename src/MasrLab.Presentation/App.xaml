@@ -5,7 +5,11 @@
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="Resources/Styles/Colors.xaml"/>
                 <ResourceDictionary Source="Resources/Styles/GlobalStyles.xaml"/>
+                <ResourceDictionary Source="Resources/Styles/ButtonStyles.xaml"/>
+                <ResourceDictionary Source="Resources/Styles/TextBoxStyles.xaml"/>
+                <ResourceDictionary Source="Resources/Styles/DataGridStyles.xaml"/>
             </ResourceDictionary.MergedDictionaries>
         </ResourceDictionary>
     </Application.Resources>
