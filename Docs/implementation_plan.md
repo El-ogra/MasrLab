@@ -637,7 +637,8 @@ MasrLab.Presentation/
 │   └── EnvelopePrinter.cs                       ← طباعة الأظرف
 │
 ├── Behaviors/                                   ← سلوكيات XAML
-│   └── RtlBehavior.cs                           ← سلوك RTL (متطلب 1)
+│   └── RtlBehavior.cs                           ← سلوك RTL (متطلب 1) — Attached Property بـ WPF القياسي
+│                                                   (بلا اعتماد على Microsoft.Xaml.Behaviors)
 │
 ├── Helpers/                                     ← مساعدات
 │   ├── LabIdGenerator.cs                        ← توليد Lab ID الفريد
