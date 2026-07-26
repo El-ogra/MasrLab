@@ -4,4 +4,9 @@ namespace MasrLab.Application.Features.SystemSettings.Commands.UpdateReceiptSett
 
 public class UpdateReceiptSettingsCommandValidator : AbstractValidator<UpdateReceiptSettingsCommand>
 {
+    public UpdateReceiptSettingsCommandValidator()
+    {
+        RuleFor(x => x.HeaderText)
+            .NotEmpty();
+    }
 }

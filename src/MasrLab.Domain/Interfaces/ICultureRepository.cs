@@ -4,4 +4,5 @@ namespace MasrLab.Domain.Interfaces;
 
 public interface ICultureRepository : IRepository<Culture>
 {
+    Task<Culture?> GetWithSensitivitiesAsync(int cultureId);
 }

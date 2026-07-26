@@ -4,4 +4,9 @@ namespace MasrLab.Application.Features.SystemSettings.Commands.UpdatePrinterSett
 
 public class UpdatePrinterSettingsCommandValidator : AbstractValidator<UpdatePrinterSettingsCommand>
 {
+    public UpdatePrinterSettingsCommandValidator()
+    {
+        RuleFor(x => x.PrinterName)
+            .NotEmpty();
+    }
 }

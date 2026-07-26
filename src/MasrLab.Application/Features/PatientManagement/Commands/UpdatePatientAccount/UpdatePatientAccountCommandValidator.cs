@@ -4,4 +4,8 @@ namespace MasrLab.Application.Features.PatientManagement.Commands.UpdatePatientA
 
 public class UpdatePatientAccountCommandValidator : AbstractValidator<UpdatePatientAccountCommand>
 {
+    public UpdatePatientAccountCommandValidator()
+    {
+        RuleFor(x => x.Id).GreaterThan(0);
+    }
 }

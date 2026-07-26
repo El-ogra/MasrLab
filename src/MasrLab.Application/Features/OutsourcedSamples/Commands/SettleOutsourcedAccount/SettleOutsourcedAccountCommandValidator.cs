@@ -4,4 +4,9 @@ namespace MasrLab.Application.Features.OutsourcedSamples.Commands.SettleOutsourc
 
 public class SettleOutsourcedAccountCommandValidator : AbstractValidator<SettleOutsourcedAccountCommand>
 {
+    public SettleOutsourcedAccountCommandValidator()
+    {
+        RuleFor(x => x.Id).GreaterThan(0);
+        RuleFor(x => x.SettlementStatus).NotEmpty();
+    }
 }

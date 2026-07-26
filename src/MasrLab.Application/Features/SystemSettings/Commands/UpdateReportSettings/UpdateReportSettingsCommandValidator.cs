@@ -4,4 +4,9 @@ namespace MasrLab.Application.Features.SystemSettings.Commands.UpdateReportSetti
 
 public class UpdateReportSettingsCommandValidator : AbstractValidator<UpdateReportSettingsCommand>
 {
+    public UpdateReportSettingsCommandValidator()
+    {
+        RuleFor(x => x.Margins)
+            .NotEmpty();
+    }
 }

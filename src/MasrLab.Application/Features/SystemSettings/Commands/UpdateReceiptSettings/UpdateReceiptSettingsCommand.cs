@@ -2,4 +2,4 @@ using MediatR;
 
 namespace MasrLab.Application.Features.SystemSettings.Commands.UpdateReceiptSettings;
 
-public record UpdateReceiptSettingsCommand : IRequest<Unit>;
+public record UpdateReceiptSettingsCommand(string HeaderText, string FooterText) : IRequest<Unit>;

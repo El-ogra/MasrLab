@@ -4,4 +4,10 @@ namespace MasrLab.Application.Features.Accounting.Commands.CreateAccountTypeDraw
 
 public class CreateAccountTypeDrawerCommandValidator : AbstractValidator<CreateAccountTypeDrawerCommand>
 {
+    public CreateAccountTypeDrawerCommandValidator()
+    {
+        RuleFor(x => x.PeriodEnd)
+            .Must((command, periodEnd) => periodEnd > command.PeriodStart)
+            .WithMessage("Period end must be greater than period start.");
+    }
 }

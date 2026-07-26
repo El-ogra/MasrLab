@@ -1,5 +1,6 @@
 using MediatR;
+using MasrLab.Domain.Common.Enums;
 
 namespace MasrLab.Application.Features.SystemSettings.Commands.UpdatePrinterSettings;
 
-public record UpdatePrinterSettingsCommand : IRequest<Unit>;
+public record UpdatePrinterSettingsCommand(string PrinterName, PrinterPurposeType PurposeType) : IRequest<Unit>;

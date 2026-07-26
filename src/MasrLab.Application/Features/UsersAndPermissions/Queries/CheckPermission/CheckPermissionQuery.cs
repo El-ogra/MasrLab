@@ -2,4 +2,4 @@ using MediatR;
 
 namespace MasrLab.Application.Features.UsersAndPermissions.Queries.CheckPermission;
 
-public record CheckPermissionQuery : IRequest<bool>;
+public record CheckPermissionQuery(int UserId, int ScreenId, int OperationId) : IRequest<bool>;

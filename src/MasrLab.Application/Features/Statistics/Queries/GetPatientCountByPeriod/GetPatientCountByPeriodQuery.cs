@@ -1,6 +1,6 @@
 using MediatR;
-using MasrLab.Application.Common.DTOs;
+using MasrLab.Domain.Common.DTOs;
 
 namespace MasrLab.Application.Features.Statistics.Queries.GetPatientCountByPeriod;
 
-public record GetPatientCountByPeriodQuery : IRequest<StatisticsDto>;
+public record GetPatientCountByPeriodQuery(DateTime PeriodStart, DateTime PeriodEnd) : IRequest<StatisticsDto>;

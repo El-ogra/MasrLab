@@ -1,6 +1,6 @@
 using MediatR;
-using MasrLab.Application.Common.DTOs;
+using MasrLab.Domain.Common.DTOs;
 
 namespace MasrLab.Application.Features.Statistics.Queries.GetTestDemandRate;
 
-public record GetTestDemandRateQuery : IRequest<StatisticsDto>;
+public record GetTestDemandRateQuery(DateTime PeriodStart, DateTime PeriodEnd) : IRequest<StatisticsDto>;

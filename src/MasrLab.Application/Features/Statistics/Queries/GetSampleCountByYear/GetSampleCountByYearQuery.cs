@@ -1,6 +1,6 @@
 using MediatR;
-using MasrLab.Application.Common.DTOs;
+using MasrLab.Domain.Common.DTOs;
 
 namespace MasrLab.Application.Features.Statistics.Queries.GetSampleCountByYear;
 
-public record GetSampleCountByYearQuery : IRequest<StatisticsDto>;
+public record GetSampleCountByYearQuery(int Year) : IRequest<StatisticsDto>;

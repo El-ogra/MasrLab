@@ -2,4 +2,4 @@ using MediatR;
 
 namespace MasrLab.Application.Features.OutsourcedSamples.Queries.GetOutsourcedSamples;
 
-public record GetOutsourcedSamplesQuery : IRequest<IReadOnlyList<object>>;
+public record GetOutsourcedSamplesQuery(DateTime PeriodStart, DateTime PeriodEnd) : IRequest<IReadOnlyList<object>>;

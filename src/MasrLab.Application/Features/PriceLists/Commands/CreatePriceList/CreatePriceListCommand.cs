@@ -2,4 +2,4 @@ using MediatR;
 
 namespace MasrLab.Application.Features.PriceLists.Commands.CreatePriceList;
 
-public record CreatePriceListCommand : IRequest<Unit>;
+public record CreatePriceListCommand(string Name) : IRequest<Unit>;

@@ -3,4 +3,4 @@ using MasrLab.Application.Common.DTOs;
 
 namespace MasrLab.Application.Features.PatientSearch.Queries.GetPatientVisitHistory;
 
-public record GetPatientVisitHistoryQuery : IRequest<IReadOnlyList<VisitDto>>;
+public record GetPatientVisitHistoryQuery(int PatientId) : IRequest<IReadOnlyList<VisitDto>>;

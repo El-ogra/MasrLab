@@ -4,4 +4,12 @@ namespace MasrLab.Application.Features.ResultsEntry.Commands.CreateCombinedRepor
 
 public class CreateCombinedReportCommandValidator : AbstractValidator<CreateCombinedReportCommand>
 {
+    public CreateCombinedReportCommandValidator()
+    {
+        RuleFor(x => x.PatientVisitId)
+            .GreaterThan(0);
+
+        RuleFor(x => x.TestIds)
+            .NotEmpty();
+    }
 }

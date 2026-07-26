@@ -8,5 +8,17 @@ public class SampleCollectionConfiguration : IEntityTypeConfiguration<SampleColl
 {
     public void Configure(EntityTypeBuilder<SampleCollection> builder)
     {
+        builder.ToTable("SampleCollections");
+        builder.HasKey(e => e.Id);
+        builder.Property(e => e.Id).ValueGeneratedOnAdd();
+
+        builder.Property(e => e.SampleId).IsRequired();
+        builder.Property(e => e.PatientId).IsRequired();
+        builder.Property(e => e.IsCollected).IsRequired();
+        builder.Property(e => e.CollectedAt).IsRequired();
+
+        builder.HasIndex(e => e.SampleId);
+        builder.HasIndex(e => e.PatientId);
+        builder.HasIndex(e => e.IsDeleted);
     }
 }

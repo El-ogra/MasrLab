@@ -4,4 +4,12 @@ namespace MasrLab.Application.Features.SampleCollection.Commands.MarkSampleColle
 
 public class MarkSampleCollectedCommandValidator : AbstractValidator<MarkSampleCollectedCommand>
 {
+    public MarkSampleCollectedCommandValidator()
+    {
+        RuleFor(x => x.SampleId)
+            .GreaterThan(0);
+
+        RuleFor(x => x.PatientId)
+            .GreaterThan(0);
+    }
 }

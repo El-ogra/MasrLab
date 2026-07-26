@@ -2,4 +2,9 @@ using MediatR;
 
 namespace MasrLab.Application.Features.TestGroups.Commands.ManageTestGroups;
 
-public record ManageTestGroupsCommand : IRequest<Unit>;
+public record ManageTestGroupsCommand(
+    int? Id,
+    string GroupName,
+    decimal GroupPrice,
+    string TestIds
+) : IRequest<Unit>;

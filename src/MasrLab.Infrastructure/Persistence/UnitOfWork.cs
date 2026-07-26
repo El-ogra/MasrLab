@@ -4,8 +4,15 @@ namespace MasrLab.Infrastructure.Persistence;
 
 public class UnitOfWork : IUnitOfWork
 {
-    public Task<int> SaveChangesAsync(CancellationToken cancellationToken)
+    private readonly MasrLabDbContext _context;
+
+    public UnitOfWork(MasrLabDbContext context)
     {
-        throw new NotImplementedException();
+        _context = context;
+    }
+
+    public async Task<int> SaveChangesAsync(CancellationToken cancellationToken)
+    {
+        return await _context.SaveChangesAsync(cancellationToken);
     }
 }

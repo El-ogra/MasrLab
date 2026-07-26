@@ -1,4 +1,4 @@
-namespace MasrLab.Application.Common.DTOs;
+namespace MasrLab.Domain.Common.DTOs;
 
 public record StatisticsDto
 {

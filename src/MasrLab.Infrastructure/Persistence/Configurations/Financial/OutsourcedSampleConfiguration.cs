@@ -8,5 +8,19 @@ public class OutsourcedSampleConfiguration : IEntityTypeConfiguration<Outsourced
 {
     public void Configure(EntityTypeBuilder<OutsourcedSample> builder)
     {
+        builder.ToTable("OutsourcedSamples");
+        builder.HasKey(e => e.Id);
+        builder.Property(e => e.Id).ValueGeneratedOnAdd();
+
+        builder.Property(e => e.PatientVisitId).IsRequired();
+        builder.Property(e => e.TestId).IsRequired();
+        builder.Property(e => e.ExternalLabId).IsRequired();
+        builder.Property(e => e.CostPrice).HasColumnType("decimal(18,2)").IsRequired();
+        builder.Property(e => e.SettlementStatus).HasMaxLength(100).IsRequired();
+
+        builder.HasIndex(e => e.PatientVisitId);
+        builder.HasIndex(e => e.TestId);
+        builder.HasIndex(e => e.ExternalLabId);
+        builder.HasIndex(e => e.IsDeleted);
     }
 }

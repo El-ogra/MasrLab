@@ -2,4 +2,4 @@ using MediatR;
 
 namespace MasrLab.Application.Features.CasesFollowUp.Queries.GetCaseUserTracking;
 
-public record GetCaseUserTrackingQuery : IRequest<IReadOnlyList<object>>;
+public record GetCaseUserTrackingQuery(int UserId, DateTime PeriodStart, DateTime PeriodEnd) : IRequest<IReadOnlyList<object>>;

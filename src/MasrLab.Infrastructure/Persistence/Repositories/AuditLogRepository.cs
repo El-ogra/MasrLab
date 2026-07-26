@@ -1,5 +1,6 @@
 using MasrLab.Domain.Entities.Administrative;
 using MasrLab.Domain.Interfaces;
+using Microsoft.EntityFrameworkCore;
 
 namespace MasrLab.Infrastructure.Persistence.Repositories;
 
@@ -7,5 +8,19 @@ public class AuditLogRepository : GenericRepository<AuditLog>, IAuditLogReposito
 {
     public AuditLogRepository(MasrLabDbContext context) : base(context)
     {
+    }
+
+    public async Task<IReadOnlyList<AuditLog>> GetByUserIdAsync(int userId)
+    {
+        return await _context.AuditLogs
+            .Where(a => a.UserId == userId)
+            .ToListAsync();
+    }
+
+    public async Task<IReadOnlyList<AuditLog>> GetByDateRangeAsync(DateTime start, DateTime end)
+    {
+        return await _context.AuditLogs
+            .Where(a => a.ActionTime >= start && a.ActionTime <= end)
+            .ToListAsync();
     }
 }

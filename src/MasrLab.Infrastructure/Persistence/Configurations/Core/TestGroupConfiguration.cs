@@ -8,5 +8,15 @@ public class TestGroupConfiguration : IEntityTypeConfiguration<TestGroup>
 {
     public void Configure(EntityTypeBuilder<TestGroup> builder)
     {
+        builder.ToTable("TestGroups");
+        builder.HasKey(e => e.Id);
+        builder.Property(e => e.Id).ValueGeneratedOnAdd();
+
+        builder.Property(e => e.GroupName).HasMaxLength(200).IsRequired();
+        builder.Property(e => e.GroupPrice).HasColumnType("decimal(18,2)").IsRequired();
+        builder.Property(e => e.TestIds).HasMaxLength(2000).IsRequired();
+
+        builder.HasIndex(e => e.GroupName);
+        builder.HasIndex(e => e.IsDeleted);
     }
 }
