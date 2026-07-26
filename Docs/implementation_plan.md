@@ -63,6 +63,8 @@ MasrLab.sln
 │   ├── MasrLab.Application/                     ← طبقة التطبيق (Application Layer)
 │   ├── MasrLab.Infrastructure/                  ← طبقة البنية التحتية (Infrastructure Layer)
 │   └── MasrLab.Presentation/                    ← طبقة العرض (Presentation Layer — WPF)
+│       └── MasrLab.csproj                       ← اسم ملف المشروع واسم الـ Assembly الناتج = MasrLab
+│                                                   (مُعتمَد بقرار DD-01 — اسم المجلد فقط هو MasrLab.Presentation)
 │
 └── tests/
     ├── MasrLab.Domain.Tests/                    ← اختبارات طبقة النطاق
@@ -194,15 +196,19 @@ MasrLab.Application/
 │   │   ├── ReceiptDto.cs
 │   │   ├── CultureResultDto.cs
 │   │   ├── PatientHistoryDto.cs                 ← DTO للكيان المشتق (Entity 3 — SQL View)
+│   │   ├── SampleDto.cs                         ← DTO للعينة (Entity 9: Sample) — مُعتمَد بقرار DD-02
 │   │   ├── StatisticsDto.cs
 │   │   ├── WorkSheetDto.cs
 │   │   ├── AttendanceDto.cs
 │   │   └── AccountDrawerDto.cs
 │   ├── Mappings/                                ← تحويلات Entity ↔ DTO
 │   │   └── MappingProfile.cs
-│   └── Behaviors/                               ← سلوكيات عامة (Validation, Logging)
-│       ├── ValidationBehavior.cs
-│       └── AuditBehavior.cs                     ← تسجيل تلقائي في AuditLog (القسم 7.2)
+│   ├── Behaviors/                               ← سلوكيات عامة (Validation, Logging)
+│   │   ├── ValidationBehavior.cs
+│   │   └── AuditBehavior.cs                     ← تسجيل تلقائي في AuditLog (القسم 7.2)
+│   └── Helpers/                                 ← مساعدات طبقة التطبيق
+│       └── LabIdGenerator.cs                    ← توليد Lab ID الفريد (يعتمد على IPatientRepository)
+│                                                   نُقل إلى Application بقرار DD-08
 │
 ├── Features/                                    ← الوظائف مقسّمة حسب الموديولات (مطابقة للقسم 1)
 │   │
@@ -348,6 +354,8 @@ MasrLab.Application/
 - كل مجلد في `Features/` يطابق موديولاً واحداً من القسم 1 في المواصفات، مما يسهّل التتبع والصيانة.
 - نمط CQRS (Command/Query) يفصل عمليات الكتابة (Commands) عن القراءة (Queries)، مما يتوافق مع طبيعة النظام (إدخال بيانات + تقارير).
 - الموديولات المالية (17–19) مجمعة في `Accounting/` لأنها تشترك في نفس الكيانات المالية (Account, CashTransaction, Receipt).
+- `Common/Helpers/` يستضيف المساعدات التي تحتاج تبعيات على عقود المستودعات (Repository Contracts)
+  ولا تصلح كدوال صرفة في Domain — أولها `LabIdGenerator` (قرار **DD-08**).
 
 ---
 
@@ -408,8 +416,9 @@ MasrLab.Infrastructure/
 │   │   ├── StatisticsRepository.cs              ← استعلامات إحصائية مُحسَّنة
 │   │   └── AuditLogRepository.cs
 │   │
-│   ├── Views/                                   ← SQL Views
-│   │   └── PatientHistoryView.sql               ← Entity 3 — SQL View للتاريخ المرضي
+│   ├── Views/                                   ← الكيان المشتق PatientHistory (Entity 3) — طبقتان بقرار DD-03
+│   │   ├── PatientHistoryView.sql               ← تعريف الـ SQL View (Placeholder — 16 حقلاً حسب المواصفات)
+│   │   └── PatientHistoryView.cs                ← Keyless Entity لاستهلاك الـ View عبر EF Core
 │   │
 │   ├── UnitOfWork.cs                            ← تطبيق وحدة العمل
 │   │
@@ -417,7 +426,9 @@ MasrLab.Infrastructure/
 │   │   ├── AuditableEntityInterceptor.cs        ← ملء CreatedAt/UpdatedAt/CreatedByUserId تلقائياً
 │   │   └── SoftDeleteInterceptor.cs             ← اعتراض Delete وتحويله لـ Soft Delete
 │   │
-│   ├── Migrations/                              ← EF Core Migrations
+│   ├── Migrations/                              ← EF Core Migrations (مجلد محجوز — يحتوي .gitkeep فقط)
+│   │                                               لم يُولَّد أي Migration بعد — مؤجَّل بقرار DD-06
+│   │                                               حتى اكتمال جميع Fluent API Configurations
 │   │
 │   └── Seeding/                                 ← بيانات أولية
 │       ├── DefaultAdminSeeder.cs                ← المدير الافتراضي (كلمة مرور: 123)
@@ -438,7 +449,10 @@ MasrLab.Infrastructure/
 - `Persistence/` مفصول عن `Services/` لأن الوصول للبيانات يختلف عن الخدمات الخارجية (طباعة، باركود).
 - `Configurations/` تتبع نفس تصنيف `Entities/` في Domain للاتساق.
 - `Interceptors/` يستخدم EF Core SaveChanges Interceptor لتطبيق سياسة أعمدة التدقيق والحذف المنطقي تلقائياً (بدلاً من كتابتها يدوياً في كل مكان).
-- `Views/` يحتوي SQL View للكيان المشتق PatientHistory (Entity 3).
+- `Views/` يحتوي طبقتي الكيان المشتق PatientHistory (Entity 3) معاً بقرار **DD-03**:
+  ملف `.sql` يعرّف الـ View على مستوى قاعدة البيانات، وملف `.cs` كـ keyless entity تستهلكه EF Core.
+  المبرر: المواصفات (الجزء الثالث — قرارات سد الفجوات) تنص أن PatientHistory كيان مُشتق غير مخزَّن，
+  وحقل `ComparisonFlag` يحتاج استعلاماً/حساباً من طبقة التطبيق — ما يستلزم الطبقتين معاً.
 - `Seeding/` يحتوي البيانات الأولية المطلوبة صراحة في المواصفات (المدير الافتراضي بكلمة مرور 123، العملة EGP).
 
 ---
@@ -454,21 +468,25 @@ MasrLab.Presentation/
 ├── MainWindow.xaml / MainWindow.xaml.cs          ← النافذة الرئيسية (Shell)
 │
 ├── Resources/                                   ← موارد التطبيق
-│   ├── Styles/                                  ← أنماط CSS/XAML العامة
+│   ├── Styles/                                  ← أنماط XAML العامة
+│   │   │                                           جميعها ResourceDictionary فارغة (Skeleton) بقرار DD-07،
+│   │   │                                           ومُسجَّلة في App.xaml بترتيب: Colors → Global → Button → TextBox → DataGrid
+│   │   ├── Colors.xaml                          ← ألوان النظام (قابلة للتخصيص — متطلب 20)
 │   │   ├── GlobalStyles.xaml                    ← الأنماط العامة (RTL, Fonts)
 │   │   ├── ButtonStyles.xaml                    ← أنماط الأزرار القياسية (إضافة/حفظ/تعديل/طباعة)
-│   │   ├── TextBoxStyles.xaml
-│   │   ├── DataGridStyles.xaml
-│   │   └── Colors.xaml                          ← ألوان النظام (قابلة للتخصيص — متطلب 20)
+│   │   ├── TextBoxStyles.xaml                   ← أنماط حقول الإدخال
+│   │   └── DataGridStyles.xaml                  ← أنماط جداول العرض
 │   ├── Icons/                                   ← أيقونات الشاشة الرئيسية (9 أيقونات — القسم 7.14)
+│   │                                               مجلد محجوز حالياً (.gitkeep) — الأصول تُضاف في مرحلة الواجهة
 │   ├── Images/                                  ← صور (الشعار، رأس التقرير)
+│   │                                               مجلد محجوز حالياً (.gitkeep)
 │   ├── Converters/                              ← محولات القيم (Value Converters)
 │   │   ├── GenderConverter.cs                   ← ذكر/أنثى → نص عربي
 │   │   ├── AccountTypeConverter.cs
 │   │   ├── VisitStatusConverter.cs
-│   │   ├── BoolToVisibilityConverter.cs
+│   │   ├── BooleanToVisibilityConverter.cs      ← الاسم المعتمد بقرار DD-04 (بلا اختصار)
 │   │   └── HighLowStatusConverter.cs            ← تلوين High/Low
-│   └── Fonts/                                   ← خطوط عربية
+│   └── Fonts/                                   ← خطوط عربية — مجلد محجوز حالياً (.gitkeep)
 │
 ├── Navigation/                                  ← نظام التنقل
 │   ├── INavigationService.cs
@@ -514,18 +532,28 @@ MasrLab.Presentation/
 │   ├── OutsourcedSamples/                       ← Module 9
 │   │   └── OutsourcedSamplesViewModel.cs
 │   │
-│   ├── MasterData/                              ← Modules 10–14 (البيانات الرئيسية)
-│   │   ├── TestsMasterDataViewModel.cs          ← Module 10
-│   │   ├── PriceListsViewModel.cs               ← Module 11
-│   │   ├── FixedCommentsViewModel.cs            ← Module 12
-│   │   ├── TestGroupsViewModel.cs               ← Module 13
-│   │   └── DoctorsReferralsViewModel.cs         ← Module 14
+│   ├── TestsMasterData/                         ← Module 10
+│   │   └── TestsMasterDataViewModel.cs
 │   │
-│   ├── Administration/                          ← Modules 15–16 (الإدارة)
-│   │   ├── UsersPermissionsViewModel.cs         ← Module 15
-│   │   └── AttendanceAuditViewModel.cs          ← Module 16
+│   ├── PriceLists/                              ← Module 11
+│   │   └── PriceListsViewModel.cs
 │   │
-│   ├── Financial/                               ← Modules 17–19 (المالية)
+│   ├── FixedComments/                           ← Module 12
+│   │   └── FixedCommentsViewModel.cs
+│   │
+│   ├── TestGroups/                              ← Module 13
+│   │   └── TestGroupsViewModel.cs
+│   │
+│   ├── DoctorsAndReferrals/                     ← Module 14
+│   │   └── DoctorsReferralsViewModel.cs
+│   │
+│   ├── UsersAndPermissions/                     ← Module 15
+│   │   └── UsersPermissionsViewModel.cs
+│   │
+│   ├── AttendanceAndAudit/                      ← Module 16
+│   │   └── AttendanceAuditViewModel.cs
+│   │
+│   ├── Accounting/                              ← Modules 17–19 (الأدراج المالية)
 │   │   ├── PeriodDrawerViewModel.cs             ← Module 17
 │   │   ├── DoctorReferralDrawerViewModel.cs     ← Module 18
 │   │   └── AccountTypeDrawerViewModel.cs        ← Module 19
@@ -533,7 +561,7 @@ MasrLab.Presentation/
 │   ├── Statistics/                              ← Module 20
 │   │   └── StatisticsViewModel.cs
 │   │
-│   └── Settings/                                ← Module 21
+│   └── SystemSettings/                          ← Module 21
 │       └── SystemSettingsViewModel.cs
 │
 ├── Views/                                       ← الشاشات (XAML) — نفس هيكل ViewModels
@@ -565,22 +593,27 @@ MasrLab.Presentation/
 │   │   └── SampleCollectionView.xaml
 │   ├── OutsourcedSamples/
 │   │   └── OutsourcedSamplesView.xaml
-│   ├── MasterData/
-│   │   ├── TestsMasterDataView.xaml
-│   │   ├── PriceListsView.xaml
-│   │   ├── FixedCommentsView.xaml
-│   │   ├── TestGroupsView.xaml
+│   ├── TestsMasterData/
+│   │   └── TestsMasterDataView.xaml
+│   ├── PriceLists/
+│   │   └── PriceListsView.xaml
+│   ├── FixedComments/
+│   │   └── FixedCommentsView.xaml
+│   ├── TestGroups/
+│   │   └── TestGroupsView.xaml
+│   ├── DoctorsAndReferrals/
 │   │   └── DoctorsReferralsView.xaml
-│   ├── Administration/
-│   │   ├── UsersPermissionsView.xaml
+│   ├── UsersAndPermissions/
+│   │   └── UsersPermissionsView.xaml
+│   ├── AttendanceAndAudit/
 │   │   └── AttendanceAuditView.xaml
-│   ├── Financial/
+│   ├── Accounting/
 │   │   ├── PeriodDrawerView.xaml
 │   │   ├── DoctorReferralDrawerView.xaml
 │   │   └── AccountTypeDrawerView.xaml
 │   ├── Statistics/
 │   │   └── StatisticsView.xaml
-│   └── Settings/
+│   └── SystemSettings/
 │       └── SystemSettingsView.xaml
 │
 ├── Controls/                                    ← عناصر تحكم مخصصة (Reusable)
@@ -609,17 +642,31 @@ MasrLab.Presentation/
 │   └── EnvelopePrinter.cs                       ← طباعة الأظرف
 │
 ├── Behaviors/                                   ← سلوكيات XAML
-│   └── RtlBehavior.cs                           ← سلوك RTL (متطلب 1)
+│   └── RtlBehavior.cs                           ← سلوك RTL (متطلب 1) — Attached Property بـ WPF القياسي
+│                                                   (بلا اعتماد على Microsoft.Xaml.Behaviors)
 │
-├── Helpers/                                     ← مساعدات
-│   ├── LabIdGenerator.cs                        ← توليد Lab ID الفريد
-│   └── AgeCalculator.cs                         ← حساب السن (سنوات/أشهر/أيام)
+├── appsettings.json                             ← ملف التهيئة (ConnectionStrings + LabSettings)
+│                                                   — يبقى في طبقة العرض بقرار DD-09 (نقطة الدخول تقرأ التهيئة)
 │
 └── DependencyInjection.cs                       ← تسجيل خدمات العرض في DI
 ```
 
 **تبرير التصنيف:**
-- `ViewModels/` و `Views/` يتبعان نفس الهيكل التنظيمي المقسّم حسب الموديولات لتسهيل التنقل.
+- `ViewModels/` و `Views/` يتبعان سياسة **Feature-per-Module** الصارمة: مجلد مستقل لكل موديول،
+  بتسمية مطابقة حرفياً لتسميات `MasrLab.Application/Features/`، **بلا أي تجميع موضوعي**
+  (لا `MasterData/` ولا `Administration/` ولا `Financial/` ولا `Settings/`) — مُعتمَد بقرار **DD-05**.
+- **المبرر المعماري لـ DD-05:** النافذة الرئيسية تعمل بمنطق تصفّح على مستويين مستقلَّين:
+  (1) الضغط على أيقونة في الشريط العلوي يُظهر قائمة أزرار في المنطقة المركزية فقط (تنقّل بسيط لا يستدعي دمج ViewModels)，
+  (2) الضغط على أي زر يفتح **نافذة مستقلة تماماً** خاصة بذلك الموديول وحده، مع إخفاء كامل للنافذة الرئيسية والشريط العلوي.
+  وبما أنه لا توجد شاشة تجميعية ولا تبويبات مشتركة تجمع عدة موديولات في View واحد，
+  فإن استقلال كل موديول بـ View/ViewModel خاص هو الانعكاس الصحيح الوحيد لهذا السلوك.
+- ⛔ **قاعدة مُلزِمة لأي وكيل أو مطوّر لاحق:** أي اقتراح بدمج مجلدات ViewModels/Views موضوعياً
+  **مرفوض مسبقاً** ولا يُعاد طرحه.
+- التطابق العددي: 19 مجلد موديول في `ViewModels/` = 19 مجلد موديول في `Views/` = 19 مجلداً في `Application/Features/`.
+- ⚠️ لا يوجد مجلد `Helpers/` في طبقة العرض بقرار **DD-08**:
+  `LabIdGenerator` → `MasrLab.Application/Common/Helpers/` (يعتمد على IPatientRepository)，
+  و`AgeCalculator` → `MasrLab.Domain/Common/` (دالة صرفة بلا تبعيات).
+  طبقة العرض لا تستضيف منطق نطاق أو تطبيق.
 - `Controls/` يحتوي عناصر تحكم مخصصة قابلة لإعادة الاستخدام (مثل TestSelector ثنائي اللوح المذكور في القسم 7.14).
 - `Printing/` مفصول كمجلد مستقل لأن النظام يعتمد كلياً على الطباعة المباشرة (لا تصدير PDF/Word) وله 20 تقريراً و4 طابعات مستقلة.
 - `Navigation/` مفصول لدعم التنقل بالأيقونات المذكور في القسم 7.14.
@@ -922,3 +969,21 @@ graph TD
 ---
 
 **نهاية التقرير.**
+
+---
+
+## سجل مواءمة الهيكل (Structure Alignment Log)
+
+| البند | القيمة |
+|---|---|
+| Commit الأساس | `e4aab3c34b255571d66c85289d6fd39da6ea8297` (development) |
+| المرجع التنفيذي | `Handoff_Structure_Alignment_Plan.md` (Parts 0–8) |
+| القرارات المطبَّقة | DD-01 … DD-10 |
+| انحرافات عولجت بتغيير ملفات | D-03, D-04, D-05, D-06, D-07, D-08, D-09, D-10, D-11, D-21, D-22 |
+| انحرافات عولجت بتوثيق فقط | D-01, D-02, D-12, D-16, D-20, D-24 |
+| انحرافات مُلغاة (Not a Deviation) | D-13, D-14, D-15, D-17, D-18, D-19 — بقرار **DD-05** |
+| ملاحظة | D-23 (AgeCalculator) — تمت إزالته من النطاق بقرار من صاحب المشروع |
+
+**قاعدة دائمة (DD-10):** هذا الملف هو **مصدر الحقيقة الوحيد** لهيكل المشروع. أي تغيير في الهيكل الفعلي
+يجب أن يُصاحبه تحديث لهذا الملف في **نفس الـ Commit**. ويُمنع على أي وكيل برمجي أو مطوّر اقتراح خطة
+أو قرار تصميمي يخالف ما ورد هنا دون قرار صريح جديد من صاحب المشروع.
