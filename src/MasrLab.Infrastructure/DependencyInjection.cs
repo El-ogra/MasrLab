@@ -45,6 +45,7 @@ public static class DependencyInjection
         services.AddScoped<ICurrentUserService, CurrentUserService>();
         services.AddScoped<IPrintService, PrintService>();
         services.AddScoped<IBackupService, BackupService>();
+        services.AddScoped<IBarcodeService, BarcodeService>();
 
         // Repositories
         services.AddScoped(typeof(IRepository<>), typeof(GenericRepository<>));
