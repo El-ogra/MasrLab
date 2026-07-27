@@ -27,5 +27,6 @@ public class PermissionConfiguration : IEntityTypeConfiguration<Permission>
         builder.HasIndex(e => e.UserId);
         builder.HasIndex(e => new { e.UserId, e.ScreenId, e.OperationId })
             .IsUnique();
+        builder.HasIndex(e => e.IsDeleted);
     }
 }

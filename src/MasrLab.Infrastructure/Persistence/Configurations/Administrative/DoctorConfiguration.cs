@@ -27,5 +27,6 @@ public class DoctorConfiguration : IEntityTypeConfiguration<Doctor>
             .IsRequired();
 
         builder.HasIndex(e => e.Name);
+        builder.HasIndex(e => e.IsDeleted);
     }
 }

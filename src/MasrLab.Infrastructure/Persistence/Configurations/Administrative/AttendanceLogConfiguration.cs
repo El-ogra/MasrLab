@@ -23,5 +23,6 @@ public class AttendanceLogConfiguration : IEntityTypeConfiguration<AttendanceLog
 
         builder.HasIndex(e => e.UserId);
         builder.HasIndex(e => e.LoginTime);
+        builder.HasIndex(e => e.IsDeleted);
     }
 }

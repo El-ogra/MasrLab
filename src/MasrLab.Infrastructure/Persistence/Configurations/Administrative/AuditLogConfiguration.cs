@@ -33,5 +33,6 @@ public class AuditLogConfiguration : IEntityTypeConfiguration<AuditLog>
         builder.HasIndex(e => e.UserId);
         builder.HasIndex(e => e.ActionTime);
         builder.HasIndex(e => new { e.EntityType, e.EntityId });
+        builder.HasIndex(e => e.IsDeleted);
     }
 }

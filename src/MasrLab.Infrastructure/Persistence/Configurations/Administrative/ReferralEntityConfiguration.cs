@@ -41,5 +41,6 @@ public class ReferralEntityConfiguration : IEntityTypeConfiguration<ReferralEnti
         builder.HasIndex(e => e.Name);
         builder.HasIndex(e => e.EntityType);
         builder.HasIndex(e => e.PriceListId);
+        builder.HasIndex(e => e.IsDeleted);
     }
 }

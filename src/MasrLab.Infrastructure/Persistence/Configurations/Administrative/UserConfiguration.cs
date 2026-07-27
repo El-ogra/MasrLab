@@ -30,5 +30,6 @@ public class UserConfiguration : IEntityTypeConfiguration<User>
             .IsUnique();
 
         builder.HasIndex(e => e.IsActive);
+        builder.HasIndex(e => e.IsDeleted);
     }
 }
