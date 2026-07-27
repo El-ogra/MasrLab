@@ -38,10 +38,8 @@ public partial class App : System.Windows.Application
         await DefaultAdminSeeder.SeedAsync(context);
         await DefaultSettingsSeeder.SeedAsync(context);
 
-        var mainWindow = new MainWindow
-        {
-            DataContext = _serviceProvider.GetRequiredService<MainViewModel>()
-        };
+        var mainWindow = _serviceProvider.GetRequiredService<MainWindow>();
+        mainWindow.DataContext = _serviceProvider.GetRequiredService<MainViewModel>();
         mainWindow.Show();
     }
 }
