@@ -1,13 +1,15 @@
+using MasrLab.Application.Common.Interfaces;
+
 namespace MasrLab.Infrastructure.Services;
 
-public class BackupService
+public class BackupService : IBackupService
 {
-    public Task BackupAsync(string destinationPath)
+    public Task BackupAsync(string filePath, CancellationToken cancellationToken = default)
     {
         throw new NotImplementedException();
     }
 
-    public Task RestoreAsync(string backupPath)
+    public Task RestoreAsync(string filePath, CancellationToken cancellationToken = default)
     {
         throw new NotImplementedException();
     }

@@ -44,6 +44,7 @@ public static class DependencyInjection
         services.AddScoped<IDateTimeService, DateTimeService>();
         services.AddScoped<ICurrentUserService, CurrentUserService>();
         services.AddScoped<IPrintService, PrintService>();
+        services.AddScoped<IBackupService, BackupService>();
 
         // Repositories
         services.AddScoped(typeof(IRepository<>), typeof(GenericRepository<>));
