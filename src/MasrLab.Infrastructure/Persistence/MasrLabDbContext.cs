@@ -2,8 +2,10 @@ using MasrLab.Domain.Entities.Core;
 using MasrLab.Domain.Entities.Culture;
 using MasrLab.Domain.Entities.Financial;
 using MasrLab.Domain.Entities.Administrative;
+using MasrLab.Domain.Common;
 using MasrLab.Domain.Entities.Settings;
 using Microsoft.EntityFrameworkCore;
+using System.Linq.Expressions;
 
 namespace MasrLab.Infrastructure.Persistence;
 
@@ -59,5 +61,19 @@ public class MasrLabDbContext : DbContext
     {
         base.OnModelCreating(modelBuilder);
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(MasrLabDbContext).Assembly);
+
+        foreach (var entityType in modelBuilder.Model.GetEntityTypes())
+        {
+            if (typeof(ISoftDeletable).IsAssignableFrom(entityType.ClrType))
+            {
+                var parameter = Expression.Parameter(entityType.ClrType, "e");
+                var property = Expression.Property(parameter, nameof(ISoftDeletable.IsDeleted));
+                var falseConstant = Expression.Constant(false);
+                var comparison = Expression.Equal(property, falseConstant);
+                var lambda = Expression.Lambda(comparison, parameter);
+
+                modelBuilder.Entity(entityType.ClrType).HasQueryFilter(lambda);
+            }
+        }
     }
 }
