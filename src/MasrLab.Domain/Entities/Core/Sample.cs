@@ -1,4 +1,5 @@
 using MasrLab.Domain.Common;
+using MasrLab.Domain.Common.Enums;
 
 namespace MasrLab.Domain.Entities.Core;
 
@@ -8,5 +9,5 @@ public class Sample : BaseEntity
     public int TestId { get; set; }
     public string SampleType { get; set; } = string.Empty;
     public string? Barcode { get; set; }
-    public string CollectionStatus { get; set; } = string.Empty;
+    public SampleStatus CollectionStatus { get; set; }
 }

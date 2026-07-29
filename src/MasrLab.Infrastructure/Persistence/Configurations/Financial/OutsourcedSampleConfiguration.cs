@@ -16,7 +16,8 @@ public class OutsourcedSampleConfiguration : IEntityTypeConfiguration<Outsourced
         builder.Property(e => e.TestId).IsRequired();
         builder.Property(e => e.ExternalLabId).IsRequired();
         builder.Property(e => e.CostPrice).HasColumnType("decimal(18,2)").IsRequired();
-        builder.Property(e => e.SettlementStatus).HasMaxLength(100).IsRequired();
+        builder.Property(e => e.SettlementStatus).IsRequired();
+        builder.Property(e => e.ReceivedAt);
 
         builder.HasIndex(e => e.PatientVisitId);
         builder.HasIndex(e => e.TestId);

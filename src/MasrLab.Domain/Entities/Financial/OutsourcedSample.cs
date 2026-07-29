@@ -1,4 +1,5 @@
 using MasrLab.Domain.Common;
+using MasrLab.Domain.Common.Enums;
 
 namespace MasrLab.Domain.Entities.Financial;
 
@@ -8,5 +9,6 @@ public class OutsourcedSample : BaseEntity
     public int TestId { get; set; }
     public int ExternalLabId { get; set; }
     public decimal CostPrice { get; set; }
-    public string SettlementStatus { get; set; } = string.Empty;
+    public SettlementStatus SettlementStatus { get; set; }
+    public DateTime? ReceivedAt { get; set; }
 }

@@ -14,7 +14,6 @@ public class TestGroupConfiguration : IEntityTypeConfiguration<TestGroup>
 
         builder.Property(e => e.GroupName).HasMaxLength(200).IsRequired();
         builder.Property(e => e.GroupPrice).HasColumnType("decimal(18,2)").IsRequired();
-        builder.Property(e => e.TestIds).HasMaxLength(2000).IsRequired();
 
         builder.HasIndex(e => e.GroupName);
         builder.HasIndex(e => e.IsDeleted);

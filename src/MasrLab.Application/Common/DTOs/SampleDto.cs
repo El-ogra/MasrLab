@@ -1,3 +1,5 @@
+using MasrLab.Domain.Common.Enums;
+
 namespace MasrLab.Application.Common.DTOs;
 
 public record SampleDto
@@ -7,5 +9,5 @@ public record SampleDto
     public int TestId { get; init; }
     public string SampleType { get; init; } = string.Empty;
     public string? Barcode { get; init; }
-    public string CollectionStatus { get; init; } = string.Empty;
+    public SampleStatus CollectionStatus { get; init; }
 }

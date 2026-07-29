@@ -10,6 +10,7 @@ public record VisitDto
     public VisitStatus Status { get; init; }
     public int RegisteredByUserId { get; init; }
     public string LabId { get; init; } = string.Empty;
-    public SampleStatus SampleStatus { get; init; }
+    public int? DoctorId { get; init; }
+    public int? ReferralEntityId { get; init; }
     public bool TakenOutsideLab { get; init; }
 }

@@ -25,11 +25,19 @@ public class PatientConfiguration : IEntityTypeConfiguration<Patient>
         builder.Property(e => e.AgeMonths).IsRequired();
         builder.Property(e => e.AgeDays).IsRequired();
         builder.Property(e => e.Gender).IsRequired();
-        builder.Property(e => e.DoctorId).IsRequired();
-        builder.Property(e => e.ReferralEntityId).IsRequired();
+        builder.Property(e => e.DoctorId);
+        builder.Property(e => e.ReferralEntityId);
         builder.Property(e => e.AccountType).IsRequired();
         builder.Property(e => e.Pregnancy).IsRequired();
         builder.Property(e => e.BloodThinning).IsRequired();
+        builder.Property(e => e.HasDiabetes).IsRequired();
+        builder.Property(e => e.HasHypertension).IsRequired();
+        builder.Property(e => e.HasLiverDisease).IsRequired();
+        builder.Property(e => e.HasJointDisease).IsRequired();
+        builder.Property(e => e.HasRenalFailure).IsRequired();
+        builder.Property(e => e.HasLupus).IsRequired();
+        builder.Property(e => e.HasHeartDisease).IsRequired();
+        builder.Property(e => e.HasThyroidDisorder).IsRequired();
 
         builder.HasIndex(e => e.LabId);
         builder.HasIndex(e => e.DoctorId);

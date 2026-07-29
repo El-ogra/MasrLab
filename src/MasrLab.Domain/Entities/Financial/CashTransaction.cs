@@ -7,7 +7,7 @@ public class CashTransaction : BaseEntity
 {
     public TransactionType Type { get; set; }
     public decimal Amount { get; set; }
-    public int EntityId { get; set; }
+    public int AccountId { get; set; }
     public int UserId { get; set; }
     public DateTime TransactionDate { get; set; }
 }

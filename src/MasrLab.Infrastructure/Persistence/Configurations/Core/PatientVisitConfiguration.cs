@@ -17,7 +17,6 @@ public class PatientVisitConfiguration : IEntityTypeConfiguration<PatientVisit>
         builder.Property(e => e.Status).IsRequired();
         builder.Property(e => e.RegisteredByUserId).IsRequired();
         builder.Property(e => e.LabId).HasMaxLength(100).IsRequired();
-        builder.Property(e => e.SampleStatus).IsRequired();
         builder.Property(e => e.TakenOutsideLab).IsRequired();
 
         builder.HasIndex(e => e.PatientId);
@@ -25,6 +24,8 @@ public class PatientVisitConfiguration : IEntityTypeConfiguration<PatientVisit>
         builder.HasIndex(e => e.VisitDate);
         builder.HasIndex(e => e.Status);
         builder.HasIndex(e => e.RegisteredByUserId);
+        builder.HasIndex(e => e.DoctorId);
+        builder.HasIndex(e => e.ReferralEntityId);
         builder.HasIndex(e => e.IsDeleted);
     }
 }
