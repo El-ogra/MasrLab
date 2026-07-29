@@ -17,6 +17,7 @@ public class SampleConfiguration : IEntityTypeConfiguration<Sample>
         builder.Property(e => e.SampleType).HasMaxLength(200).IsRequired();
         builder.Property(e => e.Barcode).HasMaxLength(200);
         builder.Property(e => e.CollectionStatus).IsRequired();
+        builder.Property(e => e.CollectedByUserId);
 
         builder.HasIndex(e => e.PatientVisitId);
         builder.HasIndex(e => e.TestId);

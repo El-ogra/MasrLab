@@ -1,8 +1,9 @@
+using MasrLab.Domain.Common.Enums;
 using MediatR;
 
 namespace MasrLab.Application.Features.OutsourcedSamples.Commands.SettleOutsourcedAccount;
 
 public record SettleOutsourcedAccountCommand(
     int Id,
-    string SettlementStatus
+    SettlementStatus SettlementStatus
 ) : IRequest<Unit>;

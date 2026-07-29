@@ -10,4 +10,5 @@ public class Sample : BaseEntity
     public string SampleType { get; set; } = string.Empty;
     public string? Barcode { get; set; }
     public SampleStatus CollectionStatus { get; set; }
+    public int? CollectedByUserId { get; set; }
 }

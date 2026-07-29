@@ -22,6 +22,9 @@ public class ReferralEntityConfiguration : IEntityTypeConfiguration<ReferralEnti
         builder.Property(e => e.ContactPerson)
             .HasMaxLength(100);
 
+        builder.Property(e => e.ContactPhone)
+            .HasMaxLength(20);
+
         builder.Property(e => e.Phone)
             .HasMaxLength(20);
 

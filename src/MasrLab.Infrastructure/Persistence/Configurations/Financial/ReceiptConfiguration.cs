@@ -18,6 +18,8 @@ public class ReceiptConfiguration : IEntityTypeConfiguration<Receipt>
         builder.Property(e => e.PaidPrevious).HasColumnType("decimal(18,2)").IsRequired();
         builder.Property(e => e.PaidNow).HasColumnType("decimal(18,2)").IsRequired();
         builder.Property(e => e.Remaining).HasColumnType("decimal(18,2)").IsRequired();
+        builder.Property(e => e.ChangeDue).HasColumnType("decimal(18,2)").IsRequired();
+        builder.Property(e => e.RefundToPatient).IsRequired();
         builder.Property(e => e.IssueDate).IsRequired();
         builder.Property(e => e.ReceiveTime).IsRequired();
         builder.Property(e => e.Currency).HasMaxLength(10).IsRequired();

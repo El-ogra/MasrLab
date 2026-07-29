@@ -20,7 +20,8 @@ public class ValidationBehaviorTests
 
         var command = new RegisterPatientCommand(
             "Ahmed", 30, 0, 0, Gender.Male, null, null, null, null,
-            "LAB-001", 1, 1, AccountType.Cash, null, false, false, null);
+            "LAB-001", 1, 1, AccountType.Cash, null, false, false,
+            false, false, false, false, false, false, false, false, null);
 
         var called = false;
         RequestHandlerDelegate<Unit> next = ct =>
@@ -45,7 +46,8 @@ public class ValidationBehaviorTests
 
         var command = new RegisterPatientCommand(
             "", 30, 0, 0, Gender.Male, null, null, null, null,
-            "LAB-001", 1, 1, AccountType.Cash, null, false, false, null);
+            "LAB-001", 1, 1, AccountType.Cash, null, false, false,
+            false, false, false, false, false, false, false, false, null);
 
         RequestHandlerDelegate<Unit> next = ct => Task.FromResult(Unit.Value);
 
@@ -62,7 +64,8 @@ public class ValidationBehaviorTests
 
         var command = new RegisterPatientCommand(
             "Ahmed", 30, 0, 0, Gender.Male, null, null, null, null,
-            "LAB-001", 1, 1, AccountType.Cash, null, false, false, null);
+            "LAB-001", 1, 1, AccountType.Cash, null, false, false,
+            false, false, false, false, false, false, false, false, null);
 
         var nextCalled = false;
         RequestHandlerDelegate<Unit> next = ct =>
@@ -85,7 +88,8 @@ public class RegisterPatientCommandValidatorTests
     {
         var command = new RegisterPatientCommand(
             "", 30, 0, 0, Gender.Male, null, null, null, null,
-            "LAB-001", 1, 1, AccountType.Cash, null, false, false, null);
+            "LAB-001", 1, 1, AccountType.Cash, null, false, false,
+            false, false, false, false, false, false, false, false, null);
 
         var result = _validator.Validate(command);
         Assert.False(result.IsValid);
@@ -97,7 +101,8 @@ public class RegisterPatientCommandValidatorTests
     {
         var command = new RegisterPatientCommand(
             "Ahmed", 30, 0, 0, Gender.Male, null, null, null, null,
-            "", 1, 1, AccountType.Cash, null, false, false, null);
+            "", 1, 1, AccountType.Cash, null, false, false,
+            false, false, false, false, false, false, false, false, null);
 
         var result = _validator.Validate(command);
         Assert.False(result.IsValid);
@@ -109,7 +114,8 @@ public class RegisterPatientCommandValidatorTests
     {
         var command = new RegisterPatientCommand(
             "Ahmed", 30, 0, 0, Gender.Male, null, null, null, null,
-            "LAB-001", 1, 1, AccountType.Cash, null, false, false, null);
+            "LAB-001", 1, 1, AccountType.Cash, null, false, false,
+            false, false, false, false, false, false, false, false, null);
 
         var result = _validator.Validate(command);
         Assert.True(result.IsValid);
