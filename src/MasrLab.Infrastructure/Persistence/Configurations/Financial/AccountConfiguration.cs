@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using MasrLab.Domain.Entities.Financial;
+using MasrLab.Domain.ValueObjects;
 
 namespace MasrLab.Infrastructure.Persistence.Configurations.Financial;
 
@@ -12,8 +13,12 @@ public class AccountConfiguration : IEntityTypeConfiguration<Account>
         builder.HasKey(e => e.Id);
         builder.Property(e => e.Id).ValueGeneratedOnAdd();
 
-        builder.Property(e => e.PeriodStart).IsRequired();
-        builder.Property(e => e.PeriodEnd).IsRequired();
+        builder.OwnsOne(e => e.Period, p =>
+        {
+            p.Property(pr => pr.Start).HasColumnName("PeriodStart").IsRequired();
+            p.Property(pr => pr.End).HasColumnName("PeriodEnd").IsRequired();
+        });
+
         builder.Property(e => e.TotalIncome).HasColumnType("decimal(18,2)").IsRequired();
         builder.Property(e => e.TotalDiscount).HasColumnType("decimal(18,2)").IsRequired();
         builder.Property(e => e.NetProfit).HasColumnType("decimal(18,2)").IsRequired();

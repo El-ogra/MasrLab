@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using MasrLab.Domain.Entities.Administrative;
+using MasrLab.Domain.ValueObjects;
 
 namespace MasrLab.Infrastructure.Persistence.Configurations.Administrative;
 
@@ -22,11 +23,15 @@ public class ReferralEntityConfiguration : IEntityTypeConfiguration<ReferralEnti
         builder.Property(e => e.ContactPerson)
             .HasMaxLength(100);
 
-        builder.Property(e => e.ContactPhone)
-            .HasMaxLength(20);
+        builder.OwnsOne(e => e.ContactPhone, phone =>
+        {
+            phone.Property(p => p.Value).HasColumnName("ContactPhone").HasMaxLength(20);
+        });
 
-        builder.Property(e => e.Phone)
-            .HasMaxLength(20);
+        builder.OwnsOne(e => e.Phone, phone =>
+        {
+            phone.Property(p => p.Value).HasColumnName("Phone").HasMaxLength(20);
+        });
 
         builder.Property(e => e.Fax)
             .HasMaxLength(20);
@@ -34,8 +39,7 @@ public class ReferralEntityConfiguration : IEntityTypeConfiguration<ReferralEnti
         builder.Property(e => e.Address)
             .HasMaxLength(200);
 
-        builder.Property(e => e.PriceListId)
-            .IsRequired();
+        builder.Property(e => e.PriceListId);
 
         builder.Property(e => e.AccountBalance)
             .HasColumnType("decimal(18,2)")

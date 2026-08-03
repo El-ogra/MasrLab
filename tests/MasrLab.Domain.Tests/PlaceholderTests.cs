@@ -3,6 +3,7 @@ using MasrLab.Domain.Common.Enums;
 using MasrLab.Domain.Entities.Core;
 using MasrLab.Domain.Entities.Administrative;
 using MasrLab.Domain.Entities.Financial;
+using MasrLab.Domain.ValueObjects;
 
 namespace MasrLab.Domain.Tests;
 
@@ -41,11 +42,9 @@ public class BaseEntityTests
         var patient = new Patient
         {
             Name = "Ahmed",
-            AgeYears = 30,
-            AgeMonths = 6,
-            AgeDays = 15,
+            Age = new Age(30, 6, 15),
             Gender = Gender.Male,
-            Phone = "01234567890",
+            Phone = new EgyptianPhone("01234567890"),
             Address = "Cairo",
             NationalId = "12345678901234",
             LabId = "LAB-001",
@@ -56,7 +55,7 @@ public class BaseEntityTests
         };
 
         Assert.Equal("Ahmed", patient.Name);
-        Assert.Equal(30, patient.AgeYears);
+        Assert.Equal(30, patient.Age.Years);
         Assert.Equal(Gender.Male, patient.Gender);
         Assert.Equal("LAB-001", patient.LabId);
         Assert.Equal(AccountType.Cash, patient.AccountType);

@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using MasrLab.Domain.Entities.Administrative;
+using MasrLab.Domain.ValueObjects;
 
 namespace MasrLab.Infrastructure.Persistence.Configurations.Administrative;
 
@@ -16,8 +17,10 @@ public class DoctorConfiguration : IEntityTypeConfiguration<Doctor>
             .HasMaxLength(100)
             .IsRequired();
 
-        builder.Property(e => e.Phone)
-            .HasMaxLength(20);
+        builder.OwnsOne(e => e.Phone, phone =>
+        {
+            phone.Property(p => p.Value).HasColumnName("Phone").HasMaxLength(20);
+        });
 
         builder.Property(e => e.Address)
             .HasMaxLength(200);

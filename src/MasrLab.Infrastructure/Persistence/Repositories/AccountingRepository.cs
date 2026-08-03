@@ -28,7 +28,7 @@ public class AccountingRepository : GenericRepository<Account>, IAccountingRepos
     public async Task<IReadOnlyList<Account>> GetByDateRangeAsync(DateTime start, DateTime end)
     {
         return await _context.Accounts
-            .Where(a => a.PeriodStart >= start && a.PeriodEnd <= end)
+            .Where(a => a.Period.Start >= start && a.Period.End <= end)
             .ToListAsync();
     }
 }

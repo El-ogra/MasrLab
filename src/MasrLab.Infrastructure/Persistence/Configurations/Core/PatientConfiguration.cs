@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using MasrLab.Domain.Entities.Core;
+using MasrLab.Domain.ValueObjects;
 
 namespace MasrLab.Infrastructure.Persistence.Configurations.Core;
 
@@ -13,7 +14,6 @@ public class PatientConfiguration : IEntityTypeConfiguration<Patient>
         builder.Property(e => e.Id).ValueGeneratedOnAdd();
 
         builder.Property(e => e.Name).HasMaxLength(200).IsRequired();
-        builder.Property(e => e.Phone).HasMaxLength(50);
         builder.Property(e => e.Address).HasMaxLength(500);
         builder.Property(e => e.NationalId).HasMaxLength(100);
         builder.Property(e => e.Notes).HasMaxLength(1000);
@@ -21,9 +21,18 @@ public class PatientConfiguration : IEntityTypeConfiguration<Patient>
         builder.Property(e => e.DrugAllergy).HasMaxLength(500);
         builder.Property(e => e.ChronicDiseases).HasMaxLength(500);
 
-        builder.Property(e => e.AgeYears).IsRequired();
-        builder.Property(e => e.AgeMonths).IsRequired();
-        builder.Property(e => e.AgeDays).IsRequired();
+        builder.OwnsOne(e => e.Age, age =>
+        {
+            age.Property(a => a.Years).HasColumnName("AgeYears").IsRequired();
+            age.Property(a => a.Months).HasColumnName("AgeMonths").IsRequired();
+            age.Property(a => a.Days).HasColumnName("AgeDays").IsRequired();
+        });
+
+        builder.OwnsOne(e => e.Phone, phone =>
+        {
+            phone.Property(p => p.Value).HasColumnName("Phone").HasMaxLength(50);
+        });
+
         builder.Property(e => e.Gender).IsRequired();
         builder.Property(e => e.DoctorId);
         builder.Property(e => e.ReferralEntityId);

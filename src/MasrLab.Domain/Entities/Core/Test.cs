@@ -13,4 +13,7 @@ public class Test : BaseEntity
     public string TurnaroundTime { get; set; } = string.Empty;
     public bool LabToLabFlag { get; set; }
     public string Unit { get; set; } = string.Empty;
+
+    public ICollection<ReferenceValue> ReferenceValues { get; set; } = new List<ReferenceValue>();
+    public ICollection<Comment> Comments { get; set; } = new List<Comment>();
 }

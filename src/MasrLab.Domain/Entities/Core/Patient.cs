@@ -1,16 +1,15 @@
 using MasrLab.Domain.Common;
 using MasrLab.Domain.Common.Enums;
+using MasrLab.Domain.ValueObjects;
 
 namespace MasrLab.Domain.Entities.Core;
 
 public class Patient : BaseEntity
 {
     public string Name { get; set; } = string.Empty;
-    public int AgeYears { get; set; }
-    public int AgeMonths { get; set; }
-    public int AgeDays { get; set; }
+    public Age Age { get; set; } = new(1, 0, 0);
     public Gender Gender { get; set; }
-    public string? Phone { get; set; }
+    public EgyptianPhone? Phone { get; set; }
     public string? Address { get; set; }
     public string? NationalId { get; set; }
     public string? Notes { get; set; }

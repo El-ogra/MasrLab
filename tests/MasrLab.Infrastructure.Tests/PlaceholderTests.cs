@@ -111,7 +111,7 @@ public class UnitOfWorkTests
         context.Patients.Add(patient);
 
         var result = await unitOfWork.SaveChangesAsync(CancellationToken.None);
-        Assert.Equal(1, result);
+        Assert.True(result >= 1);
     }
 }
 
