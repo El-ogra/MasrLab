@@ -40,6 +40,8 @@ public class MasrLabDbContext : DbContext
     public DbSet<Account> Accounts => Set<Account>();
     public DbSet<CashTransaction> CashTransactions => Set<CashTransaction>();
     public DbSet<OutsourcedSample> OutsourcedSamples => Set<OutsourcedSample>();
+    public DbSet<ExtraServiceItem> ExtraServiceItems => Set<ExtraServiceItem>();
+    public DbSet<ExternalLab> ExternalLabs => Set<ExternalLab>();
 
     // Administrative
     public DbSet<User> Users => Set<User>();
@@ -48,6 +50,7 @@ public class MasrLabDbContext : DbContext
     public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
     public DbSet<Doctor> Doctors => Set<Doctor>();
     public DbSet<ReferralEntity> ReferralEntities => Set<ReferralEntity>();
+    public DbSet<CommentTemplate> CommentTemplates => Set<CommentTemplate>();
 
     // Settings
     public DbSet<PriceList> PriceLists => Set<PriceList>();
@@ -56,6 +59,7 @@ public class MasrLabDbContext : DbContext
     public DbSet<Printer> Printers => Set<Printer>();
     public DbSet<ReportTemplate> ReportTemplates => Set<ReportTemplate>();
     public DbSet<WorkSheet> WorkSheets => Set<WorkSheet>();
+    public DbSet<CardSetting> CardSettings => Set<CardSetting>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
