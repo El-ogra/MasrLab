@@ -93,8 +93,7 @@ public class EventRaisedByEntityTests
         var sample = new Sample
         {
             PatientVisitId = 5,
-            TestId = 7,
-            CollectionStatus = SampleStatus.NotCollected
+            TestId = 7
         };
 
         sample.Collect(7);
@@ -111,8 +110,7 @@ public class EventRaisedByEntityTests
     {
         var sample = new Sample
         {
-            PatientVisitId = 5,
-            CollectionStatus = SampleStatus.NotCollected
+            PatientVisitId = 5
         };
         sample.Collect(1);
 
@@ -149,21 +147,22 @@ public class EventRaisedByEntityTests
     }
 
     [Fact]
-    public void Culture_Record_ShouldRaiseCultureRecordedWithIdEqualToItself()
+    public void Culture_Record_ShouldRaiseCultureRecordedWithVisitTestId()
     {
-        var culture = new Culture { Id = 1 };
+        var culture = new Culture { Id = 1, VisitTestId = 42 };
 
         culture.Record(100000, "E.coli", null, null);
 
         var evt = Assert.Single(culture.DomainEvents.OfType<CultureRecorded>());
         Assert.Equal(1, evt.CultureId);
-        Assert.Equal(1, evt.VisitTestId);
+        Assert.Equal(42, evt.VisitTestId);
     }
 
     [Fact]
     public void Culture_RecordSensitivity_ShouldRaiseSensitivityRecordedWithSensitivityId()
     {
-        var culture = new Culture { Id = 1, OrganismA = "E.coli" };
+        var culture = new Culture { Id = 1, VisitTestId = 42 };
+        culture.Record(100000, "E.coli", null, null);
 
         culture.RecordSensitivity(3, SensitivityLevel.HighlySensitive);
 
@@ -173,24 +172,26 @@ public class EventRaisedByEntityTests
     }
 
     [Fact]
-    public void Receipt_Issue_ShouldRaiseReceiptIssuedWithTotalAndCurrentPaidNow()
+    public void Receipt_Issue_ShouldRaiseReceiptIssuedWithTotal()
     {
-        var receipt = new Receipt { PatientVisitId = 3, PaidNow = 40m };
+        var receipt = new Receipt { PatientVisitId = 3 };
+        receipt.AddVisitTest(new VisitTest(3, 1, 200m, false));
 
-        receipt.Issue(200m);
+        receipt.Issue();
 
         var evt = Assert.Single(receipt.DomainEvents.OfType<ReceiptIssued>());
         Assert.Equal(receipt.Id, evt.ReceiptId);
         Assert.Equal(3, evt.VisitId);
         Assert.Equal(200m, evt.Total);
-        Assert.Equal(40m, evt.Paid);
+        Assert.Equal(0m, evt.Paid);
     }
 
     [Fact]
     public void Receipt_AddPayment_ShouldRaiseReceiptPaymentAddedOnlyOnSuccess()
     {
-        var receipt = new Receipt();
-        receipt.Issue(100m);
+        var receipt = new Receipt { PatientVisitId = 3 };
+        receipt.AddVisitTest(new VisitTest(3, 1, 100m, false));
+        receipt.Issue();
 
         receipt.AddPayment(40m);
         Assert.Single(receipt.DomainEvents.OfType<ReceiptPaymentAdded>());
@@ -202,8 +203,9 @@ public class EventRaisedByEntityTests
     [Fact]
     public void Receipt_ApplyDiscount_ShouldRaiseDiscountAppliedOnlyOnSuccess()
     {
-        var receipt = new Receipt();
-        receipt.Issue(100m);
+        var receipt = new Receipt { PatientVisitId = 3 };
+        receipt.AddVisitTest(new VisitTest(3, 1, 100m, false));
+        receipt.Issue();
 
         receipt.ApplyDiscount(20m);
         Assert.Single(receipt.DomainEvents.OfType<DiscountApplied>());
@@ -215,7 +217,7 @@ public class EventRaisedByEntityTests
     [Fact]
     public void BaseEntity_ClearDomainEvents_ShouldEmptyList()
     {
-        var sample = new Sample { CollectionStatus = SampleStatus.NotCollected };
+        var sample = new Sample();
         sample.Collect(1);
         Assert.NotEmpty(sample.DomainEvents);
 

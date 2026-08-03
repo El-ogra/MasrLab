@@ -19,8 +19,7 @@ public class SampleStateTests
         var sample = new Sample
         {
             PatientVisitId = 5,
-            TestId = 7,
-            CollectionStatus = SampleStatus.NotCollected
+            TestId = 7
         };
 
         sample.Collect(7);
@@ -39,7 +38,9 @@ public class SampleStateTests
     [Fact]
     public void Collect_WhenAlreadyCollected_ShouldThrowBusinessRuleViolation()
     {
-        var sample = new Sample { CollectionStatus = SampleStatus.Collected };
+        var sample = new Sample { PatientVisitId = 5, TestId = 7 };
+        sample.Collect(1);
+        sample.ClearDomainEvents();
 
         var ex = Assert.Throws<BusinessRuleViolationException>(() => sample.Collect(1));
 
@@ -53,8 +54,7 @@ public class SampleStateTests
         var sample = new Sample
         {
             PatientVisitId = 5,
-            TestId = 7,
-            CollectionStatus = SampleStatus.NotCollected
+            TestId = 7
         };
         sample.Collect(1);
 
@@ -72,7 +72,7 @@ public class SampleStateTests
     [Fact]
     public void RevertCollection_WhenNotCollected_ShouldThrowBusinessRuleViolation()
     {
-        var sample = new Sample { CollectionStatus = SampleStatus.NotCollected };
+        var sample = new Sample();
 
         var ex = Assert.Throws<BusinessRuleViolationException>(() => sample.RevertCollection());
 
@@ -192,7 +192,9 @@ public class PatientVisitStateTests
     public void IssueReceipt_WhenPrinted_ShouldThrowBusinessRuleViolation()
     {
         var visit = PatientVisit.Create(1, 1, "L1", null, null);
-        visit.Status = VisitStatus.Printed;
+        visit.AddTest(1, 100m, false);
+        visit.EnterAllResults();
+        visit.MarkAsPrinted();
 
         var ex = Assert.Throws<BusinessRuleViolationException>(() => visit.IssueReceipt());
 
@@ -248,7 +250,9 @@ public class OutsourcedSampleStateTests
     [Fact]
     public void Send_WhenPartiallySettled_ShouldThrowBusinessRuleViolation()
     {
-        var sample = new OutsourcedSample { SettlementStatus = SettlementStatus.PartiallySettled };
+        var sample = new OutsourcedSample { PatientVisitId = 5 };
+        sample.Send(1, 10m);
+        sample.ReceiveResult();
 
         var ex = Assert.Throws<BusinessRuleViolationException>(() => sample.Send(1, 10m));
 
@@ -258,7 +262,10 @@ public class OutsourcedSampleStateTests
     [Fact]
     public void Send_WhenSettled_ShouldThrowBusinessRuleViolation()
     {
-        var sample = new OutsourcedSample { SettlementStatus = SettlementStatus.Settled };
+        var sample = new OutsourcedSample { PatientVisitId = 5 };
+        sample.Send(1, 10m);
+        sample.ReceiveResult();
+        sample.CompleteSettlement();
 
         var ex = Assert.Throws<BusinessRuleViolationException>(() => sample.Send(1, 10m));
 
@@ -330,7 +337,8 @@ public class CultureStateTests
     [Fact]
     public void RecordSensitivity_WithAtLeastOneOrganism_ShouldAddSensitivityAndRaiseEvent()
     {
-        var culture = new Culture { Id = 1, OrganismA = "E.coli" };
+        var culture = new Culture { Id = 1 };
+        culture.Record(100000, "E.coli", null, null);
 
         culture.RecordSensitivity(3, SensitivityLevel.HighlySensitive);
 
@@ -344,7 +352,8 @@ public class CultureStateTests
     [Fact]
     public void RecordSensitivity_WhenAntibioticIdInvalid_ShouldPropagateSensitivityBusinessRuleViolation()
     {
-        var culture = new Culture { Id = 1, OrganismA = "E.coli" };
+        var culture = new Culture { Id = 1 };
+        culture.Record(100000, "E.coli", null, null);
 
         var ex = Assert.Throws<BusinessRuleViolationException>(
             () => culture.RecordSensitivity(0, SensitivityLevel.HighlySensitive));
@@ -355,7 +364,8 @@ public class CultureStateTests
     [Fact]
     public void RecordSensitivity_WhenCultureIdZero_ShouldPropagateSensitivityBusinessRuleViolation()
     {
-        var culture = new Culture { OrganismA = "E.coli" };
+        var culture = new Culture { Id = 0 };
+        culture.Record(100000, "E.coli", null, null);
 
         var ex = Assert.Throws<BusinessRuleViolationException>(
             () => culture.RecordSensitivity(1, SensitivityLevel.HighlySensitive));
@@ -370,8 +380,9 @@ public class ReceiptStateTests
     public void Issue_ShouldSetTotalRemainingAndDatesAndRaiseEvent()
     {
         var receipt = new Receipt { PatientVisitId = 3 };
+        receipt.AddVisitTest(new VisitTest(3, 1, 200m, false));
 
-        receipt.Issue(200m);
+        receipt.Issue();
 
         Assert.Equal(200m, receipt.Total);
         Assert.Equal(200m, receipt.Remaining);
@@ -385,23 +396,24 @@ public class ReceiptStateTests
     }
 
     [Fact]
-    public void Issue_CalledTwice_ShouldOverwriteTotalAndRaiseTwoEvents()
+    public void Issue_CalledTwice_ShouldThrowBusinessRuleViolation()
     {
-        var receipt = new Receipt();
+        var receipt = new Receipt { PatientVisitId = 3 };
+        receipt.AddVisitTest(new VisitTest(3, 1, 100m, false));
+        receipt.Issue();
 
-        receipt.Issue(100m);
-        receipt.Issue(150m);
+        var ex = Assert.Throws<BusinessRuleViolationException>(() => receipt.Issue());
 
-        Assert.Equal(150m, receipt.Total);
-        Assert.Equal(150m, receipt.Remaining);
-        Assert.Equal(2, receipt.DomainEvents.OfType<ReceiptIssued>().Count());
+        Assert.Equal("Receipt has already been issued.", ex.Message);
+        Assert.Single(receipt.DomainEvents.OfType<ReceiptIssued>());
     }
 
     [Fact]
     public void AddPayment_ShouldRaiseReceiptPaymentAddedEvent()
     {
-        var receipt = new Receipt();
-        receipt.Issue(100m);
+        var receipt = new Receipt { PatientVisitId = 3 };
+        receipt.AddVisitTest(new VisitTest(3, 1, 100m, false));
+        receipt.Issue();
 
         receipt.AddPayment(40m);
 
@@ -415,8 +427,9 @@ public class ReceiptStateTests
     [Fact]
     public void ApplyDiscount_ShouldRaiseDiscountAppliedEvent()
     {
-        var receipt = new Receipt();
-        receipt.Issue(100m);
+        var receipt = new Receipt { PatientVisitId = 3 };
+        receipt.AddVisitTest(new VisitTest(3, 1, 100m, false));
+        receipt.Issue();
 
         receipt.ApplyDiscount(20m);
 

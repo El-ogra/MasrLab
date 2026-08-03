@@ -10,7 +10,7 @@ public class PatientVisit : BaseEntity
 {
     public DateTime VisitDate { get; set; }
     public int PatientId { get; set; }
-    public VisitStatus Status { get; set; }
+    public VisitStatus Status { get; private set; }
     public int RegisteredByUserId { get; set; }
     public string LabId { get; set; } = string.Empty;
     public int? DoctorId { get; set; }
@@ -38,19 +38,31 @@ public class PatientVisit : BaseEntity
         return visit;
     }
 
+    // INV-03: If PatientVisit.DoctorId is null, defaults to Patient.DoctorId.
+    public static PatientVisit Create(Patient patient, int registeredByUserId, string labId, int? doctorId, int? referralEntityId)
+    {
+        var effectiveDoctorId = doctorId ?? patient.DoctorId;
+        return Create(patient.Id, registeredByUserId, labId, effectiveDoctorId, referralEntityId);
+    }
+
     public void AddTest(int testId, decimal price, bool isOutsourced)
     {
         if (Status == VisitStatus.Closed)
             throw new BusinessRuleViolationException("Cannot add tests to a closed visit.");
-        var visitTest = new VisitTest
-        {
-            PatientVisitId = Id,
-            TestId = testId,
-            Price = price,
-            IsOutsourced = isOutsourced
-        };
+        var visitTest = new VisitTest(Id, testId, price, isOutsourced);
         VisitTests.Add(visitTest);
         AddDomainEvent(new VisitTestAdded(Id, testId, price, isOutsourced));
+    }
+
+    public void RemoveTest(int testId)
+    {
+        if (Status == VisitStatus.Closed)
+            throw new BusinessRuleViolationException("Cannot remove tests from a closed visit.");
+        var visitTest = VisitTests.FirstOrDefault(vt => vt.TestId == testId);
+        if (visitTest is null)
+            throw new BusinessRuleViolationException("Test is not part of this visit.");
+        VisitTests.Remove(visitTest);
+        AddDomainEvent(new VisitTestRemoved(Id, testId));
     }
 
     public void EnterAllResults()
@@ -67,6 +79,13 @@ public class PatientVisit : BaseEntity
         if (Status != VisitStatus.Registered && Status != VisitStatus.ResultsEntered)
             throw new BusinessRuleViolationException("Visit must be open to issue a receipt.");
         Status = VisitStatus.ResultsEntered;
+    }
+
+    public void MarkAsPrinted()
+    {
+        if (Status != VisitStatus.ResultsEntered)
+            throw new BusinessRuleViolationException("Visit must be in ResultsEntered status to be printed.");
+        Status = VisitStatus.Printed;
     }
 
     public void Close(decimal finalTotal)

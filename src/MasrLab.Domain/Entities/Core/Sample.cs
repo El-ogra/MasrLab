@@ -11,9 +11,20 @@ public class Sample : BaseEntity
     public int TestId { get; set; }
     public string SampleType { get; set; } = string.Empty;
     public string? Barcode { get; set; }
-    public SampleStatus CollectionStatus { get; set; }
+    public SampleStatus CollectionStatus { get; private set; } = SampleStatus.NotCollected;
     public int? CollectedByUserId { get; set; }
     public DateTime? CollectedAt { get; set; }
+
+    public static Sample Create(int patientVisitId, int testId)
+    {
+        var sample = new Sample
+        {
+            PatientVisitId = patientVisitId,
+            TestId = testId,
+            CollectionStatus = SampleStatus.NotCollected
+        };
+        return sample;
+    }
 
     public void Collect(int userId)
     {

@@ -12,7 +12,7 @@ public class OutsourcedSample : BaseEntity
     public int ExternalLabId { get; set; }
     public decimal CostPrice { get; set; }
     public decimal PatientPrice { get; set; }
-    public SettlementStatus SettlementStatus { get; set; }
+    public SettlementStatus SettlementStatus { get; private set; }
     public DateTime? ReceivedAt { get; set; }
 
     public void SetPrices(decimal patientPrice, decimal costPrice)
@@ -38,6 +38,16 @@ public class OutsourcedSample : BaseEntity
         if (ReceivedAt.HasValue)
             throw new BusinessRuleViolationException("Result has already been received for this outsourced sample.");
         ReceivedAt = DateTime.UtcNow;
+        SettlementStatus = SettlementStatus.PartiallySettled;
         AddDomainEvent(new OutsourcedResultReceived(Id, ReceivedAt.Value));
+    }
+
+    public void CompleteSettlement()
+    {
+        if (ReceivedAt is null)
+            throw new BusinessRuleViolationException("Cannot complete settlement before the result is received.");
+        if (SettlementStatus != SettlementStatus.PartiallySettled)
+            throw new BusinessRuleViolationException("Outsourced sample must be in PartiallySettled status to complete settlement.");
+        SettlementStatus = SettlementStatus.Settled;
     }
 }

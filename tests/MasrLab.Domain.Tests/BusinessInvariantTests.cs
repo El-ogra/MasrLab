@@ -245,10 +245,18 @@ public class SensitivityTests
 
 public class ReceiptPaymentAndDiscountTests
 {
+    private static Receipt CreateReceipt(decimal total)
+    {
+        var receipt = new Receipt { PatientVisitId = 3 };
+        receipt.AddVisitTest(new VisitTest(3, 1, total, false));
+        receipt.Issue();
+        return receipt;
+    }
+
     [Fact]
     public void AddPayment_WhenAmountZero_ShouldThrowBusinessRuleViolation()
     {
-        var receipt = new Receipt { Total = 100m };
+        var receipt = CreateReceipt(100m);
 
         var ex = Assert.Throws<BusinessRuleViolationException>(() => receipt.AddPayment(0m));
 
@@ -258,7 +266,7 @@ public class ReceiptPaymentAndDiscountTests
     [Fact]
     public void AddPayment_WhenAmountNegative_ShouldThrowBusinessRuleViolation()
     {
-        var receipt = new Receipt { Total = 100m };
+        var receipt = CreateReceipt(100m);
 
         var ex = Assert.Throws<BusinessRuleViolationException>(() => receipt.AddPayment(-10m));
 
@@ -268,7 +276,8 @@ public class ReceiptPaymentAndDiscountTests
     [Fact]
     public void AddPayment_WhenExceedsRemaining_ShouldThrowBusinessRuleViolation()
     {
-        var receipt = new Receipt { Total = 100m, PaidNow = 60m };
+        var receipt = CreateReceipt(100m);
+        receipt.AddPayment(60m);
 
         var ex = Assert.Throws<BusinessRuleViolationException>(() => receipt.AddPayment(50m));
 
@@ -278,7 +287,8 @@ public class ReceiptPaymentAndDiscountTests
     [Fact]
     public void AddPayment_WhenExactRemaining_ShouldAcceptAndSetRemainingZero()
     {
-        var receipt = new Receipt { Total = 100m, PaidNow = 40m };
+        var receipt = CreateReceipt(100m);
+        receipt.AddPayment(40m);
 
         receipt.AddPayment(60m);
 
@@ -289,7 +299,7 @@ public class ReceiptPaymentAndDiscountTests
     [Fact]
     public void AddPayment_WhenPartial_ShouldUpdatePaidAndRemaining()
     {
-        var receipt = new Receipt { Total = 100m };
+        var receipt = CreateReceipt(100m);
 
         receipt.AddPayment(30m);
 
@@ -300,7 +310,7 @@ public class ReceiptPaymentAndDiscountTests
     [Fact]
     public void ApplyDiscount_WhenNegative_ShouldThrowBusinessRuleViolation()
     {
-        var receipt = new Receipt { Total = 100m };
+        var receipt = CreateReceipt(100m);
 
         var ex = Assert.Throws<BusinessRuleViolationException>(() => receipt.ApplyDiscount(-1m));
 
@@ -310,7 +320,7 @@ public class ReceiptPaymentAndDiscountTests
     [Fact]
     public void ApplyDiscount_WhenExceedsTotal_ShouldThrowBusinessRuleViolation()
     {
-        var receipt = new Receipt { Total = 100m };
+        var receipt = CreateReceipt(100m);
 
         var ex = Assert.Throws<BusinessRuleViolationException>(() => receipt.ApplyDiscount(150m));
 
@@ -320,7 +330,7 @@ public class ReceiptPaymentAndDiscountTests
     [Fact]
     public void ApplyDiscount_WhenZero_ShouldAccept()
     {
-        var receipt = new Receipt { Total = 100m };
+        var receipt = CreateReceipt(100m);
 
         receipt.ApplyDiscount(0m);
 
@@ -330,7 +340,7 @@ public class ReceiptPaymentAndDiscountTests
     [Fact]
     public void ApplyDiscount_WhenEqualsTotal_ShouldAccept()
     {
-        var receipt = new Receipt { Total = 100m };
+        var receipt = CreateReceipt(100m);
 
         receipt.ApplyDiscount(100m);
 
@@ -341,7 +351,8 @@ public class ReceiptPaymentAndDiscountTests
     [Fact]
     public void ApplyDiscount_WhenValidAndPaidNowSet_ShouldClampRemainingAtZero()
     {
-        var receipt = new Receipt { Total = 100m, PaidNow = 80m };
+        var receipt = CreateReceipt(100m);
+        receipt.AddPayment(80m);
 
         receipt.ApplyDiscount(30m);
 
