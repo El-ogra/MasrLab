@@ -10,8 +10,8 @@ public class OutsourcedSample : BaseEntity
     public int PatientVisitId { get; set; }
     public int TestId { get; set; }
     public int ExternalLabId { get; set; }
-    public decimal CostPrice { get; set; }
-    public decimal PatientPrice { get; set; }
+    public decimal CostPrice { get; private set; }
+    public decimal PatientPrice { get; private set; }
     public SettlementStatus SettlementStatus { get; private set; }
     public DateTime? ReceivedAt { get; set; }
 
