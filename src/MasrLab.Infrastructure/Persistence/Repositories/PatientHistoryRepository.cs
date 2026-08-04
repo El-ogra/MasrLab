@@ -40,13 +40,16 @@ public class PatientHistoryRepository : IPatientHistoryRepository
         LabId = v.LabId,
         TestId = v.TestId,
         TestName = v.TestName,
+        TestReportName = v.TestReportName,
         PreviousValue = v.PreviousValue,
         PreviousUnit = v.PreviousUnit,
         PreviousReferenceRange = v.PreviousReferenceRange,
+        PreviousStatus = v.PreviousStatus ?? string.Empty,
         PreviousVisitDate = v.PreviousVisitDate,
         CurrentValue = v.CurrentValue,
         CurrentUnit = v.CurrentUnit,
         CurrentReferenceRange = v.CurrentReferenceRange,
+        CurrentStatus = v.CurrentStatus ?? string.Empty,
         CurrentVisitDate = v.CurrentVisitDate,
         ComparisonFlag = v.CurrentValue != v.PreviousValue
             || v.CurrentUnit != v.PreviousUnit

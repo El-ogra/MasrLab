@@ -1,12 +1,21 @@
-using MasrLab.Application.Common.DTOs;
 using MediatR;
+using MasrLab.Application.Common.DTOs;
+using MasrLab.Domain.Interfaces;
 
 namespace MasrLab.Application.Features.Statistics.Queries.GetGenderStatistics;
 
 public class GetGenderStatisticsQueryHandler : IRequestHandler<GetGenderStatisticsQuery, GenderStatisticsDto>
 {
-    public Task<GenderStatisticsDto> Handle(GetGenderStatisticsQuery request, CancellationToken cancellationToken)
+    private readonly IStatisticsRepository _statisticsRepository;
+
+    public GetGenderStatisticsQueryHandler(IStatisticsRepository statisticsRepository)
     {
-        throw new NotImplementedException();
+        _statisticsRepository = statisticsRepository;
+    }
+
+    public async Task<GenderStatisticsDto> Handle(GetGenderStatisticsQuery request, CancellationToken cancellationToken)
+    {
+        var domainResult = await _statisticsRepository.GetGenderStatisticsAsync(request.PeriodStart, request.PeriodEnd);
+        return new GenderStatisticsDto(domainResult);
     }
 }

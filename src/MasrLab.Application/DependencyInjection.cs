@@ -1,5 +1,6 @@
 using System.Reflection;
 using FluentValidation;
+using MasrLab.Application.Common.Helpers;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -15,6 +16,7 @@ public static class DependencyInjection
         services.AddAutoMapper(cfg => { }, assembly);
         services.AddValidatorsFromAssembly(assembly);
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(Common.Behaviors.ValidationBehavior<,>));
+        services.AddScoped<LabIdGenerator>();
 
         return services;
     }

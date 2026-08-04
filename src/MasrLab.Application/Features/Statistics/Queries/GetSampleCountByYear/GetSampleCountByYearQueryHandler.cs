@@ -1,12 +1,21 @@
-using MasrLab.Application.Common.DTOs;
 using MediatR;
+using MasrLab.Application.Common.DTOs;
+using MasrLab.Domain.Interfaces;
 
 namespace MasrLab.Application.Features.Statistics.Queries.GetSampleCountByYear;
 
 public class GetSampleCountByYearQueryHandler : IRequestHandler<GetSampleCountByYearQuery, SampleCountByYearDto>
 {
-    public Task<SampleCountByYearDto> Handle(GetSampleCountByYearQuery request, CancellationToken cancellationToken)
+    private readonly IStatisticsRepository _statisticsRepository;
+
+    public GetSampleCountByYearQueryHandler(IStatisticsRepository statisticsRepository)
     {
-        throw new NotImplementedException();
+        _statisticsRepository = statisticsRepository;
+    }
+
+    public async Task<SampleCountByYearDto> Handle(GetSampleCountByYearQuery request, CancellationToken cancellationToken)
+    {
+        var domainResult = await _statisticsRepository.GetSampleCountByYearAsync(request.Year);
+        return new SampleCountByYearDto(domainResult);
     }
 }

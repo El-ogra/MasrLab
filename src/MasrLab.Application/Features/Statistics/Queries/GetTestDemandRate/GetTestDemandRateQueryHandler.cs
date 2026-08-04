@@ -1,12 +1,21 @@
-using MasrLab.Application.Common.DTOs;
 using MediatR;
+using MasrLab.Application.Common.DTOs;
+using MasrLab.Domain.Interfaces;
 
 namespace MasrLab.Application.Features.Statistics.Queries.GetTestDemandRate;
 
 public class GetTestDemandRateQueryHandler : IRequestHandler<GetTestDemandRateQuery, TestDemandRateDto>
 {
-    public Task<TestDemandRateDto> Handle(GetTestDemandRateQuery request, CancellationToken cancellationToken)
+    private readonly IStatisticsRepository _statisticsRepository;
+
+    public GetTestDemandRateQueryHandler(IStatisticsRepository statisticsRepository)
     {
-        throw new NotImplementedException();
+        _statisticsRepository = statisticsRepository;
+    }
+
+    public async Task<TestDemandRateDto> Handle(GetTestDemandRateQuery request, CancellationToken cancellationToken)
+    {
+        var domainResult = await _statisticsRepository.GetTestDemandRateAsync(request.PeriodStart, request.PeriodEnd);
+        return new TestDemandRateDto(domainResult);
     }
 }

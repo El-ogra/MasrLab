@@ -2,14 +2,6 @@ using MasrLab.Domain.Interfaces;
 
 namespace MasrLab.Application.Common.Helpers;
 
-/// <summary>
-/// توليد Lab ID الفريد للمريض.
-/// موضعه في طبقة Application بقرار DD-08، لأنه يعتمد على IPatientRepository
-/// (تحقق من التفرّد مقابل المخزَّن) وليس دالة صرفة — فلا يصلح لطبقة Domain，
-/// ولا يجوز وضعه في Presentation/Helpers.
-/// هيكل أساسي: منطق التوليد الفعلي يُكتب في مرحلة Business Logic，
-/// اتساقاً مع أسلوب Handlers الحالية في المشروع.
-/// </summary>
 public class LabIdGenerator
 {
     private readonly IPatientRepository _patientRepository;
@@ -20,12 +12,16 @@ public class LabIdGenerator
             ?? throw new ArgumentNullException(nameof(patientRepository));
     }
 
-    /// <summary>
-    /// يولّد Lab ID فريداً غير مستخدم مسبقاً.
-    /// </summary>
-    public Task<string> GenerateAsync(CancellationToken cancellationToken = default)
+    public async Task<string> GenerateAsync(CancellationToken cancellationToken = default)
     {
-        _ = _patientRepository;
-        throw new NotImplementedException();
+        var prefix = DateTime.UtcNow.ToString("yyyyMMdd");
+        var existingPatients = await _patientRepository.GetAllAsync();
+        var existingLabIds = existingPatients
+            .Select(p => p.LabId)
+            .Where(id => id.StartsWith(prefix))
+            .ToList();
+
+        var nextNumber = existingLabIds.Count + 1;
+        return $"{prefix}-{nextNumber:D4}";
     }
 }

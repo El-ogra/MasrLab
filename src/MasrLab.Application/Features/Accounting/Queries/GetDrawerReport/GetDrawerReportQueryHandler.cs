@@ -1,12 +1,29 @@
 using MediatR;
 using MasrLab.Application.Common.DTOs;
+using MasrLab.Domain.Interfaces;
 
 namespace MasrLab.Application.Features.Accounting.Queries.GetDrawerReport;
 
 public class GetDrawerReportQueryHandler : IRequestHandler<GetDrawerReportQuery, AccountDrawerDto>
 {
-    public Task<AccountDrawerDto> Handle(GetDrawerReportQuery request, CancellationToken cancellationToken)
+    private readonly IAccountingRepository _accountingRepository;
+
+    public GetDrawerReportQueryHandler(IAccountingRepository accountingRepository)
     {
-        throw new NotImplementedException();
+        _accountingRepository = accountingRepository;
+    }
+
+    public async Task<AccountDrawerDto> Handle(GetDrawerReportQuery request, CancellationToken cancellationToken)
+    {
+        var accounts = await _accountingRepository.GetByDateRangeAsync(request.PeriodStart, request.PeriodEnd);
+
+        return new AccountDrawerDto
+        {
+            PeriodStart = request.PeriodStart,
+            PeriodEnd = request.PeriodEnd,
+            TotalIncome = accounts.Sum(a => a.TotalIncome),
+            TotalDiscount = accounts.Sum(a => a.TotalDiscount),
+            NetProfit = accounts.Sum(a => a.NetProfit)
+        };
     }
 }

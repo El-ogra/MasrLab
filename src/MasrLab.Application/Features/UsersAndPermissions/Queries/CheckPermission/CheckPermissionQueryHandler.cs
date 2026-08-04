@@ -1,11 +1,28 @@
 using MediatR;
+using MasrLab.Domain.Common.Enums;
+using MasrLab.Domain.Entities.Administrative;
+using MasrLab.Domain.Interfaces;
 
 namespace MasrLab.Application.Features.UsersAndPermissions.Queries.CheckPermission;
 
 public class CheckPermissionQueryHandler : IRequestHandler<CheckPermissionQuery, bool>
 {
-    public Task<bool> Handle(CheckPermissionQuery request, CancellationToken cancellationToken)
+    private readonly IRepository<Permission> _permissionRepository;
+
+    public CheckPermissionQueryHandler(IRepository<Permission> permissionRepository)
     {
-        throw new NotImplementedException();
+        _permissionRepository = permissionRepository;
+    }
+
+    public async Task<bool> Handle(CheckPermissionQuery request, CancellationToken cancellationToken)
+    {
+        var allPermissions = await _permissionRepository.GetAllAsync();
+
+        var permission = allPermissions.FirstOrDefault(p =>
+            p.UserId == request.UserId &&
+            p.ScreenId == (ScreenType)request.ScreenId &&
+            p.OperationId == (PermissionOperation)request.OperationId);
+
+        return permission?.Allowed ?? false;
     }
 }
