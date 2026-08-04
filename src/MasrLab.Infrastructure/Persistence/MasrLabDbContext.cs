@@ -4,6 +4,7 @@ using MasrLab.Domain.Entities.Financial;
 using MasrLab.Domain.Entities.Administrative;
 using MasrLab.Domain.Common;
 using MasrLab.Domain.Entities.Settings;
+using MasrLab.Infrastructure.Persistence.Views;
 using Microsoft.EntityFrameworkCore;
 using System.Linq.Expressions;
 
@@ -61,10 +62,15 @@ public class MasrLabDbContext : DbContext
     public DbSet<WorkSheet> WorkSheets => Set<WorkSheet>();
     public DbSet<CardSetting> CardSettings => Set<CardSetting>();
 
+    // Views
+    public DbSet<PatientHistoryView> PatientHistoryViews => Set<PatientHistoryView>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(MasrLabDbContext).Assembly);
+
+        modelBuilder.Entity<PatientHistoryView>().HasNoKey().ToView("PatientHistoryView");
 
         foreach (var entityType in modelBuilder.Model.GetEntityTypes())
         {

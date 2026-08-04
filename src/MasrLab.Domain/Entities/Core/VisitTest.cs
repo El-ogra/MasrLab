@@ -23,6 +23,8 @@ public class VisitTest : BaseEntity
 
     public bool IsOutsourced { get; private set; }
 
+    public int? ReceiptId { get; set; }
+
     public VisitTest(int patientVisitId, int testId, decimal price, bool isOutsourced)
     {
         PatientVisitId = patientVisitId;
