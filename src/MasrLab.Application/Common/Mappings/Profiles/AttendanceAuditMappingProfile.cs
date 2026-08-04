@@ -8,7 +8,10 @@ public class AttendanceAuditMappingProfile : Profile
 {
     public AttendanceAuditMappingProfile()
     {
-        CreateMap<AttendanceLog, AttendanceDto>().ReverseMap();
-        CreateMap<AuditLog, AuditLogDto>().ReverseMap();
+        CreateMap<AttendanceLog, AttendanceDto>()
+            .ForMember(dest => dest.LoginTime, opt => opt.MapFrom(src => src.WorkPeriod.Start))
+            .ForMember(dest => dest.LogoutTime, opt => opt.MapFrom(src => src.WorkPeriod.End))
+            .ForMember(dest => dest.Username, opt => opt.Ignore());
+        CreateMap<AuditLog, AuditLogDto>();
     }
 }

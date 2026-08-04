@@ -8,6 +8,6 @@ public class VisitMappingProfile : Profile
 {
     public VisitMappingProfile()
     {
-        CreateMap<PatientVisit, VisitDto>().ReverseMap();
+        CreateMap<PatientVisit, VisitDto>();
     }
 }

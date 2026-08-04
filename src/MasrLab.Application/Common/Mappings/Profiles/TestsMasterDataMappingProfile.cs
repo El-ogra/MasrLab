@@ -10,12 +10,12 @@ public class TestsMasterDataMappingProfile : Profile
 {
     public TestsMasterDataMappingProfile()
     {
-        CreateMap<Test, TestDto>().ReverseMap();
-        CreateMap<ReferenceValue, ReferenceValueDto>().ReverseMap();
-        CreateMap<TestGroup, TestGroupDto>().ReverseMap();
-        CreateMap<TestGroupItem, TestGroupItemDto>().ReverseMap();
-        CreateMap<CommentTemplate, CommentTemplateDto>().ReverseMap();
-        CreateMap<PriceList, PriceListDto>().ReverseMap();
-        CreateMap<PriceListItem, PriceListItemDto>().ReverseMap();
+        CreateMap<Test, TestDto>();
+        CreateMap<ReferenceValue, ReferenceValueDto>();
+        CreateMap<TestGroup, TestGroupDto>();
+        CreateMap<TestGroupItem, TestGroupItemDto>();
+        CreateMap<CommentTemplate, CommentTemplateDto>();
+        CreateMap<PriceList, PriceListDto>();
+        CreateMap<PriceListItem, PriceListItemDto>();
     }
 }

@@ -1,3 +1,4 @@
+using AutoMapper;
 using MediatR;
 using MasrLab.Application.Common.DTOs;
 using MasrLab.Domain.Entities.Administrative;
@@ -8,10 +9,12 @@ namespace MasrLab.Application.Features.AttendanceAndAudit.Queries.GetAuditLogs;
 public class GetAuditLogsQueryHandler : IRequestHandler<GetAuditLogsQuery, IReadOnlyList<AuditLogDto>>
 {
     private readonly IAuditLogRepository _auditLogRepository;
+    private readonly IMapper _mapper;
 
-    public GetAuditLogsQueryHandler(IAuditLogRepository auditLogRepository)
+    public GetAuditLogsQueryHandler(IAuditLogRepository auditLogRepository, IMapper mapper)
     {
         _auditLogRepository = auditLogRepository;
+        _mapper = mapper;
     }
 
     public async Task<IReadOnlyList<AuditLogDto>> Handle(GetAuditLogsQuery request, CancellationToken cancellationToken)
@@ -34,15 +37,6 @@ public class GetAuditLogsQueryHandler : IRequestHandler<GetAuditLogsQuery, IRead
 
         logs = logs.Where(l => l.ActionTime >= request.PeriodStart && l.ActionTime <= request.PeriodEnd);
 
-        return logs.Select(l => new AuditLogDto
-        {
-            Id = l.Id,
-            UserId = l.UserId,
-            ActionType = l.ActionType,
-            EntityType = l.EntityType,
-            EntityId = l.EntityId,
-            ActionTime = l.ActionTime,
-            PrintCount = l.PrintCount
-        }).ToList();
+        return logs.Select(l => _mapper.Map<AuditLogDto>(l)).ToList();
     }
 }

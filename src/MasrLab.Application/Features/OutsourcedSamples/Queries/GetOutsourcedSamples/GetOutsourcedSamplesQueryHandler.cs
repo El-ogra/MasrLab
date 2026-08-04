@@ -1,3 +1,4 @@
+using AutoMapper;
 using MediatR;
 using MasrLab.Application.Common.DTOs;
 using MasrLab.Domain.Entities.Financial;
@@ -8,10 +9,12 @@ namespace MasrLab.Application.Features.OutsourcedSamples.Queries.GetOutsourcedSa
 public class GetOutsourcedSamplesQueryHandler : IRequestHandler<GetOutsourcedSamplesQuery, IReadOnlyList<OutsourcedSampleDto>>
 {
     private readonly IRepository<OutsourcedSample> _repository;
+    private readonly IMapper _mapper;
 
-    public GetOutsourcedSamplesQueryHandler(IRepository<OutsourcedSample> repository)
+    public GetOutsourcedSamplesQueryHandler(IRepository<OutsourcedSample> repository, IMapper mapper)
     {
         _repository = repository;
+        _mapper = mapper;
     }
 
     public async Task<IReadOnlyList<OutsourcedSampleDto>> Handle(GetOutsourcedSamplesQuery request, CancellationToken cancellationToken)
@@ -22,16 +25,6 @@ public class GetOutsourcedSamplesQueryHandler : IRequestHandler<GetOutsourcedSam
             .Where(s => s.ReceivedAt >= request.PeriodStart && s.ReceivedAt <= request.PeriodEnd)
             .ToList();
 
-        return filtered.Select(s => new OutsourcedSampleDto
-        {
-            Id = s.Id,
-            PatientVisitId = s.PatientVisitId,
-            TestId = s.TestId,
-            ExternalLabId = s.ExternalLabId,
-            CostPrice = s.CostPrice,
-            PatientPrice = s.PatientPrice,
-            SettlementStatus = s.SettlementStatus,
-            ReceivedAt = s.ReceivedAt
-        }).ToList();
+        return filtered.Select(s => _mapper.Map<OutsourcedSampleDto>(s)).ToList();
     }
 }

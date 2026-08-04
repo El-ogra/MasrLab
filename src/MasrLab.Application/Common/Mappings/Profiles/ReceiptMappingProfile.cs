@@ -8,6 +8,6 @@ public class ReceiptMappingProfile : Profile
 {
     public ReceiptMappingProfile()
     {
-        CreateMap<Receipt, ReceiptDto>().ReverseMap();
+        CreateMap<Receipt, ReceiptDto>();
     }
 }

@@ -8,6 +8,6 @@ public class ResultMappingProfile : Profile
 {
     public ResultMappingProfile()
     {
-        CreateMap<TestResult, TestResultDto>().ReverseMap();
+        CreateMap<TestResult, TestResultDto>();
     }
 }

@@ -1,3 +1,4 @@
+using AutoMapper;
 using MediatR;
 using MasrLab.Application.Common.DTOs;
 using MasrLab.Domain.Entities.Culture;
@@ -8,10 +9,12 @@ namespace MasrLab.Application.Features.Cultures.Queries.FilterAntibiotics;
 public class FilterAntibioticsQueryHandler : IRequestHandler<FilterAntibioticsQuery, IReadOnlyList<AntibioticDto>>
 {
     private readonly IRepository<Antibiotic> _repository;
+    private readonly IMapper _mapper;
 
-    public FilterAntibioticsQueryHandler(IRepository<Antibiotic> repository)
+    public FilterAntibioticsQueryHandler(IRepository<Antibiotic> repository, IMapper mapper)
     {
         _repository = repository;
+        _mapper = mapper;
     }
 
     public async Task<IReadOnlyList<AntibioticDto>> Handle(FilterAntibioticsQuery request, CancellationToken cancellationToken)
@@ -26,11 +29,6 @@ public class FilterAntibioticsQueryHandler : IRequestHandler<FilterAntibioticsQu
                 .ToList();
         }
 
-        return antibiotics.Select(a => new AntibioticDto
-        {
-            Id = a.Id,
-            Name = a.Name,
-            ScientificName = a.ScientificName
-        }).ToList();
+        return antibiotics.Select(a => _mapper.Map<AntibioticDto>(a)).ToList();
     }
 }

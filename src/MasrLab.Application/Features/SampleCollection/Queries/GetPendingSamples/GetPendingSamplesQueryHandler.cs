@@ -1,3 +1,4 @@
+using AutoMapper;
 using MasrLab.Application.Common.DTOs;
 using MasrLab.Domain.Common.Enums;
 using MasrLab.Domain.Entities.Core;
@@ -9,10 +10,12 @@ namespace MasrLab.Application.Features.SampleCollection.Queries.GetPendingSample
 public class GetPendingSamplesQueryHandler : IRequestHandler<GetPendingSamplesQuery, IReadOnlyList<SampleDto>>
 {
     private readonly IRepository<Sample> _sampleRepository;
+    private readonly IMapper _mapper;
 
-    public GetPendingSamplesQueryHandler(IRepository<Sample> sampleRepository)
+    public GetPendingSamplesQueryHandler(IRepository<Sample> sampleRepository, IMapper mapper)
     {
         _sampleRepository = sampleRepository;
+        _mapper = mapper;
     }
 
     public async Task<IReadOnlyList<SampleDto>> Handle(GetPendingSamplesQuery request, CancellationToken cancellationToken)
@@ -26,14 +29,6 @@ public class GetPendingSamplesQueryHandler : IRequestHandler<GetPendingSamplesQu
             pendingSamples = pendingSamples.Where(s => s.PatientVisitId == request.PatientVisitId.Value);
         }
 
-        return pendingSamples.Select(s => new SampleDto
-        {
-            Id = s.Id,
-            PatientVisitId = s.PatientVisitId,
-            TestId = s.TestId,
-            SampleType = s.SampleType,
-            Barcode = s.Barcode,
-            CollectionStatus = s.CollectionStatus
-        }).ToList();
+        return pendingSamples.Select(s => _mapper.Map<SampleDto>(s)).ToList();
     }
 }

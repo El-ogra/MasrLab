@@ -8,8 +8,8 @@ public class SettingsMappingProfile : Profile
 {
     public SettingsMappingProfile()
     {
-        CreateMap<Printer, PrinterDto>().ReverseMap();
-        CreateMap<ReportTemplate, ReportSettingsDto>().ReverseMap();
-        CreateMap<CardSetting, EnvelopeBarcodeSettingsDto>().ReverseMap();
+        CreateMap<Printer, PrinterDto>();
+        CreateMap<ReportTemplate, ReportSettingsDto>();
+        CreateMap<CardSetting, EnvelopeBarcodeSettingsDto>();
     }
 }

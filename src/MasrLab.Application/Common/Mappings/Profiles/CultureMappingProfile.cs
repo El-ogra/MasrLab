@@ -8,9 +8,9 @@ public class CultureMappingProfile : Profile
 {
     public CultureMappingProfile()
     {
-        CreateMap<CultureEntity, CultureResultDto>().ReverseMap();
-        CreateMap<Domain.Entities.Culture.Antibiotic, AntibioticDto>().ReverseMap();
-        CreateMap<Domain.Entities.Culture.Sensitivity, SensitivityDto>().ReverseMap();
-        CreateMap<Domain.Entities.Culture.Organism, OrganismDto>().ReverseMap();
+        CreateMap<CultureEntity, CultureResultDto>();
+        CreateMap<Domain.Entities.Culture.Antibiotic, AntibioticDto>();
+        CreateMap<Domain.Entities.Culture.Sensitivity, SensitivityDto>();
+        CreateMap<Domain.Entities.Culture.Organism, OrganismDto>();
     }
 }

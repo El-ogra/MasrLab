@@ -1,3 +1,4 @@
+using AutoMapper;
 using MasrLab.Application.Common.DTOs;
 using MasrLab.Domain.Interfaces;
 using MediatR;
@@ -7,29 +8,18 @@ namespace MasrLab.Application.Features.ResultsEntry.Queries.GetTestResultForVisi
 public class GetTestResultForVisitQueryHandler : IRequestHandler<GetTestResultForVisitQuery, IReadOnlyList<TestResultDto>>
 {
     private readonly ITestResultRepository _testResultRepository;
+    private readonly IMapper _mapper;
 
-    public GetTestResultForVisitQueryHandler(ITestResultRepository testResultRepository)
+    public GetTestResultForVisitQueryHandler(ITestResultRepository testResultRepository, IMapper mapper)
     {
         _testResultRepository = testResultRepository;
+        _mapper = mapper;
     }
 
     public async Task<IReadOnlyList<TestResultDto>> Handle(GetTestResultForVisitQuery request, CancellationToken cancellationToken)
     {
         var results = await _testResultRepository.GetByVisitTestIdAsync(request.VisitTestId);
 
-        return results.Select(r => new TestResultDto
-        {
-            Id = r.Id,
-            VisitTestId = r.VisitTestId,
-            Value = r.Value,
-            Unit = r.Unit,
-            ReferenceRange = r.ReferenceRange,
-            Status = r.Status,
-            EnteredByUserId = r.EnteredByUserId,
-            EnteredAt = r.EnteredAt,
-            PrintedByUserId = r.PrintedByUserId,
-            PrintedAt = r.PrintedAt,
-            PrintCount = r.PrintCount
-        }).ToList();
+        return results.Select(r => _mapper.Map<TestResultDto>(r)).ToList();
     }
 }

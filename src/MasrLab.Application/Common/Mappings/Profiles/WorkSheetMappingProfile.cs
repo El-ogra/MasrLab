@@ -8,6 +8,6 @@ public class WorkSheetMappingProfile : Profile
 {
     public WorkSheetMappingProfile()
     {
-        CreateMap<WorkSheet, WorkSheetDto>().ReverseMap();
+        CreateMap<WorkSheet, WorkSheetDto>();
     }
 }

@@ -8,6 +8,6 @@ public class SampleMappingProfile : Profile
 {
     public SampleMappingProfile()
     {
-        CreateMap<Sample, SampleDto>().ReverseMap();
+        CreateMap<Sample, SampleDto>();
     }
 }

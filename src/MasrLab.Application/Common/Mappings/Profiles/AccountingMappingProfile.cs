@@ -8,7 +8,9 @@ public class AccountingMappingProfile : Profile
 {
     public AccountingMappingProfile()
     {
-        CreateMap<Account, AccountDrawerDto>().ReverseMap();
-        CreateMap<CashTransaction, CashTransactionDto>().ReverseMap();
+        CreateMap<Account, AccountDrawerDto>()
+            .ForMember(dest => dest.PeriodStart, opt => opt.MapFrom(src => src.Period.Start))
+            .ForMember(dest => dest.PeriodEnd, opt => opt.MapFrom(src => src.Period.End));
+        CreateMap<CashTransaction, CashTransactionDto>();
     }
 }

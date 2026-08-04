@@ -1,7 +1,8 @@
+using AutoMapper;
 using MediatR;
 using MasrLab.Application.Common.DTOs;
-using MasrLab.Domain.Entities.Settings;
 using MasrLab.Domain.Common.Enums;
+using MasrLab.Domain.Entities.Settings;
 using MasrLab.Domain.Interfaces;
 using MasrLab.Domain.ValueObjects;
 
@@ -11,11 +12,13 @@ public class GenerateTestWorkSheetQueryHandler : IRequestHandler<GenerateTestWor
 {
     private readonly IRepository<WorkSheet> _repository;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IMapper _mapper;
 
-    public GenerateTestWorkSheetQueryHandler(IRepository<WorkSheet> repository, IUnitOfWork unitOfWork)
+    public GenerateTestWorkSheetQueryHandler(IRepository<WorkSheet> repository, IUnitOfWork unitOfWork, IMapper mapper)
     {
         _repository = repository;
         _unitOfWork = unitOfWork;
+        _mapper = mapper;
     }
 
     public async Task<WorkSheetDto> Handle(GenerateTestWorkSheetQuery request, CancellationToken cancellationToken)
@@ -31,14 +34,6 @@ public class GenerateTestWorkSheetQueryHandler : IRequestHandler<GenerateTestWor
         await _repository.AddAsync(workSheet);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return new WorkSheetDto
-        {
-            Id = workSheet.Id,
-            PeriodStart = request.PeriodStart,
-            PeriodEnd = request.PeriodEnd,
-            Type = workSheet.Type,
-            PatientVisitIds = workSheet.PatientVisitIds,
-            TestIds = workSheet.TestIds
-        };
+        return _mapper.Map<WorkSheetDto>(workSheet);
     }
 }

@@ -8,8 +8,8 @@ public class UsersPermissionsMappingProfile : Profile
 {
     public UsersPermissionsMappingProfile()
     {
-        CreateMap<User, UserDto>().ReverseMap();
-        CreateMap<Permission, PermissionDto>().ReverseMap();
-        CreateMap<Permission, PermissionAssignmentDto>().ReverseMap();
+        CreateMap<User, UserDto>();
+        CreateMap<Permission, PermissionDto>();
+        CreateMap<Permission, PermissionAssignmentDto>();
     }
 }

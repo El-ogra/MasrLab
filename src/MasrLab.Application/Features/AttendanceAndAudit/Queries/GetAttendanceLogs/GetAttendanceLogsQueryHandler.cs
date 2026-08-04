@@ -1,3 +1,4 @@
+using AutoMapper;
 using MediatR;
 using MasrLab.Application.Common.DTOs;
 using MasrLab.Domain.Entities.Administrative;
@@ -8,10 +9,12 @@ namespace MasrLab.Application.Features.AttendanceAndAudit.Queries.GetAttendanceL
 public class GetAttendanceLogsQueryHandler : IRequestHandler<GetAttendanceLogsQuery, AttendanceDto>
 {
     private readonly IRepository<AttendanceLog> _repository;
+    private readonly IMapper _mapper;
 
-    public GetAttendanceLogsQueryHandler(IRepository<AttendanceLog> repository)
+    public GetAttendanceLogsQueryHandler(IRepository<AttendanceLog> repository, IMapper mapper)
     {
         _repository = repository;
+        _mapper = mapper;
     }
 
     public async Task<AttendanceDto> Handle(GetAttendanceLogsQuery request, CancellationToken cancellationToken)
@@ -26,15 +29,6 @@ public class GetAttendanceLogsQueryHandler : IRequestHandler<GetAttendanceLogsQu
 
         var log = filtered.FirstOrDefault()!;
 
-        return new AttendanceDto
-        {
-            Id = log.Id,
-            UserId = log.UserId,
-            LoginTime = log.WorkPeriod.Start,
-            LogoutTime = log.WorkPeriod.End,
-            Overtime = log.Overtime,
-            Delays = log.Delays,
-            BreakPeriods = log.BreakPeriods
-        };
+        return _mapper.Map<AttendanceDto>(log);
     }
 }

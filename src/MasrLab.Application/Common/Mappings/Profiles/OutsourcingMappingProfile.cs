@@ -8,7 +8,7 @@ public class OutsourcingMappingProfile : Profile
 {
     public OutsourcingMappingProfile()
     {
-        CreateMap<OutsourcedSample, OutsourcedSampleDto>().ReverseMap();
-        CreateMap<ExternalLab, ExternalLabDto>().ReverseMap();
+        CreateMap<OutsourcedSample, OutsourcedSampleDto>();
+        CreateMap<ExternalLab, ExternalLabDto>();
     }
 }
