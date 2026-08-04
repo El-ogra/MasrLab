@@ -3,4 +3,4 @@ using MasrLab.Application.Common.DTOs;
 
 namespace MasrLab.Application.Features.PriceLists.Queries.GetPriceListForPrint;
 
-public record GetPriceListForPrintQuery(int PriceListId) : IRequest<ReceiptDto?>;
+public record GetPriceListForPrintQuery(int PriceListId) : IRequest<PriceListPrintDto?>;
