@@ -25,9 +25,9 @@ public class CultureSensitivityService : ICultureSensitivityService
     /// INV: يستدعي culture.RecordSensitivity() — لا يُعيّن Sensitivities مباشرة.
     /// INV:Culture.Status يجب أن يكون Recorded، ويجب وجود عضو واحد على الأقل.
     /// </summary>
-    public void RecordSensitivity(int cultureId, int antibioticId, int sensitivityLevel)
+    public async Task RecordSensitivityAsync(int cultureId, int antibioticId, int sensitivityLevel, CancellationToken ct = default)
     {
-        var culture = _cultures.GetByIdAsync(cultureId).GetAwaiter().GetResult();
+        var culture = await _cultures.GetByIdAsync(cultureId);
         if (culture is null)
             return;
 
@@ -35,16 +35,16 @@ public class CultureSensitivityService : ICultureSensitivityService
         culture.RecordSensitivity(antibioticId, level);
 
         _cultures.Update(culture);
-        _unitOfWork.SaveChangesAsync().GetAwaiter().GetResult();
+        await _unitOfWork.SaveChangesAsync(ct);
     }
 
     /// <summary>
     /// يُرجع ملخصاً نصياً لحساسية الزراعة.
     /// INV: قراءة فقط — لا يُعدّل أي حالة.
     /// </summary>
-    public string GetSensitivitySummary(int cultureId)
+    public async Task<string> GetSensitivitySummaryAsync(int cultureId, CancellationToken ct = default)
     {
-        var culture = _cultures.GetByIdAsync(cultureId).GetAwaiter().GetResult();
+        var culture = await _cultures.GetByIdAsync(cultureId);
         if (culture is null)
             return string.Empty;
 
@@ -57,22 +57,5 @@ public class CultureSensitivityService : ICultureSensitivityService
             .ToList();
 
         return $"Organism: {organism}; Antibiotics: {string.Join(", ", sensitivities)}";
-    }
-
-    /// <summary>
-    /// النسخة غير المتزامنة من RecordSensitivity.
-    /// INV: يستدعي culture.RecordSensitivity() — لا يُعيّن Sensitivities مباشرة.
-    /// </summary>
-    public async Task RecordSensitivityAsync(int cultureId, int antibioticId, int sensitivityLevel, CancellationToken ct = default)
-    {
-        var culture = await _cultures.GetByIdAsync(cultureId);
-        if (culture is null)
-            return;
-
-        var level = (SensitivityLevel)sensitivityLevel;
-        culture.RecordSensitivity(antibioticId, level);
-
-        _cultures.Update(culture);
-        await _unitOfWork.SaveChangesAsync(ct);
     }
 }

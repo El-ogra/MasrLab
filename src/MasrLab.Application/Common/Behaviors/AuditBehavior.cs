@@ -1,14 +1,69 @@
+using MasrLab.Application.Common.Interfaces;
+using MasrLab.Domain.Entities.Administrative;
+using MasrLab.Domain.Interfaces;
 using MediatR;
-using System.Diagnostics;
 
 namespace MasrLab.Application.Common.Behaviors;
 
 public class AuditBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, TResponse>
     where TRequest : notnull
 {
+    private readonly ICurrentUserService _currentUserService;
+    private readonly IDateTimeService _dateTimeService;
+    private readonly IRequestAuditLogRepository _auditLogRepository;
+
+    public AuditBehavior(
+        ICurrentUserService currentUserService,
+        IDateTimeService dateTimeService,
+        IRequestAuditLogRepository auditLogRepository)
+    {
+        _currentUserService = currentUserService;
+        _dateTimeService = dateTimeService;
+        _auditLogRepository = auditLogRepository;
+    }
+
     public async Task<TResponse> Handle(TRequest request, RequestHandlerDelegate<TResponse> next, CancellationToken cancellationToken)
     {
-        Debug.WriteLine($"[Audit] {typeof(TRequest).Name} - {DateTime.UtcNow:O}");
-        return await next();
+        var requestName = typeof(TRequest).Name;
+        var userId = _currentUserService.UserId;
+        var startTime = _dateTimeService.UtcNow;
+
+        try
+        {
+            var response = await next();
+
+            await PersistAuditEntryAsync(requestName, userId, startTime, success: true, errorMessage: null, cancellationToken);
+
+            return response;
+        }
+        catch (Exception ex)
+        {
+            await PersistAuditEntryAsync(requestName, userId, startTime, success: false, errorMessage: ex.Message, cancellationToken);
+
+            throw;
+        }
+    }
+
+    private async Task PersistAuditEntryAsync(
+        string requestName, int? userId, DateTime startTimeUtc,
+        bool success, string? errorMessage, CancellationToken ct)
+    {
+        try
+        {
+            var entry = new RequestAuditLog
+            {
+                RequestName = requestName,
+                UserId = userId,
+                ActionTimeUtc = startTimeUtc,
+                Success = success,
+                ErrorMessage = errorMessage
+            };
+
+            await _auditLogRepository.AddAsync(entry);
+        }
+        catch
+        {
+            // Audit persistence failure must not abort the request.
+        }
     }
 }

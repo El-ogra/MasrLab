@@ -49,6 +49,7 @@ public class MasrLabDbContext : DbContext
     public DbSet<Permission> Permissions => Set<Permission>();
     public DbSet<AttendanceLog> AttendanceLogs => Set<AttendanceLog>();
     public DbSet<AuditLog> AuditLogs => Set<AuditLog>();
+    public DbSet<RequestAuditLog> RequestAuditLogs => Set<RequestAuditLog>();
     public DbSet<Doctor> Doctors => Set<Doctor>();
     public DbSet<ReferralEntity> ReferralEntities => Set<ReferralEntity>();
     public DbSet<CommentTemplate> CommentTemplates => Set<CommentTemplate>();

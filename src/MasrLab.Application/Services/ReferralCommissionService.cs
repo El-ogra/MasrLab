@@ -11,37 +11,17 @@ namespace MasrLab.Application.Services;
 public class ReferralCommissionService : IReferralCommissionService
 {
     private readonly IRepository<Doctor> _doctors;
-    private readonly IRepository<ReferralEntity> _referralEntities;
 
-    public ReferralCommissionService(
-        IRepository<Doctor> doctors,
-        IRepository<ReferralEntity> referralEntities)
+    public ReferralCommissionService(IRepository<Doctor> doctors)
     {
         _doctors = doctors ?? throw new ArgumentNullException(nameof(doctors));
-        _referralEntities = referralEntities ?? throw new ArgumentNullException(nameof(referralEntities));
     }
 
     /// <summary>
     /// يحسب عمولة الطبيب بناءً على نسبة العمولة المحددة.
     /// INV: لا يمكن أن تكون النسبة سالبة أو أكبر من 100 (Doctor.cs:19).
     /// </summary>
-    public decimal CalculateCommission(int? doctorId, int? referralEntityId, decimal visitTotal)
-    {
-        if (doctorId.HasValue)
-        {
-            var doctor = _doctors.GetByIdAsync(doctorId.Value).GetAwaiter().GetResult();
-            if (doctor is not null)
-                return visitTotal * (doctor.CommissionPercent / 100m);
-        }
-
-        // الكيانات المرجعية لا تحوي نسبة عمولة — يُرجع 0
-        return 0;
-    }
-
-    /// <summary>
-    /// النسخة غير المتزامنة من CalculateCommission.
-    /// </summary>
-    public async Task<decimal> CalculateCommissionAsync(int? doctorId, int? referralEntityId, decimal visitTotal, CancellationToken ct = default)
+    public async Task<decimal> CalculateCommissionAsync(int? doctorId, decimal visitTotal, CancellationToken ct = default)
     {
         if (doctorId.HasValue)
         {

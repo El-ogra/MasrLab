@@ -11,77 +11,16 @@ namespace MasrLab.Application.Services;
 /// </summary>
 public class ResultValidationService : IResultValidationService
 {
-    private readonly IRepository<Test> _tests;
     private readonly IRepository<ReferenceValue> _referenceValues;
 
-    public ResultValidationService(
-        IRepository<Test> tests,
-        IRepository<ReferenceValue> referenceValues)
+    public ResultValidationService(IRepository<ReferenceValue> referenceValues)
     {
-        _tests = tests ?? throw new ArgumentNullException(nameof(tests));
         _referenceValues = referenceValues ?? throw new ArgumentNullException(nameof(referenceValues));
     }
 
     /// <summary>
     /// يتحقق من حالة النتيجة (عالية/منخفضة/طبيعية) بناءً على القيم المرجعية.
     /// INV: إذا لم يُوجد نطاق مرجعي مطابق، تُرجع Normal (بقرار DD-12 الخيار أ).
-    /// </summary>
-    public ResultStatus ValidateResult(int testId, string value, string? gender, int ageYears)
-    {
-        if (!decimal.TryParse(value, out var numericValue))
-            return ResultStatus.Normal;
-
-        var referenceValues = _referenceValues.GetAllAsync().GetAwaiter().GetResult();
-        var matchingRef = FindMatchingReference(referenceValues, testId, gender, ageYears);
-
-        if (matchingRef is null)
-            return ResultStatus.Normal;
-
-        if (TryParseRange(matchingRef.NormalRange, out var min, out var max))
-        {
-            if (numericValue > max) return ResultStatus.High;
-            if (numericValue < min) return ResultStatus.Low;
-        }
-
-        return ResultStatus.Normal;
-    }
-
-    /// <summary>
-    /// يتحقق مما إذا كانت النتيجة ضمن النطاق المرجعي.
-    /// INV: يُرجع التعليق المناسب (HighComment أو LowComment) حسب الموقع.
-    /// </summary>
-    public bool IsResultInRange(int testId, string value, out string? comment)
-    {
-        comment = null;
-
-        if (!decimal.TryParse(value, out var numericValue))
-            return true;
-
-        var referenceValues = _referenceValues.GetAllAsync().GetAwaiter().GetResult();
-        var matchingRef = FindMatchingReference(referenceValues, testId, null, 0);
-
-        if (matchingRef is null)
-            return true;
-
-        if (TryParseRange(matchingRef.NormalRange, out var min, out var max))
-        {
-            if (numericValue > max)
-            {
-                comment = matchingRef.HighComment;
-                return false;
-            }
-            if (numericValue < min)
-            {
-                comment = matchingRef.LowComment;
-                return false;
-            }
-        }
-
-        return true;
-    }
-
-    /// <summary>
-    /// النسخة غير المتزامنة من ValidateResult.
     /// </summary>
     public async Task<ResultStatus> ValidateResultAsync(int testId, string value, string? gender, int ageYears, CancellationToken ct = default)
     {
@@ -104,15 +43,16 @@ public class ResultValidationService : IResultValidationService
     }
 
     /// <summary>
-    /// النسخة غير المتزامنة من IsResultInRange (بدون out parameter).
+    /// يتحقق مما إذا كانت النتيجة ضمن النطاق المرجعي.
+    /// INV: يُرجع التعليق المناسب (HighComment أو LowComment) حسب الموقع.
     /// </summary>
-    public async Task<(bool IsInRange, string? Comment)> IsResultInRangeAsync(int testId, string value, CancellationToken ct = default)
+    public async Task<(bool IsInRange, string? Comment)> IsResultInRangeAsync(int testId, string value, string? gender, int ageYears, CancellationToken ct = default)
     {
         if (!decimal.TryParse(value, out var numericValue))
             return (true, null);
 
         var allValues = await _referenceValues.GetAllAsync();
-        var matchingRef = FindMatchingReference(allValues, testId, null, 0);
+        var matchingRef = FindMatchingReference(allValues, testId, gender, ageYears);
 
         if (matchingRef is null)
             return (true, null);
@@ -153,7 +93,6 @@ public class ResultValidationService : IResultValidationService
         if (string.IsNullOrWhiteSpace(normalRange))
             return false;
 
-        // يدعم صيغ مثل "0-100" أو "5.0 - 15.0"
         var parts = normalRange.Split('-', StringSplitOptions.TrimEntries);
         if (parts.Length == 2 &&
             decimal.TryParse(parts[0], out min) &&
