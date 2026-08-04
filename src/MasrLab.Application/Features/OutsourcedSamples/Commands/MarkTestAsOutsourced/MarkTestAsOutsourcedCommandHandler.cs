@@ -1,42 +1,25 @@
 using MediatR;
-using MasrLab.Domain.Entities.Financial;
-using MasrLab.Domain.Entities.Core;
-using MasrLab.Domain.Interfaces;
+using MasrLab.Domain.Services;
 
 namespace MasrLab.Application.Features.OutsourcedSamples.Commands.MarkTestAsOutsourced;
 
 public class MarkTestAsOutsourcedCommandHandler : IRequestHandler<MarkTestAsOutsourcedCommand, Unit>
 {
-    private readonly IRepository<OutsourcedSample> _outsourcedRepository;
-    private readonly IRepository<VisitTest> _visitTestRepository;
-    private readonly IUnitOfWork _unitOfWork;
+    private readonly IOutsourcingService _outsourcingService;
 
-    public MarkTestAsOutsourcedCommandHandler(
-        IRepository<OutsourcedSample> outsourcedRepository,
-        IRepository<VisitTest> visitTestRepository,
-        IUnitOfWork unitOfWork)
+    public MarkTestAsOutsourcedCommandHandler(IOutsourcingService outsourcingService)
     {
-        _outsourcedRepository = outsourcedRepository;
-        _visitTestRepository = visitTestRepository;
-        _unitOfWork = unitOfWork;
+        _outsourcingService = outsourcingService;
     }
 
     public async Task<Unit> Handle(MarkTestAsOutsourcedCommand request, CancellationToken cancellationToken)
     {
-        var visitTest = await _visitTestRepository.GetByIdAsync(request.TestId);
-        if (visitTest is null)
-            throw new InvalidOperationException($"VisitTest with Id {request.TestId} not found.");
-
-        var outsourcedSample = new OutsourcedSample
-        {
-            PatientVisitId = request.PatientVisitId,
-            TestId = request.TestId
-        };
-
-        outsourcedSample.Send(request.ExternalLabId, request.CostPrice);
-
-        await _outsourcedRepository.AddAsync(outsourcedSample);
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
+        await _outsourcingService.CreateOutsourcedSampleAsync(
+            request.PatientVisitId,
+            request.TestId,
+            request.ExternalLabId,
+            request.CostPrice,
+            request.PatientPrice);
 
         return Unit.Value;
     }

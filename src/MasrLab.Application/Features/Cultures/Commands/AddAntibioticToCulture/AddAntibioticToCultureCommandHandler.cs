@@ -1,29 +1,24 @@
 using MediatR;
-using MasrLab.Domain.Entities.Culture;
-using MasrLab.Domain.Interfaces;
+using MasrLab.Domain.Services;
 
 namespace MasrLab.Application.Features.Cultures.Commands.AddAntibioticToCulture;
 
 public class AddAntibioticToCultureCommandHandler : IRequestHandler<AddAntibioticToCultureCommand, Unit>
 {
-    private readonly ICultureRepository _cultureRepository;
-    private readonly IUnitOfWork _unitOfWork;
+    private readonly ICultureSensitivityService _cultureSensitivityService;
 
-    public AddAntibioticToCultureCommandHandler(ICultureRepository cultureRepository, IUnitOfWork unitOfWork)
+    public AddAntibioticToCultureCommandHandler(ICultureSensitivityService cultureSensitivityService)
     {
-        _cultureRepository = cultureRepository;
-        _unitOfWork = unitOfWork;
+        _cultureSensitivityService = cultureSensitivityService;
     }
 
     public async Task<Unit> Handle(AddAntibioticToCultureCommand request, CancellationToken cancellationToken)
     {
-        var culture = await _cultureRepository.GetWithSensitivitiesAsync(request.CultureId);
-        if (culture is null)
-            throw new InvalidOperationException($"Culture with Id {request.CultureId} not found.");
-
-        culture.RecordSensitivity(request.AntibioticId, request.SensitivityLevel);
-
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
+        await _cultureSensitivityService.RecordSensitivityAsync(
+            request.CultureId,
+            request.AntibioticId,
+            (int)request.SensitivityLevel,
+            cancellationToken);
 
         return Unit.Value;
     }

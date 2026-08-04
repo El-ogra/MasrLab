@@ -1,22 +1,22 @@
 using MasrLab.Application.Common.DTOs;
 using MasrLab.Application.Features.PatientHistory.Queries.GetPatientHistory;
-using MasrLab.Domain.Interfaces;
+using MasrLab.Domain.Services;
 using MediatR;
 
 namespace MasrLab.Application.Features.PatientHistory.Queries.GetPatientHistory;
 
 public class GetPatientHistoryQueryHandler : IRequestHandler<GetPatientHistoryQuery, IReadOnlyList<PatientHistoryDto>>
 {
-    private readonly IPatientHistoryRepository _patientHistoryRepository;
+    private readonly IMedicalHistoryService _medicalHistoryService;
 
-    public GetPatientHistoryQueryHandler(IPatientHistoryRepository patientHistoryRepository)
+    public GetPatientHistoryQueryHandler(IMedicalHistoryService medicalHistoryService)
     {
-        _patientHistoryRepository = patientHistoryRepository;
+        _medicalHistoryService = medicalHistoryService;
     }
 
     public async Task<IReadOnlyList<PatientHistoryDto>> Handle(GetPatientHistoryQuery request, CancellationToken cancellationToken)
     {
-        var entries = await _patientHistoryRepository.GetByPatientIdAsync(request.PatientId);
+        var entries = await _medicalHistoryService.BuildHistoryAsync(request.PatientId);
 
         return entries.Select(e => new PatientHistoryDto
         {

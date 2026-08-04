@@ -6,5 +6,6 @@ public record MarkTestAsOutsourcedCommand(
     int PatientVisitId,
     int TestId,
     int ExternalLabId,
-    decimal CostPrice
+    decimal CostPrice,
+    decimal PatientPrice
 ) : IRequest<Unit>;

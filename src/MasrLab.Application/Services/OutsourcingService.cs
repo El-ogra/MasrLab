@@ -61,4 +61,19 @@ public class OutsourcingService : IOutsourcingService
         _outsourcedSamples.Update(sample);
         await _unitOfWork.SaveChangesAsync();
     }
+
+    /// <summary>
+    /// يكمل تسوية حساب العينة المرسلة.
+    /// INV: يستدعي CompleteSettlement() — يجب أن تكون الحالة PartiallySettled.
+    /// </summary>
+    public async Task SettleOutsourcedAccountAsync(int outsourcedSampleId)
+    {
+        var sample = await _outsourcedSamples.GetByIdAsync(outsourcedSampleId);
+        if (sample is null)
+            return;
+
+        sample.CompleteSettlement();
+        _outsourcedSamples.Update(sample);
+        await _unitOfWork.SaveChangesAsync();
+    }
 }

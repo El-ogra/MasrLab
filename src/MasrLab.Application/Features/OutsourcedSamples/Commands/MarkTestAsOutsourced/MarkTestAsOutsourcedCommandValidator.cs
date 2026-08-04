@@ -10,5 +10,6 @@ public class MarkTestAsOutsourcedCommandValidator : AbstractValidator<MarkTestAs
         RuleFor(x => x.TestId).GreaterThan(0);
         RuleFor(x => x.ExternalLabId).GreaterThan(0);
         RuleFor(x => x.CostPrice).GreaterThanOrEqualTo(0);
+        RuleFor(x => x.PatientPrice).GreaterThanOrEqualTo(0);
     }
 }

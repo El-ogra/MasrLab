@@ -2,6 +2,7 @@ using MediatR;
 using MasrLab.Domain.Entities.Financial;
 using MasrLab.Domain.Common.Enums;
 using MasrLab.Domain.Interfaces;
+using MasrLab.Domain.Services;
 
 namespace MasrLab.Application.Features.Accounting.Commands.RecordCashTransaction;
 
@@ -9,15 +10,18 @@ public class RecordCashTransactionCommandHandler : IRequestHandler<RecordCashTra
 {
     private readonly IRepository<CashTransaction> _transactionRepository;
     private readonly IRepository<Account> _accountRepository;
+    private readonly IAccountingService _accountingService;
     private readonly IUnitOfWork _unitOfWork;
 
     public RecordCashTransactionCommandHandler(
         IRepository<CashTransaction> transactionRepository,
         IRepository<Account> accountRepository,
+        IAccountingService accountingService,
         IUnitOfWork unitOfWork)
     {
         _transactionRepository = transactionRepository;
         _accountRepository = accountRepository;
+        _accountingService = accountingService;
         _unitOfWork = unitOfWork;
     }
 
@@ -42,6 +46,8 @@ public class RecordCashTransactionCommandHandler : IRequestHandler<RecordCashTra
 
         await _transactionRepository.AddAsync(transaction);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
+
+        await _accountingService.RecalculateNetProfitAsync(request.EntityId);
 
         return Unit.Value;
     }

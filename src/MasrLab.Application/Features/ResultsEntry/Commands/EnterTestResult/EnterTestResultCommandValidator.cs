@@ -17,5 +17,11 @@ public class EnterTestResultCommandValidator : AbstractValidator<EnterTestResult
 
         RuleFor(x => x.EnteredByUserId)
             .GreaterThan(0);
+
+        RuleFor(x => x.PatientId)
+            .GreaterThan(0);
+
+        RuleFor(x => x.AgeYears)
+            .GreaterThanOrEqualTo(0);
     }
 }
