@@ -1,6 +1,6 @@
 using FluentValidation;
 using MasrLab.Application.Common.Behaviors;
-using MasrLab.Application.Common.Mappings;
+using MasrLab.Application.Common.Mappings.Profiles;
 using MasrLab.Application.Features.PatientManagement.Commands.RegisterPatient;
 using MasrLab.Application.Features.UsersAndPermissions.Commands.CreateUser;
 using MasrLab.Application.Features.TestsMasterData.Commands.AddTest;
@@ -185,7 +185,7 @@ public class MappingProfileTests
     [Fact]
     public void AutoMapper_Profiles_ShouldBeRegistered()
     {
-        var profile = new MappingProfile();
+        var profile = new PatientMappingProfile();
         Assert.NotNull(profile);
         Assert.False(string.IsNullOrEmpty(profile.ProfileName));
     }
