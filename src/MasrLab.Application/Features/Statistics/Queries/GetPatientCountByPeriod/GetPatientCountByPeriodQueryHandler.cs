@@ -1,11 +1,11 @@
+using MasrLab.Application.Common.DTOs;
 using MediatR;
-using MasrLab.Domain.Common.DTOs;
 
 namespace MasrLab.Application.Features.Statistics.Queries.GetPatientCountByPeriod;
 
-public class GetPatientCountByPeriodQueryHandler : IRequestHandler<GetPatientCountByPeriodQuery, StatisticsDto>
+public class GetPatientCountByPeriodQueryHandler : IRequestHandler<GetPatientCountByPeriodQuery, PatientCountByPeriodDto>
 {
-    public Task<StatisticsDto> Handle(GetPatientCountByPeriodQuery request, CancellationToken cancellationToken)
+    public Task<PatientCountByPeriodDto> Handle(GetPatientCountByPeriodQuery request, CancellationToken cancellationToken)
     {
         throw new NotImplementedException();
     }

@@ -1,11 +1,11 @@
+using MasrLab.Application.Common.DTOs;
 using MediatR;
-using MasrLab.Domain.Common.DTOs;
 
 namespace MasrLab.Application.Features.Statistics.Queries.GetMonthlyStatistics;
 
-public class GetMonthlyStatisticsQueryHandler : IRequestHandler<GetMonthlyStatisticsQuery, StatisticsDto>
+public class GetMonthlyStatisticsQueryHandler : IRequestHandler<GetMonthlyStatisticsQuery, MonthlyStatisticsDto>
 {
-    public Task<StatisticsDto> Handle(GetMonthlyStatisticsQuery request, CancellationToken cancellationToken)
+    public Task<MonthlyStatisticsDto> Handle(GetMonthlyStatisticsQuery request, CancellationToken cancellationToken)
     {
         throw new NotImplementedException();
     }

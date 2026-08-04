@@ -21,5 +21,28 @@ public class MappingProfile : Profile
         CreateMap<AttendanceLog, AttendanceDto>().ReverseMap();
         CreateMap<Account, AccountDrawerDto>().ReverseMap();
         CreateMap<WorkSheet, WorkSheetDto>().ReverseMap();
+
+        CreateMap<AuditLog, AuditLogDto>().ReverseMap();
+        CreateMap<OutsourcedSample, OutsourcedSampleDto>().ReverseMap();
+        CreateMap<Antibiotic, AntibioticDto>().ReverseMap();
+        CreateMap<ExternalLab, ExternalLabDto>().ReverseMap();
+        CreateMap<Sensitivity, SensitivityDto>().ReverseMap();
+        CreateMap<Organism, OrganismDto>().ReverseMap();
+        CreateMap<Doctor, DoctorDto>().ReverseMap();
+        CreateMap<ReferralEntity, ReferralEntityDto>().ReverseMap();
+        CreateMap<Test, TestDto>().ReverseMap();
+        CreateMap<ReferenceValue, ReferenceValueDto>().ReverseMap();
+        CreateMap<TestGroup, TestGroupDto>().ReverseMap();
+        CreateMap<TestGroupItem, TestGroupItemDto>().ReverseMap();
+        CreateMap<User, UserDto>().ReverseMap();
+        CreateMap<Permission, PermissionDto>().ReverseMap();
+        CreateMap<Permission, PermissionAssignmentDto>().ReverseMap();
+        CreateMap<PriceList, PriceListDto>().ReverseMap();
+        CreateMap<PriceListItem, PriceListItemDto>().ReverseMap();
+        CreateMap<CommentTemplate, CommentTemplateDto>().ReverseMap();
+        CreateMap<CashTransaction, CashTransactionDto>().ReverseMap();
+        CreateMap<Printer, PrinterDto>().ReverseMap();
+        CreateMap<ReportTemplate, ReportSettingsDto>().ReverseMap();
+        CreateMap<CardSetting, EnvelopeBarcodeSettingsDto>().ReverseMap();
     }
 }

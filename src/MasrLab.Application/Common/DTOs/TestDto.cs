@@ -1,6 +1,6 @@
 namespace MasrLab.Application.Common.DTOs;
 
-public record TestWithReferencesDto
+public record TestDto
 {
     public int Id { get; init; }
     public string Name { get; init; } = string.Empty;
@@ -12,5 +12,4 @@ public record TestWithReferencesDto
     public string TurnaroundTime { get; init; } = string.Empty;
     public bool LabToLabFlag { get; init; }
     public string Unit { get; init; } = string.Empty;
-    public IReadOnlyList<ReferenceValueDto> ReferenceValues { get; init; } = Array.Empty<ReferenceValueDto>();
 }

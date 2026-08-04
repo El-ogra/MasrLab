@@ -1,16 +1,12 @@
-using MasrLab.Domain.Common.Enums;
-
 namespace MasrLab.Application.Common.DTOs;
 
-public record TestLogEntryDto
+public record WorkSheetLineDto
 {
     public int PatientVisitId { get; init; }
     public string PatientName { get; init; } = string.Empty;
     public string LabId { get; init; } = string.Empty;
     public int TestId { get; init; }
     public string TestName { get; init; } = string.Empty;
-    public string SampleType { get; init; } = string.Empty;
-    public SampleStatus CollectionStatus { get; init; }
-    public string? ResultValue { get; init; }
-    public ResultStatus? ResultStatus { get; init; }
+    public decimal Price { get; init; }
+    public bool IsOutsourced { get; init; }
 }
