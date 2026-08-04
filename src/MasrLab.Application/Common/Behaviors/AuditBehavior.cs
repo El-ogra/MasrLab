@@ -11,15 +11,18 @@ public class AuditBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, TR
     private readonly ICurrentUserService _currentUserService;
     private readonly IDateTimeService _dateTimeService;
     private readonly IRequestAuditLogRepository _auditLogRepository;
+    private readonly IUnitOfWork _unitOfWork;
 
     public AuditBehavior(
         ICurrentUserService currentUserService,
         IDateTimeService dateTimeService,
-        IRequestAuditLogRepository auditLogRepository)
+        IRequestAuditLogRepository auditLogRepository,
+        IUnitOfWork unitOfWork)
     {
         _currentUserService = currentUserService;
         _dateTimeService = dateTimeService;
         _auditLogRepository = auditLogRepository;
+        _unitOfWork = unitOfWork;
     }
 
     public async Task<TResponse> Handle(TRequest request, RequestHandlerDelegate<TResponse> next, CancellationToken cancellationToken)
@@ -60,6 +63,7 @@ public class AuditBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, TR
             };
 
             await _auditLogRepository.AddAsync(entry);
+            await _unitOfWork.SaveChangesAsync(ct);
         }
         catch
         {
