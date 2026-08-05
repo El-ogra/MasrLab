@@ -25,6 +25,17 @@ public class VisitRepository : GenericRepository<PatientVisit>, IVisitRepository
             .ToListAsync(cancellationToken);
     }
 
+    public async Task<IReadOnlyList<PatientVisit>> GetByDateRangeWithTestsAsync(DateTime start, DateTime end, CancellationToken cancellationToken = default)
+    {
+        return await _context.PatientVisits
+            .AsNoTracking()
+            .Where(v => v.VisitDate >= start && v.VisitDate <= end)
+            .Include(v => v.VisitTests)
+                .ThenInclude(vt => vt.TestResult)
+            .Include(v => v.Samples)
+            .ToListAsync(cancellationToken);
+    }
+
     public async Task<IReadOnlyList<PatientVisit>> GetPendingVisitsAsync(CancellationToken cancellationToken = default)
     {
         return await _context.PatientVisits

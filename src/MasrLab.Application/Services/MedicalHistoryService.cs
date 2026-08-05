@@ -6,8 +6,6 @@ namespace MasrLab.Application.Services;
 
 /// <summary>
 /// خدمة التاريخ الطبي للمريض — تبني سجل الاختبارات السابقة.
-/// ⚠️ ملاحظة: هذه الخدمة تعتمد على IPatientHistoryRepository الذي لا يُنفَّذ حالياً.
-/// ستنجح في البناء لكن لا يمكن اختبارها end-to-end حتى تُنفَّذ المرحلة 6a.
 /// </summary>
 public class MedicalHistoryService : IMedicalHistoryService
 {

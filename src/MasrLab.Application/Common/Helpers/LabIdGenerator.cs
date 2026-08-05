@@ -15,13 +15,8 @@ public class LabIdGenerator
     public async Task<string> GenerateAsync(CancellationToken cancellationToken = default)
     {
         var prefix = DateTime.UtcNow.ToString("yyyyMMdd");
-        var existingPatients = await _patientRepository.GetAllAsync(cancellationToken);
-        var existingLabIds = existingPatients
-            .Select(p => p.LabId)
-            .Where(id => id.StartsWith(prefix))
-            .ToList();
-
-        var nextNumber = existingLabIds.Count + 1;
+        var maxSuffix = await _patientRepository.GetMaxLabIdSuffixAsync(prefix, cancellationToken);
+        var nextNumber = (maxSuffix ?? 0) + 1;
         return $"{prefix}-{nextNumber:D4}";
     }
 }

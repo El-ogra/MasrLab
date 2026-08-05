@@ -10,29 +10,23 @@ public class GenerateTestLogQueryHandler : IRequestHandler<GenerateTestLogQuery,
 {
     private readonly IVisitRepository _visitRepository;
     private readonly IRepository<Test> _testRepository;
-    private readonly IRepository<Sample> _sampleRepository;
     private readonly IPatientRepository _patientRepository;
 
     public GenerateTestLogQueryHandler(
         IVisitRepository visitRepository,
         IRepository<Test> testRepository,
-        IRepository<Sample> sampleRepository,
         IPatientRepository patientRepository)
     {
         _visitRepository = visitRepository;
         _testRepository = testRepository;
-        _sampleRepository = sampleRepository;
         _patientRepository = patientRepository;
     }
 
     public async Task<IReadOnlyList<TestLogEntryDto>> Handle(GenerateTestLogQuery request, CancellationToken cancellationToken)
     {
-        var visits = await _visitRepository.GetByDateRangeAsync(request.PeriodStart, request.PeriodEnd, cancellationToken);
+        var visits = await _visitRepository.GetByDateRangeWithTestsAsync(request.PeriodStart, request.PeriodEnd, cancellationToken);
 
-        var allTests = await _testRepository.GetAllAsync(cancellationToken);
-        var testDict = allTests.ToDictionary(t => t.Id);
-
-        var allSamples = await _sampleRepository.GetAllAsync(cancellationToken);
+        var test = await _testRepository.GetByIdAsync(request.TestId, cancellationToken);
 
         var patientIds = visits.Select(v => v.PatientId).Distinct().ToList();
         var patients = new Dictionary<int, Domain.Entities.Core.Patient>();
@@ -52,11 +46,9 @@ public class GenerateTestLogQueryHandler : IRequestHandler<GenerateTestLogQuery,
 
             foreach (var vt in matchingVisitTests)
             {
-                var sample = allSamples.FirstOrDefault(s =>
-                    s.PatientVisitId == visit.Id && s.TestId == request.TestId);
+                var sample = visit.Samples.FirstOrDefault(s => s.TestId == request.TestId);
 
                 patients.TryGetValue(visit.PatientId, out var patient);
-                testDict.TryGetValue(request.TestId, out var test);
 
                 result.Add(new TestLogEntryDto
                 {

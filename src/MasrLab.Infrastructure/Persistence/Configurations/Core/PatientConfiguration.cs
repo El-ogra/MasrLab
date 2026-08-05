@@ -48,7 +48,7 @@ public class PatientConfiguration : IEntityTypeConfiguration<Patient>
         builder.Property(e => e.HasHeartDisease).IsRequired();
         builder.Property(e => e.HasThyroidDisorder).IsRequired();
 
-        builder.HasIndex(e => e.LabId);
+        builder.HasIndex(e => e.LabId).IsUnique();
         builder.HasIndex(e => e.DoctorId);
         builder.HasIndex(e => e.NationalId);
         builder.HasIndex(e => e.IsDeleted);

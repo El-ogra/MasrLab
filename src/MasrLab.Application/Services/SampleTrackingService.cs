@@ -10,26 +10,20 @@ namespace MasrLab.Application.Services;
 /// </summary>
 public class SampleTrackingService : ISampleTrackingService
 {
-    private readonly IVisitRepository _visits;
+    private readonly ISampleRepository _samples;
 
-    public SampleTrackingService(IVisitRepository visits)
-        => _visits = visits ?? throw new ArgumentNullException(nameof(visits));
+    public SampleTrackingService(ISampleRepository samples)
+        => _samples = samples ?? throw new ArgumentNullException(nameof(samples));
 
     /// <summary>
-    /// يتحقق مما إذا تم جمع العينة المرتبطة باختبار معين.
+    /// يتحقق مما إذا تم جمع العينة المرتبطة باختبار معين في زيارة معينة.
     /// INV: لا يُعيّن CollectionStatus مباشرة — يقرأ فقط.
     /// </summary>
-    public async Task<bool> IsSampleCollectedAsync(int visitTestId, CancellationToken ct = default)
+    public async Task<bool> IsSampleCollectedAsync(int patientVisitId, int testId, CancellationToken ct = default)
     {
-        var visits = await _visits.GetAllAsync(ct);
-        foreach (var visit in visits)
-        {
-            var sample = visit.Samples.FirstOrDefault(s => s.TestId == visitTestId);
-            if (sample is not null)
-                return sample.CollectionStatus == SampleStatus.Collected;
-        }
-
-        return false;
+        var samples = await _samples.GetByPatientVisitAndTestAsync(new[] { patientVisitId }, testId, ct);
+        var sample = samples.FirstOrDefault();
+        return sample is not null && sample.CollectionStatus == SampleStatus.Collected;
     }
 
     /// <summary>
@@ -38,10 +32,7 @@ public class SampleTrackingService : ISampleTrackingService
     /// </summary>
     public async Task<int> GetUncollectedSamplesCountAsync(int visitId, CancellationToken ct = default)
     {
-        var visit = await _visits.GetByIdAsync(visitId, ct);
-        if (visit is null)
-            return 0;
-
-        return visit.Samples.Count(s => s.CollectionStatus == SampleStatus.NotCollected);
+        var samples = await _samples.GetPendingAsync(visitId, ct);
+        return samples.Count;
     }
 }

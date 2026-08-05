@@ -1,6 +1,8 @@
+using MasrLab.Application.Common.Helpers;
 using MasrLab.Application.Features.PatientManagement.Commands.RegisterPatient;
 using MasrLab.Domain.Common.Enums;
 using MasrLab.Domain.Entities.Core;
+using MasrLab.Domain.Exceptions;
 using MasrLab.Domain.Interfaces;
 using MasrLab.Domain.ValueObjects;
 using MediatR;
@@ -9,13 +11,20 @@ namespace MasrLab.Application.Features.PatientManagement.Commands.RegisterPatien
 
 public class RegisterPatientCommandHandler : IRequestHandler<RegisterPatientCommand, Unit>
 {
+    private const int MaxLabIdRetries = 3;
+
     private readonly IPatientRepository _patientRepository;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly LabIdGenerator _labIdGenerator;
 
-    public RegisterPatientCommandHandler(IPatientRepository patientRepository, IUnitOfWork unitOfWork)
+    public RegisterPatientCommandHandler(
+        IPatientRepository patientRepository,
+        IUnitOfWork unitOfWork,
+        LabIdGenerator labIdGenerator)
     {
         _patientRepository = patientRepository;
         _unitOfWork = unitOfWork;
+        _labIdGenerator = labIdGenerator;
     }
 
     public async Task<Unit> Handle(RegisterPatientCommand request, CancellationToken cancellationToken)
@@ -43,8 +52,18 @@ public class RegisterPatientCommandHandler : IRequestHandler<RegisterPatientComm
         patient.ChronicDiseases = request.ChronicDiseases;
 
         await _patientRepository.AddAsync(patient, cancellationToken);
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-        return Unit.Value;
+        for (var attempt = 0; ; attempt++)
+        {
+            try
+            {
+                await _unitOfWork.SaveChangesAsync(cancellationToken);
+                return Unit.Value;
+            }
+            catch (DuplicateLabIdException) when (attempt < MaxLabIdRetries - 1)
+            {
+                patient.LabId = await _labIdGenerator.GenerateAsync(cancellationToken);
+            }
+        }
     }
 }
