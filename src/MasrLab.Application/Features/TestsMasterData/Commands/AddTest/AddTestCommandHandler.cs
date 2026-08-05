@@ -31,7 +31,7 @@ public class AddTestCommandHandler : IRequestHandler<AddTestCommand, Unit>
             Unit = request.Unit
         };
 
-        await _testRepository.AddAsync(test);
+        await _testRepository.AddAsync(test, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         return Unit.Value;

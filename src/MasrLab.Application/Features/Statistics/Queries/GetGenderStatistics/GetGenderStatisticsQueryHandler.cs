@@ -15,7 +15,7 @@ public class GetGenderStatisticsQueryHandler : IRequestHandler<GetGenderStatisti
 
     public async Task<GenderStatisticsDto> Handle(GetGenderStatisticsQuery request, CancellationToken cancellationToken)
     {
-        var domainResult = await _statisticsRepository.GetGenderStatisticsAsync(request.PeriodStart, request.PeriodEnd);
+        var domainResult = await _statisticsRepository.GetGenderStatisticsAsync(request.PeriodStart, request.PeriodEnd, cancellationToken);
         return new GenderStatisticsDto(domainResult);
     }
 }

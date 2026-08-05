@@ -15,7 +15,7 @@ public class GetMonthlyStatisticsQueryHandler : IRequestHandler<GetMonthlyStatis
 
     public async Task<MonthlyStatisticsDto> Handle(GetMonthlyStatisticsQuery request, CancellationToken cancellationToken)
     {
-        var domainResult = await _statisticsRepository.GetMonthlyStatisticsAsync(request.PeriodStart, request.PeriodEnd);
+        var domainResult = await _statisticsRepository.GetMonthlyStatisticsAsync(request.PeriodStart, request.PeriodEnd, cancellationToken);
         return new MonthlyStatisticsDto(domainResult);
     }
 }

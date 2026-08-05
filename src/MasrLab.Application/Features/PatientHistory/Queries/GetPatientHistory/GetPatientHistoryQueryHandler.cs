@@ -16,7 +16,7 @@ public class GetPatientHistoryQueryHandler : IRequestHandler<GetPatientHistoryQu
 
     public async Task<IReadOnlyList<PatientHistoryDto>> Handle(GetPatientHistoryQuery request, CancellationToken cancellationToken)
     {
-        var entries = await _medicalHistoryService.BuildHistoryAsync(request.PatientId);
+        var entries = await _medicalHistoryService.BuildHistoryAsync(request.PatientId, cancellationToken);
 
         return entries.Select(e => new PatientHistoryDto
         {

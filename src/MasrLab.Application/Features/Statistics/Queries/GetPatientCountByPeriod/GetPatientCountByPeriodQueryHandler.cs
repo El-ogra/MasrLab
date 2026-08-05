@@ -15,7 +15,7 @@ public class GetPatientCountByPeriodQueryHandler : IRequestHandler<GetPatientCou
 
     public async Task<PatientCountByPeriodDto> Handle(GetPatientCountByPeriodQuery request, CancellationToken cancellationToken)
     {
-        var domainResult = await _statisticsRepository.GetPatientCountByPeriodAsync(request.PeriodStart, request.PeriodEnd);
+        var domainResult = await _statisticsRepository.GetPatientCountByPeriodAsync(request.PeriodStart, request.PeriodEnd, cancellationToken);
         return new PatientCountByPeriodDto(domainResult);
     }
 }

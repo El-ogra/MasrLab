@@ -17,7 +17,7 @@ public class GetSystemSettingsQueryHandler : IRequestHandler<GetSystemSettingsQu
 
     public async Task<SystemSettingsDto> Handle(GetSystemSettingsQuery request, CancellationToken cancellationToken)
     {
-        var allSettings = await _settingRepository.GetAllAsync();
+        var allSettings = await _settingRepository.GetAllAsync(cancellationToken);
         var settings = allSettings.ToDictionary(s => s.SettingKey, s => s.SettingValue);
 
         return new SystemSettingsDto

@@ -33,14 +33,14 @@ public class AccountingService : IAccountingService
     /// يعيد حساب صافي الربح لحساب معين ويحفظه.
     /// INV: Account.NetProfit له internal set (Account.cs:15).
     /// </summary>
-    public async Task RecalculateNetProfitAsync(int accountId)
+    public async Task RecalculateNetProfitAsync(int accountId, CancellationToken ct = default)
     {
-        var account = await _accountingRepo.GetByIdAsync(accountId);
+        var account = await _accountingRepo.GetByIdAsync(accountId, ct);
         if (account is null)
             return;
 
         account.NetProfit = CalculateNetProfit(account);
         _accountingRepo.Update(account);
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChangesAsync(ct);
     }
 }

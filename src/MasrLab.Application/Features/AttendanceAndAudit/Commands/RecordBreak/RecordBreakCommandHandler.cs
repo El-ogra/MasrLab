@@ -17,7 +17,7 @@ public class RecordBreakCommandHandler : IRequestHandler<RecordBreakCommand, Uni
 
     public async Task<Unit> Handle(RecordBreakCommand request, CancellationToken cancellationToken)
     {
-        var attendanceLog = await _repository.GetByIdAsync(request.AttendanceLogId);
+        var attendanceLog = await _repository.GetByIdAsync(request.AttendanceLogId, cancellationToken);
         if (attendanceLog is null)
             throw new InvalidOperationException($"AttendanceLog with Id {request.AttendanceLogId} not found.");
 

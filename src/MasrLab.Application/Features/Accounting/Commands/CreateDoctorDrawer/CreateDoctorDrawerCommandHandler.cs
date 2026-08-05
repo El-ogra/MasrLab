@@ -19,7 +19,7 @@ public class CreateDoctorDrawerCommandHandler : IRequestHandler<CreateDoctorDraw
 
     public async Task<Unit> Handle(CreateDoctorDrawerCommand request, CancellationToken cancellationToken)
     {
-        var accounts = await _accountingRepository.GetByDoctorIdAsync(request.DoctorId);
+        var accounts = await _accountingRepository.GetByDoctorIdAsync(request.DoctorId, cancellationToken);
         var periodAccounts = accounts
             .Where(a => a.Period.Start >= request.PeriodStart && a.Period.End <= request.PeriodEnd)
             .ToList();
@@ -38,7 +38,7 @@ public class CreateDoctorDrawerCommandHandler : IRequestHandler<CreateDoctorDraw
             NetProfit = netProfit
         };
 
-        await _accountingRepository.AddAsync(account);
+        await _accountingRepository.AddAsync(account, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         return Unit.Value;

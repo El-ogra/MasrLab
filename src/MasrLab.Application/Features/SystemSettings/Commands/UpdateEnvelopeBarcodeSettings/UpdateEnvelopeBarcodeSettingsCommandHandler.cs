@@ -17,7 +17,7 @@ public class UpdateEnvelopeBarcodeSettingsCommandHandler : IRequestHandler<Updat
 
     public async Task<Unit> Handle(UpdateEnvelopeBarcodeSettingsCommand request, CancellationToken cancellationToken)
     {
-        var settings = await _settingRepository.GetAllAsync();
+        var settings = await _settingRepository.GetAllAsync(cancellationToken);
 
         var keys = new Dictionary<string, string>
         {
@@ -40,7 +40,7 @@ public class UpdateEnvelopeBarcodeSettingsCommandHandler : IRequestHandler<Updat
                 {
                     SettingKey = kvp.Key,
                     SettingValue = kvp.Value
-                });
+                }, cancellationToken);
             }
         }
 

@@ -27,18 +27,18 @@ public class GenerateTestLogQueryHandler : IRequestHandler<GenerateTestLogQuery,
 
     public async Task<IReadOnlyList<TestLogEntryDto>> Handle(GenerateTestLogQuery request, CancellationToken cancellationToken)
     {
-        var visits = await _visitRepository.GetByDateRangeAsync(request.PeriodStart, request.PeriodEnd);
+        var visits = await _visitRepository.GetByDateRangeAsync(request.PeriodStart, request.PeriodEnd, cancellationToken);
 
-        var allTests = await _testRepository.GetAllAsync();
+        var allTests = await _testRepository.GetAllAsync(cancellationToken);
         var testDict = allTests.ToDictionary(t => t.Id);
 
-        var allSamples = await _sampleRepository.GetAllAsync();
+        var allSamples = await _sampleRepository.GetAllAsync(cancellationToken);
 
         var patientIds = visits.Select(v => v.PatientId).Distinct().ToList();
         var patients = new Dictionary<int, Domain.Entities.Core.Patient>();
         foreach (var pid in patientIds)
         {
-            var patient = await _patientRepository.GetByIdAsync(pid);
+            var patient = await _patientRepository.GetByIdAsync(pid, cancellationToken);
             if (patient is not null)
                 patients[pid] = patient;
         }

@@ -16,7 +16,7 @@ public class CreateBlankReportCommandHandler : IRequestHandler<CreateBlankReport
 
     public async Task<Unit> Handle(CreateBlankReportCommand request, CancellationToken cancellationToken)
     {
-        var visit = await _visitRepository.GetByIdAsync(request.PatientVisitId)
+        var visit = await _visitRepository.GetByIdAsync(request.PatientVisitId, cancellationToken)
             ?? throw new Exception($"Patient visit with ID {request.PatientVisitId} not found.");
 
         visit.IssueReceipt();

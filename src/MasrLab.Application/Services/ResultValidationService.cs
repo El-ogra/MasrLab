@@ -27,7 +27,7 @@ public class ResultValidationService : IResultValidationService
         if (!decimal.TryParse(value, out var numericValue))
             return ResultStatus.Normal;
 
-        var allValues = await _referenceValues.GetAllAsync();
+        var allValues = await _referenceValues.GetAllAsync(ct);
         var matchingRef = FindMatchingReference(allValues, testId, gender, ageYears);
 
         if (matchingRef is null)
@@ -51,7 +51,7 @@ public class ResultValidationService : IResultValidationService
         if (!decimal.TryParse(value, out var numericValue))
             return (true, null);
 
-        var allValues = await _referenceValues.GetAllAsync();
+        var allValues = await _referenceValues.GetAllAsync(ct);
         var matchingRef = FindMatchingReference(allValues, testId, gender, ageYears);
 
         if (matchingRef is null)

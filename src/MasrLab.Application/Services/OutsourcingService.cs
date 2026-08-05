@@ -30,7 +30,7 @@ public class OutsourcingService : IOutsourcingService
     /// INV: يستدعي SetPrices() لضمان patientPrice >= costPrice.
     /// </summary>
     public async Task<OutsourcedSample> CreateOutsourcedSampleAsync(
-        int patientVisitId, int testId, int externalLabId, decimal costPrice, decimal patientPrice)
+        int patientVisitId, int testId, int externalLabId, decimal costPrice, decimal patientPrice, CancellationToken ct = default)
     {
         var sample = new OutsourcedSample
         {
@@ -41,8 +41,8 @@ public class OutsourcingService : IOutsourcingService
 
         sample.SetPrices(patientPrice, costPrice);
 
-        await _outsourcedSamples.AddAsync(sample);
-        await _unitOfWork.SaveChangesAsync();
+        await _outsourcedSamples.AddAsync(sample, ct);
+        await _unitOfWork.SaveChangesAsync(ct);
 
         return sample;
     }
@@ -51,29 +51,29 @@ public class OutsourcingService : IOutsourcingService
     /// يسجل استلام نتيجة العينة المرسلة.
     /// INV: يستدعي ReceiveResult() لضمان عدم الاستلام المزدوج.
     /// </summary>
-    public async Task ReceiveOutsourcedResultAsync(int outsourcedSampleId)
+    public async Task ReceiveOutsourcedResultAsync(int outsourcedSampleId, CancellationToken ct = default)
     {
-        var sample = await _outsourcedSamples.GetByIdAsync(outsourcedSampleId);
+        var sample = await _outsourcedSamples.GetByIdAsync(outsourcedSampleId, ct);
         if (sample is null)
             return;
 
         sample.ReceiveResult();
         _outsourcedSamples.Update(sample);
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChangesAsync(ct);
     }
 
     /// <summary>
     /// يكمل تسوية حساب العينة المرسلة.
     /// INV: يستدعي CompleteSettlement() — يجب أن تكون الحالة PartiallySettled.
     /// </summary>
-    public async Task SettleOutsourcedAccountAsync(int outsourcedSampleId)
+    public async Task SettleOutsourcedAccountAsync(int outsourcedSampleId, CancellationToken ct = default)
     {
-        var sample = await _outsourcedSamples.GetByIdAsync(outsourcedSampleId);
+        var sample = await _outsourcedSamples.GetByIdAsync(outsourcedSampleId, ct);
         if (sample is null)
             return;
 
         sample.CompleteSettlement();
         _outsourcedSamples.Update(sample);
-        await _unitOfWork.SaveChangesAsync();
+        await _unitOfWork.SaveChangesAsync(ct);
     }
 }

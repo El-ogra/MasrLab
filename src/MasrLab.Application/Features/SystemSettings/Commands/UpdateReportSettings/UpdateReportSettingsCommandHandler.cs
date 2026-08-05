@@ -17,7 +17,7 @@ public class UpdateReportSettingsCommandHandler : IRequestHandler<UpdateReportSe
 
     public async Task<Unit> Handle(UpdateReportSettingsCommand request, CancellationToken cancellationToken)
     {
-        var settings = await _settingRepository.GetAllAsync();
+        var settings = await _settingRepository.GetAllAsync(cancellationToken);
 
         var keys = new Dictionary<string, string>
         {
@@ -44,7 +44,7 @@ public class UpdateReportSettingsCommandHandler : IRequestHandler<UpdateReportSe
                 {
                     SettingKey = kvp.Key,
                     SettingValue = kvp.Value
-                });
+                }, cancellationToken);
             }
         }
 

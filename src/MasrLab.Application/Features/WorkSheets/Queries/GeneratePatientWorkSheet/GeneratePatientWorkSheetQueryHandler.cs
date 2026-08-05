@@ -28,7 +28,7 @@ public class GeneratePatientWorkSheetQueryHandler : IRequestHandler<GeneratePati
             TestIds = string.Empty
         };
 
-        await _repository.AddAsync(workSheet);
+        await _repository.AddAsync(workSheet, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         return new WorkSheetDto

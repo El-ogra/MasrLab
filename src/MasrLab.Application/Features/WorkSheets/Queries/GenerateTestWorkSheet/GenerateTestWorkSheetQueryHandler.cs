@@ -31,7 +31,7 @@ public class GenerateTestWorkSheetQueryHandler : IRequestHandler<GenerateTestWor
             PatientVisitIds = string.Empty
         };
 
-        await _repository.AddAsync(workSheet);
+        await _repository.AddAsync(workSheet, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         return _mapper.Map<WorkSheetDto>(workSheet);

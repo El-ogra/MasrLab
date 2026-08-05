@@ -19,9 +19,9 @@ public class SampleTrackingService : ISampleTrackingService
     /// يتحقق مما إذا تم جمع العينة المرتبطة باختبار معين.
     /// INV: لا يُعيّن CollectionStatus مباشرة — يقرأ فقط.
     /// </summary>
-    public async Task<bool> IsSampleCollectedAsync(int visitTestId)
+    public async Task<bool> IsSampleCollectedAsync(int visitTestId, CancellationToken ct = default)
     {
-        var visits = await _visits.GetAllAsync();
+        var visits = await _visits.GetAllAsync(ct);
         foreach (var visit in visits)
         {
             var sample = visit.Samples.FirstOrDefault(s => s.TestId == visitTestId);
@@ -36,9 +36,9 @@ public class SampleTrackingService : ISampleTrackingService
     /// يعدد العينات التي لم تُجمع بعد في زيارة معينة.
     /// INV: يقرأ CollectionStatus فقط — لا يُعدّل أي حالة.
     /// </summary>
-    public async Task<int> GetUncollectedSamplesCountAsync(int visitId)
+    public async Task<int> GetUncollectedSamplesCountAsync(int visitId, CancellationToken ct = default)
     {
-        var visit = await _visits.GetByIdAsync(visitId);
+        var visit = await _visits.GetByIdAsync(visitId, ct);
         if (visit is null)
             return 0;
 

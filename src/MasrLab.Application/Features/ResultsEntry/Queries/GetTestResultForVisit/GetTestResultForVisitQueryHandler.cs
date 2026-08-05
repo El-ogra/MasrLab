@@ -18,7 +18,7 @@ public class GetTestResultForVisitQueryHandler : IRequestHandler<GetTestResultFo
 
     public async Task<IReadOnlyList<TestResultDto>> Handle(GetTestResultForVisitQuery request, CancellationToken cancellationToken)
     {
-        var results = await _testResultRepository.GetByVisitTestIdAsync(request.VisitTestId);
+        var results = await _testResultRepository.GetByVisitTestIdAsync(request.VisitTestId, cancellationToken);
 
         return results.Select(r => _mapper.Map<TestResultDto>(r)).ToList();
     }

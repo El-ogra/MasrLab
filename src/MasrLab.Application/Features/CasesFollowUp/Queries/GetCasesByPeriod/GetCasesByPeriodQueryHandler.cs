@@ -18,7 +18,7 @@ public class GetCasesByPeriodQueryHandler : IRequestHandler<GetCasesByPeriodQuer
 
     public async Task<IReadOnlyList<VisitDto>> Handle(GetCasesByPeriodQuery request, CancellationToken cancellationToken)
     {
-        var visits = await _visitRepository.GetByDateRangeAsync(request.PeriodStart, request.PeriodEnd);
+        var visits = await _visitRepository.GetByDateRangeAsync(request.PeriodStart, request.PeriodEnd, cancellationToken);
 
         return visits.Select(v => _mapper.Map<VisitDto>(v)).ToList();
     }

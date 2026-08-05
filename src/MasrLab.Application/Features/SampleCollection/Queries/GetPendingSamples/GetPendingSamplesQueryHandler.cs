@@ -20,7 +20,7 @@ public class GetPendingSamplesQueryHandler : IRequestHandler<GetPendingSamplesQu
 
     public async Task<IReadOnlyList<SampleDto>> Handle(GetPendingSamplesQuery request, CancellationToken cancellationToken)
     {
-        var allSamples = await _sampleRepository.GetAllAsync();
+        var allSamples = await _sampleRepository.GetAllAsync(cancellationToken);
 
         var pendingSamples = allSamples.Where(s => s.CollectionStatus == SampleStatus.NotCollected);
 

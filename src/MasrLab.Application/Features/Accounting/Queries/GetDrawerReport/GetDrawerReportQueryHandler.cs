@@ -15,7 +15,7 @@ public class GetDrawerReportQueryHandler : IRequestHandler<GetDrawerReportQuery,
 
     public async Task<AccountDrawerDto> Handle(GetDrawerReportQuery request, CancellationToken cancellationToken)
     {
-        var accounts = await _accountingRepository.GetByDateRangeAsync(request.PeriodStart, request.PeriodEnd);
+        var accounts = await _accountingRepository.GetByDateRangeAsync(request.PeriodStart, request.PeriodEnd, cancellationToken);
 
         return new AccountDrawerDto
         {

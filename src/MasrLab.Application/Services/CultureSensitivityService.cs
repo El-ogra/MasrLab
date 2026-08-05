@@ -27,7 +27,7 @@ public class CultureSensitivityService : ICultureSensitivityService
     /// </summary>
     public async Task RecordSensitivityAsync(int cultureId, int antibioticId, int sensitivityLevel, CancellationToken ct = default)
     {
-        var culture = await _cultures.GetByIdAsync(cultureId);
+        var culture = await _cultures.GetByIdAsync(cultureId, ct);
         if (culture is null)
             return;
 
@@ -44,7 +44,7 @@ public class CultureSensitivityService : ICultureSensitivityService
     /// </summary>
     public async Task<string> GetSensitivitySummaryAsync(int cultureId, CancellationToken ct = default)
     {
-        var culture = await _cultures.GetByIdAsync(cultureId);
+        var culture = await _cultures.GetByIdAsync(cultureId, ct);
         if (culture is null)
             return string.Empty;
 

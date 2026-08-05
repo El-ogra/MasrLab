@@ -19,7 +19,7 @@ public class SearchPatientsQueryHandler : IRequestHandler<SearchPatientsQuery, I
 
     public async Task<IReadOnlyList<PatientDto>> Handle(SearchPatientsQuery request, CancellationToken cancellationToken)
     {
-        var patients = await _patientRepository.SearchByNameAsync(request.SearchTerm);
+        var patients = await _patientRepository.SearchByNameAsync(request.SearchTerm, cancellationToken);
 
         return patients.Select(p => _mapper.Map<PatientDto>(p)).ToList();
     }

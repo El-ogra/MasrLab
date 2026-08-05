@@ -17,7 +17,7 @@ public class EnterCultureResultCommandHandler : IRequestHandler<EnterCultureResu
 
     public async Task<Unit> Handle(EnterCultureResultCommand request, CancellationToken cancellationToken)
     {
-        var culture = await _cultureRepository.GetWithSensitivitiesAsync(request.CultureId);
+        var culture = await _cultureRepository.GetWithSensitivitiesAsync(request.CultureId, cancellationToken);
         if (culture is null)
             throw new InvalidOperationException($"Culture with Id {request.CultureId} not found.");
 

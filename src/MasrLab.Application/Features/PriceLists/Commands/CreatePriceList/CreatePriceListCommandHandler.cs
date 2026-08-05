@@ -22,7 +22,7 @@ public class CreatePriceListCommandHandler : IRequestHandler<CreatePriceListComm
             Name = request.Name
         };
 
-        await _repository.AddAsync(priceList);
+        await _repository.AddAsync(priceList, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         return Unit.Value;

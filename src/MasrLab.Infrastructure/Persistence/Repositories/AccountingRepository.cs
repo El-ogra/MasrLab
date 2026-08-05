@@ -11,24 +11,24 @@ public class AccountingRepository : GenericRepository<Account>, IAccountingRepos
     {
     }
 
-    public async Task<IReadOnlyList<Account>> GetByDoctorIdAsync(int doctorId)
+    public async Task<IReadOnlyList<Account>> GetByDoctorIdAsync(int doctorId, CancellationToken cancellationToken = default)
     {
         return await _context.Accounts
             .Where(a => a.DoctorId == doctorId)
-            .ToListAsync();
+            .ToListAsync(cancellationToken);
     }
 
-    public async Task<IReadOnlyList<Account>> GetByAccountTypeAsync(AccountType accountType)
+    public async Task<IReadOnlyList<Account>> GetByAccountTypeAsync(AccountType accountType, CancellationToken cancellationToken = default)
     {
         return await _context.Accounts
             .Where(a => a.AccountType == accountType)
-            .ToListAsync();
+            .ToListAsync(cancellationToken);
     }
 
-    public async Task<IReadOnlyList<Account>> GetByDateRangeAsync(DateTime start, DateTime end)
+    public async Task<IReadOnlyList<Account>> GetByDateRangeAsync(DateTime start, DateTime end, CancellationToken cancellationToken = default)
     {
         return await _context.Accounts
             .Where(a => a.Period.Start >= start && a.Period.End <= end)
-            .ToListAsync();
+            .ToListAsync(cancellationToken);
     }
 }

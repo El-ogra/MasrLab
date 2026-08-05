@@ -15,7 +15,7 @@ public class GetTestDemandRateQueryHandler : IRequestHandler<GetTestDemandRateQu
 
     public async Task<TestDemandRateDto> Handle(GetTestDemandRateQuery request, CancellationToken cancellationToken)
     {
-        var domainResult = await _statisticsRepository.GetTestDemandRateAsync(request.PeriodStart, request.PeriodEnd);
+        var domainResult = await _statisticsRepository.GetTestDemandRateAsync(request.PeriodStart, request.PeriodEnd, cancellationToken);
         return new TestDemandRateDto(domainResult);
     }
 }

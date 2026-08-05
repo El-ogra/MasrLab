@@ -19,7 +19,7 @@ public class UpdatePatientDataCommandHandler : IRequestHandler<UpdatePatientData
 
     public async Task<Unit> Handle(UpdatePatientDataCommand request, CancellationToken cancellationToken)
     {
-        var patient = await _patientRepository.GetByIdAsync(request.Id);
+        var patient = await _patientRepository.GetByIdAsync(request.Id, cancellationToken);
         if (patient is null)
             throw new InvalidOperationException($"Patient with Id {request.Id} not found.");
 

@@ -14,18 +14,18 @@ public class StatisticsRepository : IStatisticsRepository
         _context = context;
     }
 
-    public async Task<GenderStatisticsDto> GetGenderStatisticsAsync(DateTime start, DateTime end)
+    public async Task<GenderStatisticsDto> GetGenderStatisticsAsync(DateTime start, DateTime end, CancellationToken cancellationToken = default)
     {
         var patientCount = await _context.Patients
-            .CountAsync(p => p.CreatedAt >= start && p.CreatedAt <= end);
+            .CountAsync(p => p.CreatedAt >= start && p.CreatedAt <= end, cancellationToken);
 
         var sampleCount = await _context.VisitTests
             .Where(vt => vt.CreatedAt >= start && vt.CreatedAt <= end)
-            .CountAsync();
+            .CountAsync(cancellationToken);
 
         var totalRevenue = await _context.Receipts
             .Where(r => r.IssueDate >= start && r.IssueDate <= end)
-            .SumAsync(r => r.Total);
+            .SumAsync(r => r.Total, cancellationToken);
 
         return new GenderStatisticsDto
         {
@@ -35,18 +35,18 @@ public class StatisticsRepository : IStatisticsRepository
         };
     }
 
-    public async Task<MonthlyStatisticsDto> GetMonthlyStatisticsAsync(DateTime start, DateTime end)
+    public async Task<MonthlyStatisticsDto> GetMonthlyStatisticsAsync(DateTime start, DateTime end, CancellationToken cancellationToken = default)
     {
         var patientCount = await _context.Patients
-            .CountAsync(p => p.CreatedAt >= start && p.CreatedAt <= end);
+            .CountAsync(p => p.CreatedAt >= start && p.CreatedAt <= end, cancellationToken);
 
         var sampleCount = await _context.VisitTests
             .Where(vt => vt.CreatedAt >= start && vt.CreatedAt <= end)
-            .CountAsync();
+            .CountAsync(cancellationToken);
 
         var totalRevenue = await _context.Receipts
             .Where(r => r.IssueDate >= start && r.IssueDate <= end)
-            .SumAsync(r => r.Total);
+            .SumAsync(r => r.Total, cancellationToken);
 
         return new MonthlyStatisticsDto
         {
@@ -58,17 +58,17 @@ public class StatisticsRepository : IStatisticsRepository
         };
     }
 
-    public async Task<PatientCountByPeriodDto> GetPatientCountByPeriodAsync(DateTime start, DateTime end)
+    public async Task<PatientCountByPeriodDto> GetPatientCountByPeriodAsync(DateTime start, DateTime end, CancellationToken cancellationToken = default)
     {
         var allPatientsInRange = await _context.Patients
             .Where(p => p.CreatedAt >= start && p.CreatedAt <= end)
-            .ToListAsync();
+            .ToListAsync(cancellationToken);
 
         var returningPatientIds = await _context.PatientVisits
             .Where(v => v.VisitDate < start)
             .Select(v => v.PatientId)
             .Distinct()
-            .ToListAsync();
+            .ToListAsync(cancellationToken);
 
         var returningCount = allPatientsInRange.Count(p => returningPatientIds.Contains(p.Id));
         var newCount = allPatientsInRange.Count - returningCount;
@@ -83,18 +83,18 @@ public class StatisticsRepository : IStatisticsRepository
         };
     }
 
-    public async Task<SampleCountByYearDto> GetSampleCountByYearAsync(int year)
+    public async Task<SampleCountByYearDto> GetSampleCountByYearAsync(int year, CancellationToken cancellationToken = default)
     {
         var start = new DateTime(year, 1, 1);
         var end = new DateTime(year, 12, 31, 23, 59, 59);
 
         var totalSamples = await _context.VisitTests
             .Where(vt => vt.CreatedAt >= start && vt.CreatedAt <= end)
-            .CountAsync();
+            .CountAsync(cancellationToken);
 
         var collectedSamples = await _context.Samples
             .Where(s => s.CollectedAt >= start && s.CollectedAt <= end && s.CollectionStatus == Domain.Common.Enums.SampleStatus.Collected)
-            .CountAsync();
+            .CountAsync(cancellationToken);
 
         return new SampleCountByYearDto
         {
@@ -105,18 +105,18 @@ public class StatisticsRepository : IStatisticsRepository
         };
     }
 
-    public async Task<TestDemandRateDto> GetTestDemandRateAsync(DateTime start, DateTime end)
+    public async Task<TestDemandRateDto> GetTestDemandRateAsync(DateTime start, DateTime end, CancellationToken cancellationToken = default)
     {
         var totalVisits = await _context.VisitTests
             .Where(vt => vt.CreatedAt >= start && vt.CreatedAt <= end)
-            .CountAsync();
+            .CountAsync(cancellationToken);
 
         var topTest = await _context.VisitTests
             .Where(vt => vt.CreatedAt >= start && vt.CreatedAt <= end)
             .GroupBy(vt => vt.TestId)
             .Select(g => new { TestId = g.Key, Count = g.Count() })
             .OrderByDescending(x => x.Count)
-            .FirstOrDefaultAsync();
+            .FirstOrDefaultAsync(cancellationToken);
 
         if (topTest is null)
         {
@@ -132,7 +132,7 @@ public class StatisticsRepository : IStatisticsRepository
         var testName = await _context.Tests
             .Where(t => t.Id == topTest.TestId)
             .Select(t => t.Name)
-            .FirstOrDefaultAsync() ?? string.Empty;
+            .FirstOrDefaultAsync(cancellationToken) ?? string.Empty;
 
         return new TestDemandRateDto
         {

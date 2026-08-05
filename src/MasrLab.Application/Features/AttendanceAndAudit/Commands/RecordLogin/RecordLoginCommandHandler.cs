@@ -24,7 +24,7 @@ public class RecordLoginCommandHandler : IRequestHandler<RecordLoginCommand, Uni
             WorkPeriod = new DateRange(request.LoginTime, request.LoginTime)
         };
 
-        await _repository.AddAsync(attendanceLog);
+        await _repository.AddAsync(attendanceLog, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         return Unit.Value;

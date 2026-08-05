@@ -19,7 +19,7 @@ public class FilterAntibioticsQueryHandler : IRequestHandler<FilterAntibioticsQu
 
     public async Task<IReadOnlyList<AntibioticDto>> Handle(FilterAntibioticsQuery request, CancellationToken cancellationToken)
     {
-        var antibiotics = await _repository.GetAllAsync();
+        var antibiotics = await _repository.GetAllAsync(cancellationToken);
 
         if (!string.IsNullOrWhiteSpace(request.SearchTerm))
         {

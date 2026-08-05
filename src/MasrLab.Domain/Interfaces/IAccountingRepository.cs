@@ -5,7 +5,7 @@ namespace MasrLab.Domain.Interfaces;
 
 public interface IAccountingRepository : IRepository<Account>
 {
-    Task<IReadOnlyList<Account>> GetByDoctorIdAsync(int doctorId);
-    Task<IReadOnlyList<Account>> GetByAccountTypeAsync(AccountType accountType);
-    Task<IReadOnlyList<Account>> GetByDateRangeAsync(DateTime start, DateTime end);
+    Task<IReadOnlyList<Account>> GetByDoctorIdAsync(int doctorId, CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<Account>> GetByAccountTypeAsync(AccountType accountType, CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<Account>> GetByDateRangeAsync(DateTime start, DateTime end, CancellationToken cancellationToken = default);
 }

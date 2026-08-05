@@ -23,11 +23,11 @@ public class GetAuditLogsQueryHandler : IRequestHandler<GetAuditLogsQuery, IRead
 
         if (request.UserId.HasValue)
         {
-            logs = await _auditLogRepository.GetByUserIdAsync(request.UserId.Value);
+            logs = await _auditLogRepository.GetByUserIdAsync(request.UserId.Value, cancellationToken);
         }
         else
         {
-            logs = await _auditLogRepository.GetAllAsync();
+            logs = await _auditLogRepository.GetAllAsync(cancellationToken);
         }
 
         if (!string.IsNullOrWhiteSpace(request.EntityType))

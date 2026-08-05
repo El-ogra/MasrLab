@@ -19,7 +19,7 @@ public class GetAttendanceLogsQueryHandler : IRequestHandler<GetAttendanceLogsQu
 
     public async Task<AttendanceDto> Handle(GetAttendanceLogsQuery request, CancellationToken cancellationToken)
     {
-        var logs = await _repository.GetAllAsync();
+        var logs = await _repository.GetAllAsync(cancellationToken);
 
         var filtered = logs
             .Where(l => l.UserId == request.UserId

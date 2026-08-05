@@ -15,7 +15,7 @@ public class GetDoctorReferralReportQueryHandler : IRequestHandler<GetDoctorRefe
 
     public async Task<AccountDrawerDto> Handle(GetDoctorReferralReportQuery request, CancellationToken cancellationToken)
     {
-        var accounts = await _accountingRepository.GetByDoctorIdAsync(request.DoctorId);
+        var accounts = await _accountingRepository.GetByDoctorIdAsync(request.DoctorId, cancellationToken);
         var periodAccounts = accounts
             .Where(a => a.Period.Start >= request.PeriodStart && a.Period.End <= request.PeriodEnd)
             .ToList();

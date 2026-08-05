@@ -42,7 +42,7 @@ public class RegisterPatientCommandHandler : IRequestHandler<RegisterPatientComm
         patient.HasThyroidDisorder = request.HasThyroidDisorder;
         patient.ChronicDiseases = request.ChronicDiseases;
 
-        await _patientRepository.AddAsync(patient);
+        await _patientRepository.AddAsync(patient, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         return Unit.Value;

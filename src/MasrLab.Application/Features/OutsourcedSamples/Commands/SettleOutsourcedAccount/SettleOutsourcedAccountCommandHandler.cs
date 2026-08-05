@@ -17,11 +17,11 @@ public class SettleOutsourcedAccountCommandHandler : IRequestHandler<SettleOutso
     {
         if (request.SettlementStatus == SettlementStatus.PartiallySettled)
         {
-            await _outsourcingService.ReceiveOutsourcedResultAsync(request.Id);
+            await _outsourcingService.ReceiveOutsourcedResultAsync(request.Id, cancellationToken);
         }
         else if (request.SettlementStatus == SettlementStatus.Settled)
         {
-            await _outsourcingService.SettleOutsourcedAccountAsync(request.Id);
+            await _outsourcingService.SettleOutsourcedAccountAsync(request.Id, cancellationToken);
         }
 
         return Unit.Value;

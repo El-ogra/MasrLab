@@ -24,14 +24,14 @@ public class ManageTestGroupsCommandHandler : IRequestHandler<ManageTestGroupsCo
     {
         if (request.Id.HasValue)
         {
-            var existingGroup = await _testGroupRepository.GetByIdAsync(request.Id.Value)
+            var existingGroup = await _testGroupRepository.GetByIdAsync(request.Id.Value, cancellationToken)
                 ?? throw new Exception($"Test group with ID {request.Id.Value} not found.");
 
             existingGroup.GroupName = request.GroupName;
             existingGroup.GroupPrice = request.GroupPrice;
             _testGroupRepository.Update(existingGroup);
 
-            var existingItems = await _testGroupItemRepository.GetAllAsync();
+            var existingItems = await _testGroupItemRepository.GetAllAsync(cancellationToken);
             var itemsToRemove = existingItems.Where(i => i.TestGroupId == request.Id.Value).ToList();
             foreach (var item in itemsToRemove)
             {
@@ -45,7 +45,7 @@ public class ManageTestGroupsCommandHandler : IRequestHandler<ManageTestGroupsCo
                 {
                     TestGroupId = request.Id.Value,
                     TestId = testId
-                });
+                }, cancellationToken);
             }
         }
         else
@@ -55,7 +55,7 @@ public class ManageTestGroupsCommandHandler : IRequestHandler<ManageTestGroupsCo
                 GroupName = request.GroupName,
                 GroupPrice = request.GroupPrice
             };
-            await _testGroupRepository.AddAsync(newGroup);
+            await _testGroupRepository.AddAsync(newGroup, cancellationToken);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             var testIds = ParseTestIds(request.TestIds);
@@ -65,7 +65,7 @@ public class ManageTestGroupsCommandHandler : IRequestHandler<ManageTestGroupsCo
                 {
                     TestGroupId = newGroup.Id,
                     TestId = testId
-                });
+                }, cancellationToken);
             }
         }
 

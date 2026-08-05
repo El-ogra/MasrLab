@@ -16,7 +16,7 @@ public class CheckPermissionQueryHandler : IRequestHandler<CheckPermissionQuery,
 
     public async Task<bool> Handle(CheckPermissionQuery request, CancellationToken cancellationToken)
     {
-        var allPermissions = await _permissionRepository.GetAllAsync();
+        var allPermissions = await _permissionRepository.GetAllAsync(cancellationToken);
 
         var permission = allPermissions.FirstOrDefault(p =>
             p.UserId == request.UserId &&

@@ -31,7 +31,7 @@ public class AddReferralEntityCommandHandler : IRequestHandler<AddReferralEntity
             AccountBalance = request.AccountBalance
         };
 
-        await _referralEntityRepository.AddAsync(referralEntity);
+        await _referralEntityRepository.AddAsync(referralEntity, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         return Unit.Value;

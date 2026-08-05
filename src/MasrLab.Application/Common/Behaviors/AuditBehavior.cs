@@ -62,7 +62,7 @@ public class AuditBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, TR
                 ErrorMessage = errorMessage
             };
 
-            await _auditLogRepository.AddAsync(entry);
+            await _auditLogRepository.AddAsync(entry, ct);
             await _unitOfWork.SaveChangesAsync(ct);
         }
         catch

@@ -25,7 +25,7 @@ public class CreateUserCommandHandler : IRequestHandler<CreateUserCommand, Unit>
             IsActive = true
         };
 
-        await _userRepository.AddAsync(user);
+        await _userRepository.AddAsync(user, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         return Unit.Value;

@@ -16,7 +16,7 @@ public class GetPriceListForPrintQueryHandler : IRequestHandler<GetPriceListForP
 
     public async Task<PriceListPrintDto?> Handle(GetPriceListForPrintQuery request, CancellationToken cancellationToken)
     {
-        var priceList = await _repository.GetByIdAsync(request.PriceListId);
+        var priceList = await _repository.GetByIdAsync(request.PriceListId, cancellationToken);
         if (priceList is null)
             throw new InvalidOperationException($"PriceList with Id {request.PriceListId} not found.");
 

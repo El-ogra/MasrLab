@@ -11,24 +11,24 @@ public class VisitRepository : GenericRepository<PatientVisit>, IVisitRepository
     {
     }
 
-    public async Task<IReadOnlyList<PatientVisit>> GetByPatientIdAsync(int patientId)
+    public async Task<IReadOnlyList<PatientVisit>> GetByPatientIdAsync(int patientId, CancellationToken cancellationToken = default)
     {
         return await _context.PatientVisits
             .Where(v => v.PatientId == patientId)
-            .ToListAsync();
+            .ToListAsync(cancellationToken);
     }
 
-    public async Task<IReadOnlyList<PatientVisit>> GetByDateRangeAsync(DateTime start, DateTime end)
+    public async Task<IReadOnlyList<PatientVisit>> GetByDateRangeAsync(DateTime start, DateTime end, CancellationToken cancellationToken = default)
     {
         return await _context.PatientVisits
             .Where(v => v.VisitDate >= start && v.VisitDate <= end)
-            .ToListAsync();
+            .ToListAsync(cancellationToken);
     }
 
-    public async Task<IReadOnlyList<PatientVisit>> GetPendingVisitsAsync()
+    public async Task<IReadOnlyList<PatientVisit>> GetPendingVisitsAsync(CancellationToken cancellationToken = default)
     {
         return await _context.PatientVisits
             .Where(v => v.Status == VisitStatus.Registered)
-            .ToListAsync();
+            .ToListAsync(cancellationToken);
     }
 }

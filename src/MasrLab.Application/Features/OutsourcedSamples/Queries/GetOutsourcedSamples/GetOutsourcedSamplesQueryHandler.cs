@@ -19,7 +19,7 @@ public class GetOutsourcedSamplesQueryHandler : IRequestHandler<GetOutsourcedSam
 
     public async Task<IReadOnlyList<OutsourcedSampleDto>> Handle(GetOutsourcedSamplesQuery request, CancellationToken cancellationToken)
     {
-        var samples = await _repository.GetAllAsync();
+        var samples = await _repository.GetAllAsync(cancellationToken);
 
         var filtered = samples
             .Where(s => s.ReceivedAt >= request.PeriodStart && s.ReceivedAt <= request.PeriodEnd)

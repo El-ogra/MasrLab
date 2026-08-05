@@ -13,23 +13,23 @@ public class PatientHistoryRepository : IPatientHistoryRepository
     public PatientHistoryRepository(MasrLabDbContext context)
         => _context = context;
 
-    public async Task<IReadOnlyList<PatientHistoryEntry>> GetByPatientIdAsync(int patientId)
+    public async Task<IReadOnlyList<PatientHistoryEntry>> GetByPatientIdAsync(int patientId, CancellationToken cancellationToken = default)
     {
         var rows = await _context.PatientHistoryViews
             .Where(v => v.PatientId == patientId)
             .OrderBy(v => v.TestId)
             .ThenBy(v => v.CurrentVisitDate)
-            .ToListAsync();
+            .ToListAsync(cancellationToken);
 
         return rows.Select(MapToEntry).ToList();
     }
 
-    public async Task<IReadOnlyList<PatientHistoryEntry>> GetByPatientAndTestAsync(int patientId, int testId)
+    public async Task<IReadOnlyList<PatientHistoryEntry>> GetByPatientAndTestAsync(int patientId, int testId, CancellationToken cancellationToken = default)
     {
         var rows = await _context.PatientHistoryViews
             .Where(v => v.PatientId == patientId && v.TestId == testId)
             .OrderBy(v => v.CurrentVisitDate)
-            .ToListAsync();
+            .ToListAsync(cancellationToken);
 
         return rows.Select(MapToEntry).ToList();
     }

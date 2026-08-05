@@ -26,7 +26,7 @@ public class PriceListResolverService : IPriceListResolverService
         if (priceListId <= 0)
             throw new BusinessRuleViolationException("Price list ID must be greater than zero.");
 
-        var allItems = await _priceListItems.GetAllAsync();
+        var allItems = await _priceListItems.GetAllAsync(ct);
         var item = allItems.FirstOrDefault(i =>
             i.PriceListId == priceListId && i.TestId == testId);
 

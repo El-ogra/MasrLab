@@ -40,10 +40,10 @@ public class EnterTestResultCommandHandler : IRequestHandler<EnterTestResultComm
         testResult.ReferenceRange = request.ReferenceRange;
         testResult.Status = status;
 
-        await _testResultRepository.AddAsync(testResult);
+        await _testResultRepository.AddAsync(testResult, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-        await _medicalHistoryService.ShouldAutoInsertHistoryAsync(request.PatientId, request.VisitTestId);
+        await _medicalHistoryService.ShouldAutoInsertHistoryAsync(request.PatientId, request.VisitTestId, cancellationToken);
 
         return Unit.Value;
     }

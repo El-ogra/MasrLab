@@ -10,9 +10,9 @@ public class CultureRepository : GenericRepository<Domain.Entities.Culture.Cultu
     {
     }
 
-    public async Task<Domain.Entities.Culture.Culture?> GetWithSensitivitiesAsync(int cultureId)
+    public async Task<Domain.Entities.Culture.Culture?> GetWithSensitivitiesAsync(int cultureId, CancellationToken cancellationToken = default)
     {
         return await _context.Cultures
-            .FirstOrDefaultAsync(c => c.Id == cultureId);
+            .FirstOrDefaultAsync(c => c.Id == cultureId, cancellationToken);
     }
 }

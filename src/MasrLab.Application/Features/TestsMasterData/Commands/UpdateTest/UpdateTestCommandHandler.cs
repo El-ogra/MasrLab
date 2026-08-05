@@ -18,7 +18,7 @@ public class UpdateTestCommandHandler : IRequestHandler<UpdateTestCommand, Unit>
 
     public async Task<Unit> Handle(UpdateTestCommand request, CancellationToken cancellationToken)
     {
-        var test = await _testRepository.GetByIdAsync(request.Id);
+        var test = await _testRepository.GetByIdAsync(request.Id, cancellationToken);
         if (test is null)
             throw new InvalidOperationException($"Test with Id {request.Id} not found.");
 

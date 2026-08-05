@@ -27,7 +27,7 @@ public class AddDoctorCommandHandler : IRequestHandler<AddDoctorCommand, Unit>
             CommissionPercent = request.CommissionPercent
         };
 
-        await _doctorRepository.AddAsync(doctor);
+        await _doctorRepository.AddAsync(doctor, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         return Unit.Value;

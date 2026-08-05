@@ -17,7 +17,7 @@ public class DeliverResultsCommandHandler : IRequestHandler<DeliverResultsComman
 
     public async Task<Unit> Handle(DeliverResultsCommand request, CancellationToken cancellationToken)
     {
-        var visit = await _visitRepository.GetByIdAsync(request.PatientVisitId);
+        var visit = await _visitRepository.GetByIdAsync(request.PatientVisitId, cancellationToken);
         if (visit is null)
             throw new InvalidOperationException($"PatientVisit with Id {request.PatientVisitId} not found.");
 

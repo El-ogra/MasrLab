@@ -19,7 +19,7 @@ public class CreatePeriodDrawerCommandHandler : IRequestHandler<CreatePeriodDraw
 
     public async Task<Unit> Handle(CreatePeriodDrawerCommand request, CancellationToken cancellationToken)
     {
-        var accounts = await _accountingRepository.GetByDateRangeAsync(request.PeriodStart, request.PeriodEnd);
+        var accounts = await _accountingRepository.GetByDateRangeAsync(request.PeriodStart, request.PeriodEnd, cancellationToken);
 
         var totalIncome = accounts.Sum(a => a.TotalIncome);
         var totalDiscount = accounts.Sum(a => a.TotalDiscount);
@@ -34,7 +34,7 @@ public class CreatePeriodDrawerCommandHandler : IRequestHandler<CreatePeriodDraw
             NetProfit = netProfit
         };
 
-        await _accountingRepository.AddAsync(account);
+        await _accountingRepository.AddAsync(account, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         return Unit.Value;

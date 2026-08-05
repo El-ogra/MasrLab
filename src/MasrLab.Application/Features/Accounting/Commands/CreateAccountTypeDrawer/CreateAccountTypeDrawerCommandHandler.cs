@@ -19,7 +19,7 @@ public class CreateAccountTypeDrawerCommandHandler : IRequestHandler<CreateAccou
 
     public async Task<Unit> Handle(CreateAccountTypeDrawerCommand request, CancellationToken cancellationToken)
     {
-        var accounts = await _accountingRepository.GetByAccountTypeAsync(request.AccountType);
+        var accounts = await _accountingRepository.GetByAccountTypeAsync(request.AccountType, cancellationToken);
         var periodAccounts = accounts
             .Where(a => a.Period.Start >= request.PeriodStart && a.Period.End <= request.PeriodEnd)
             .ToList();
@@ -37,7 +37,7 @@ public class CreateAccountTypeDrawerCommandHandler : IRequestHandler<CreateAccou
             NetProfit = netProfit
         };
 
-        await _accountingRepository.AddAsync(account);
+        await _accountingRepository.AddAsync(account, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         return Unit.Value;

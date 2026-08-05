@@ -25,7 +25,7 @@ public class GetCaseUserTrackingQueryHandler : IRequestHandler<GetCaseUserTracki
 
     public async Task<IReadOnlyList<CaseUserTrackingDto>> Handle(GetCaseUserTrackingQuery request, CancellationToken cancellationToken)
     {
-        var visits = await _visitRepository.GetByDateRangeAsync(request.PeriodStart, request.PeriodEnd);
+        var visits = await _visitRepository.GetByDateRangeAsync(request.PeriodStart, request.PeriodEnd, cancellationToken);
 
         var filteredVisits = visits
             .Where(v => v.RegisteredByUserId == request.UserId)
@@ -35,7 +35,7 @@ public class GetCaseUserTrackingQueryHandler : IRequestHandler<GetCaseUserTracki
         var patients = new Dictionary<int, Patient>();
         foreach (var pid in patientIds)
         {
-            var patient = await _patientRepository.GetByIdAsync(pid);
+            var patient = await _patientRepository.GetByIdAsync(pid, cancellationToken);
             if (patient is not null)
                 patients[pid] = patient;
         }
@@ -44,7 +44,7 @@ public class GetCaseUserTrackingQueryHandler : IRequestHandler<GetCaseUserTracki
         var doctors = new Dictionary<int, Doctor>();
         foreach (var did in doctorIds)
         {
-            var doctor = await _doctorRepository.GetByIdAsync(did);
+            var doctor = await _doctorRepository.GetByIdAsync(did, cancellationToken);
             if (doctor is not null)
                 doctors[did] = doctor;
         }

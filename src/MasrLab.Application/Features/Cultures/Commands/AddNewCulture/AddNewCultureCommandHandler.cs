@@ -25,7 +25,7 @@ public class AddNewCultureCommandHandler : IRequestHandler<AddNewCultureCommand,
             request.OrganismC);
         culture.SampleType = request.SampleType;
 
-        await _repository.AddAsync(culture);
+        await _repository.AddAsync(culture, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         return Unit.Value;

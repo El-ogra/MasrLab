@@ -36,7 +36,7 @@ public class UpdateReferenceValuesCommandHandler : IRequestHandler<UpdateReferen
             LowComment = request.LowComment
         };
 
-        await _referenceValueRepository.AddAsync(referenceValue);
+        await _referenceValueRepository.AddAsync(referenceValue, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         return Unit.Value;

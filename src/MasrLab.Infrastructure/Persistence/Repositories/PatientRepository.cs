@@ -10,23 +10,23 @@ public class PatientRepository : GenericRepository<Patient>, IPatientRepository
     {
     }
 
-    public async Task<IReadOnlyList<Patient>> SearchByNameAsync(string name)
+    public async Task<IReadOnlyList<Patient>> SearchByNameAsync(string name, CancellationToken cancellationToken = default)
     {
         return await _context.Patients
             .Where(p => p.Name.Contains(name))
-            .ToListAsync();
+            .ToListAsync(cancellationToken);
     }
 
-    public async Task<Patient?> GetByLabIdAsync(string labId)
+    public async Task<Patient?> GetByLabIdAsync(string labId, CancellationToken cancellationToken = default)
     {
         return await _context.Patients
-            .FirstOrDefaultAsync(p => p.LabId == labId);
+            .FirstOrDefaultAsync(p => p.LabId == labId, cancellationToken);
     }
 
-    public async Task<IReadOnlyList<Patient>> GetByDoctorIdAsync(int doctorId)
+    public async Task<IReadOnlyList<Patient>> GetByDoctorIdAsync(int doctorId, CancellationToken cancellationToken = default)
     {
         return await _context.Patients
             .Where(p => p.DoctorId == doctorId)
-            .ToListAsync();
+            .ToListAsync(cancellationToken);
     }
 }

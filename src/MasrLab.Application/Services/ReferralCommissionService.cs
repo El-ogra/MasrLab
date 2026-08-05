@@ -25,7 +25,7 @@ public class ReferralCommissionService : IReferralCommissionService
     {
         if (doctorId.HasValue)
         {
-            var doctor = await _doctors.GetByIdAsync(doctorId.Value);
+            var doctor = await _doctors.GetByIdAsync(doctorId.Value, ct);
             if (doctor is not null)
                 return visitTotal * (doctor.CommissionPercent / 100m);
         }

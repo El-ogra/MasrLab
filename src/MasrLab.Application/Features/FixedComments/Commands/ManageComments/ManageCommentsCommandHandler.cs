@@ -19,7 +19,7 @@ public class ManageCommentsCommandHandler : IRequestHandler<ManageCommentsComman
     {
         if (request.Id.HasValue)
         {
-            var existingComment = await _repository.GetByIdAsync(request.Id.Value);
+            var existingComment = await _repository.GetByIdAsync(request.Id.Value, cancellationToken);
             if (existingComment != null)
             {
                 existingComment.CommentText = request.CommentText;
@@ -29,7 +29,7 @@ public class ManageCommentsCommandHandler : IRequestHandler<ManageCommentsComman
         else
         {
             var comment = Comment.AttachToResult(request.TestId, request.CommentText);
-            await _repository.AddAsync(comment);
+            await _repository.AddAsync(comment, cancellationToken);
         }
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);

@@ -19,7 +19,7 @@ public class GetPatientVisitHistoryQueryHandler : IRequestHandler<GetPatientVisi
 
     public async Task<IReadOnlyList<VisitDto>> Handle(GetPatientVisitHistoryQuery request, CancellationToken cancellationToken)
     {
-        var visits = await _visitRepository.GetByPatientIdAsync(request.PatientId);
+        var visits = await _visitRepository.GetByPatientIdAsync(request.PatientId, cancellationToken);
 
         return visits.Select(v => _mapper.Map<VisitDto>(v)).ToList();
     }

@@ -17,7 +17,7 @@ public class UpdateAccountSettingsCommandHandler : IRequestHandler<UpdateAccount
 
     public async Task<Unit> Handle(UpdateAccountSettingsCommand request, CancellationToken cancellationToken)
     {
-        var settings = await _settingRepository.GetAllAsync();
+        var settings = await _settingRepository.GetAllAsync(cancellationToken);
 
         var keys = new Dictionary<string, string>
         {
@@ -39,7 +39,7 @@ public class UpdateAccountSettingsCommandHandler : IRequestHandler<UpdateAccount
                 {
                     SettingKey = kvp.Key,
                     SettingValue = kvp.Value
-                });
+                }, cancellationToken);
             }
         }
 

@@ -20,18 +20,18 @@ public class MedicalHistoryService : IMedicalHistoryService
     /// يبني سجل الاختبارات السابقة للمريض.
     /// INV: يعتمد على PatientHistoryView في قاعدة البيانات.
     /// </summary>
-    public async Task<IReadOnlyList<PatientHistoryEntry>> BuildHistoryAsync(int patientId)
+    public async Task<IReadOnlyList<PatientHistoryEntry>> BuildHistoryAsync(int patientId, CancellationToken ct = default)
     {
-        return await _patientHistoryRepo.GetByPatientIdAsync(patientId);
+        return await _patientHistoryRepo.GetByPatientIdAsync(patientId, ct);
     }
 
     /// <summary>
     /// يحدد ما إذا كان يجب إدراج سجل تلقائي عند إدخال نتيجة اختبار.
     /// INV: إذا وُجدت سجلات سابقة للمريض+الاختبار، يُرجع true.
     /// </summary>
-    public async Task<bool> ShouldAutoInsertHistoryAsync(int patientId, int testId)
+    public async Task<bool> ShouldAutoInsertHistoryAsync(int patientId, int testId, CancellationToken ct = default)
     {
-        var history = await _patientHistoryRepo.GetByPatientAndTestAsync(patientId, testId);
+        var history = await _patientHistoryRepo.GetByPatientAndTestAsync(patientId, testId, ct);
         return history.Any();
     }
 }

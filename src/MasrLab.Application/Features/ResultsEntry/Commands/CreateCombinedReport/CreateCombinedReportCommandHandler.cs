@@ -16,7 +16,7 @@ public class CreateCombinedReportCommandHandler : IRequestHandler<CreateCombined
 
     public async Task<Unit> Handle(CreateCombinedReportCommand request, CancellationToken cancellationToken)
     {
-        var visit = await _visitRepository.GetByIdAsync(request.PatientVisitId)
+        var visit = await _visitRepository.GetByIdAsync(request.PatientVisitId, cancellationToken)
             ?? throw new Exception($"Patient visit with ID {request.PatientVisitId} not found.");
 
         visit.EnterAllResults();

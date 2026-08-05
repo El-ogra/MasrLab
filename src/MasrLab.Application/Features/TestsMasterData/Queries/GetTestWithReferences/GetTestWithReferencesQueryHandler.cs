@@ -19,11 +19,11 @@ public class GetTestWithReferencesQueryHandler : IRequestHandler<GetTestWithRefe
 
     public async Task<TestWithReferencesDto?> Handle(GetTestWithReferencesQuery request, CancellationToken cancellationToken)
     {
-        var test = await _testRepository.GetByIdAsync(request.TestId);
+        var test = await _testRepository.GetByIdAsync(request.TestId, cancellationToken);
         if (test is null)
             return null;
 
-        var allReferenceValues = await _referenceValueRepository.GetAllAsync();
+        var allReferenceValues = await _referenceValueRepository.GetAllAsync(cancellationToken);
         var referenceValues = allReferenceValues
             .Where(rv => rv.TestId == request.TestId)
             .ToList();

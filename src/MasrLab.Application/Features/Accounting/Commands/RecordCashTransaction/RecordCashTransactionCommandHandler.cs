@@ -27,7 +27,7 @@ public class RecordCashTransactionCommandHandler : IRequestHandler<RecordCashTra
 
     public async Task<Unit> Handle(RecordCashTransactionCommand request, CancellationToken cancellationToken)
     {
-        var account = await _accountRepository.GetByIdAsync(request.EntityId);
+        var account = await _accountRepository.GetByIdAsync(request.EntityId, cancellationToken);
         if (account is null)
             throw new InvalidOperationException($"Account with Id {request.EntityId} not found.");
 
@@ -44,10 +44,10 @@ public class RecordCashTransactionCommandHandler : IRequestHandler<RecordCashTra
 
         transaction.TransactionDate = request.TransactionDate;
 
-        await _transactionRepository.AddAsync(transaction);
+        await _transactionRepository.AddAsync(transaction, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-        await _accountingService.RecalculateNetProfitAsync(request.EntityId);
+        await _accountingService.RecalculateNetProfitAsync(request.EntityId, cancellationToken);
 
         return Unit.Value;
     }

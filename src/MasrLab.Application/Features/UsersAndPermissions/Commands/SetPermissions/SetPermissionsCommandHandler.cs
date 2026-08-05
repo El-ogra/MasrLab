@@ -26,7 +26,7 @@ public class SetPermissionsCommandHandler : IRequestHandler<SetPermissionsComman
             Allowed = request.Allowed
         };
 
-        await _permissionRepository.AddAsync(permission);
+        await _permissionRepository.AddAsync(permission, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         return Unit.Value;

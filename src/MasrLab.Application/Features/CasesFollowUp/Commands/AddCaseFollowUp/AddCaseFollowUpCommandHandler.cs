@@ -23,7 +23,7 @@ public class AddCaseFollowUpCommandHandler : IRequestHandler<AddCaseFollowUpComm
             Text = request.Notes
         };
 
-        await _repository.AddAsync(commentTemplate);
+        await _repository.AddAsync(commentTemplate, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         return Unit.Value;

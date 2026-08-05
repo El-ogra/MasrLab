@@ -17,7 +17,7 @@ public class MarkSampleCollectedCommandHandler : IRequestHandler<MarkSampleColle
 
     public async Task<Unit> Handle(MarkSampleCollectedCommand request, CancellationToken cancellationToken)
     {
-        var sample = await _sampleRepository.GetByIdAsync(request.SampleId)
+        var sample = await _sampleRepository.GetByIdAsync(request.SampleId, cancellationToken)
             ?? throw new Exception($"Sample with ID {request.SampleId} not found.");
 
         if (request.IsCollected)

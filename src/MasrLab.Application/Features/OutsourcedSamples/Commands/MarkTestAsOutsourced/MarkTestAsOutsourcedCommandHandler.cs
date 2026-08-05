@@ -19,7 +19,8 @@ public class MarkTestAsOutsourcedCommandHandler : IRequestHandler<MarkTestAsOuts
             request.TestId,
             request.ExternalLabId,
             request.CostPrice,
-            request.PatientPrice);
+            request.PatientPrice,
+            cancellationToken);
 
         return Unit.Value;
     }

@@ -22,7 +22,7 @@ public class UpdatePriceListItemsCommandHandler : IRequestHandler<UpdatePriceLis
 
     public async Task<Unit> Handle(UpdatePriceListItemsCommand request, CancellationToken cancellationToken)
     {
-        var priceList = await _priceListRepository.GetByIdAsync(request.PriceListId);
+        var priceList = await _priceListRepository.GetByIdAsync(request.PriceListId, cancellationToken);
         if (priceList is null)
             throw new InvalidOperationException($"PriceList with Id {request.PriceListId} not found.");
 
@@ -42,7 +42,7 @@ public class UpdatePriceListItemsCommandHandler : IRequestHandler<UpdatePriceLis
                 TestId = itemData.TestId,
                 Price = itemData.Price
             };
-            await _itemRepository.AddAsync(newItem);
+            await _itemRepository.AddAsync(newItem, cancellationToken);
         }
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);
