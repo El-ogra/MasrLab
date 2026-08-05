@@ -10,9 +10,9 @@ namespace MasrLab.Application.Services;
 /// </summary>
 public class PriceListResolverService : IPriceListResolverService
 {
-    private readonly IRepository<PriceListItem> _priceListItems;
+    private readonly IPriceListItemRepository _priceListItems;
 
-    public PriceListResolverService(IRepository<PriceListItem> priceListItems)
+    public PriceListResolverService(IPriceListItemRepository priceListItems)
     {
         _priceListItems = priceListItems ?? throw new ArgumentNullException(nameof(priceListItems));
     }
@@ -26,9 +26,7 @@ public class PriceListResolverService : IPriceListResolverService
         if (priceListId <= 0)
             throw new BusinessRuleViolationException("Price list ID must be greater than zero.");
 
-        var allItems = await _priceListItems.GetAllAsync(ct);
-        var item = allItems.FirstOrDefault(i =>
-            i.PriceListId == priceListId && i.TestId == testId);
+        var item = await _priceListItems.GetByPriceListAndTestAsync(priceListId, testId, ct);
 
         return item?.Price ?? 0;
     }

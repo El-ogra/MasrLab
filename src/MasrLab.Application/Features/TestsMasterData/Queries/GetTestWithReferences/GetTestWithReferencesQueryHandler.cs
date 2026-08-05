@@ -9,9 +9,9 @@ namespace MasrLab.Application.Features.TestsMasterData.Queries.GetTestWithRefere
 public class GetTestWithReferencesQueryHandler : IRequestHandler<GetTestWithReferencesQuery, TestWithReferencesDto?>
 {
     private readonly IRepository<Test> _testRepository;
-    private readonly IRepository<ReferenceValue> _referenceValueRepository;
+    private readonly IReferenceValueRepository _referenceValueRepository;
 
-    public GetTestWithReferencesQueryHandler(IRepository<Test> testRepository, IRepository<ReferenceValue> referenceValueRepository)
+    public GetTestWithReferencesQueryHandler(IRepository<Test> testRepository, IReferenceValueRepository referenceValueRepository)
     {
         _testRepository = testRepository;
         _referenceValueRepository = referenceValueRepository;
@@ -23,10 +23,7 @@ public class GetTestWithReferencesQueryHandler : IRequestHandler<GetTestWithRefe
         if (test is null)
             return null;
 
-        var allReferenceValues = await _referenceValueRepository.GetAllAsync(cancellationToken);
-        var referenceValues = allReferenceValues
-            .Where(rv => rv.TestId == request.TestId)
-            .ToList();
+        var referenceValues = await _referenceValueRepository.GetByTestIdAsync(request.TestId, cancellationToken);
 
         return new TestWithReferencesDto
         {

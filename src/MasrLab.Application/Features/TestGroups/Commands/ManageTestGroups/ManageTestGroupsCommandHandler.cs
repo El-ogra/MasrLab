@@ -7,12 +7,12 @@ namespace MasrLab.Application.Features.TestGroups.Commands.ManageTestGroups;
 public class ManageTestGroupsCommandHandler : IRequestHandler<ManageTestGroupsCommand, Unit>
 {
     private readonly IRepository<TestGroup> _testGroupRepository;
-    private readonly IRepository<TestGroupItem> _testGroupItemRepository;
+    private readonly ITestGroupItemRepository _testGroupItemRepository;
     private readonly IUnitOfWork _unitOfWork;
 
     public ManageTestGroupsCommandHandler(
         IRepository<TestGroup> testGroupRepository,
-        IRepository<TestGroupItem> testGroupItemRepository,
+        ITestGroupItemRepository testGroupItemRepository,
         IUnitOfWork unitOfWork)
     {
         _testGroupRepository = testGroupRepository;
@@ -31,9 +31,8 @@ public class ManageTestGroupsCommandHandler : IRequestHandler<ManageTestGroupsCo
             existingGroup.GroupPrice = request.GroupPrice;
             _testGroupRepository.Update(existingGroup);
 
-            var existingItems = await _testGroupItemRepository.GetAllAsync(cancellationToken);
-            var itemsToRemove = existingItems.Where(i => i.TestGroupId == request.Id.Value).ToList();
-            foreach (var item in itemsToRemove)
+            var existingItems = await _testGroupItemRepository.GetByTestGroupIdAsync(request.Id.Value, cancellationToken);
+            foreach (var item in existingItems)
             {
                 _testGroupItemRepository.Delete(item);
             }

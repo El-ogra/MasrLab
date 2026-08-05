@@ -11,9 +11,9 @@ namespace MasrLab.Application.Services;
 /// </summary>
 public class ResultValidationService : IResultValidationService
 {
-    private readonly IRepository<ReferenceValue> _referenceValues;
+    private readonly IReferenceValueRepository _referenceValues;
 
-    public ResultValidationService(IRepository<ReferenceValue> referenceValues)
+    public ResultValidationService(IReferenceValueRepository referenceValues)
     {
         _referenceValues = referenceValues ?? throw new ArgumentNullException(nameof(referenceValues));
     }
@@ -27,8 +27,8 @@ public class ResultValidationService : IResultValidationService
         if (!decimal.TryParse(value, out var numericValue))
             return ResultStatus.Normal;
 
-        var allValues = await _referenceValues.GetAllAsync(ct);
-        var matchingRef = FindMatchingReference(allValues, testId, gender, ageYears);
+        var testValues = await _referenceValues.GetByTestIdAsync(testId, ct);
+        var matchingRef = FindMatchingReference(testValues, gender, ageYears);
 
         if (matchingRef is null)
             return ResultStatus.Normal;
@@ -51,8 +51,8 @@ public class ResultValidationService : IResultValidationService
         if (!decimal.TryParse(value, out var numericValue))
             return (true, null);
 
-        var allValues = await _referenceValues.GetAllAsync(ct);
-        var matchingRef = FindMatchingReference(allValues, testId, gender, ageYears);
+        var testValues = await _referenceValues.GetByTestIdAsync(testId, ct);
+        var matchingRef = FindMatchingReference(testValues, gender, ageYears);
 
         if (matchingRef is null)
             return (true, null);
@@ -69,7 +69,7 @@ public class ResultValidationService : IResultValidationService
     }
 
     private static ReferenceValue? FindMatchingReference(
-        IReadOnlyList<ReferenceValue> allValues, int testId, string? gender, int ageYears)
+        IReadOnlyList<ReferenceValue> values, string? gender, int ageYears)
     {
         var genderFilter = gender?.ToLowerInvariant() switch
         {
@@ -78,8 +78,7 @@ public class ResultValidationService : IResultValidationService
             _ => ReferenceValueGender.Both
         };
 
-        return allValues.FirstOrDefault(rv =>
-            rv.TestId == testId &&
+        return values.FirstOrDefault(rv =>
             (rv.Gender == genderFilter || rv.Gender == ReferenceValueGender.Both) &&
             ageYears >= rv.AgeMin &&
             ageYears <= rv.AgeMax);

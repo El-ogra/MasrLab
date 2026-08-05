@@ -1,7 +1,6 @@
 using AutoMapper;
 using MediatR;
 using MasrLab.Application.Common.DTOs;
-using MasrLab.Domain.Entities.Administrative;
 using MasrLab.Domain.Interfaces;
 
 namespace MasrLab.Application.Features.AttendanceAndAudit.Queries.GetAuditLogs;
@@ -19,24 +18,16 @@ public class GetAuditLogsQueryHandler : IRequestHandler<GetAuditLogsQuery, IRead
 
     public async Task<IReadOnlyList<AuditLogDto>> Handle(GetAuditLogsQuery request, CancellationToken cancellationToken)
     {
-        IEnumerable<AuditLog> logs;
+        var logs = await _auditLogRepository.GetByPeriodAsync(
+            request.PeriodStart,
+            request.PeriodEnd,
+            request.UserId,
+            cancellationToken);
 
-        if (request.UserId.HasValue)
-        {
-            logs = await _auditLogRepository.GetByUserIdAsync(request.UserId.Value, cancellationToken);
-        }
-        else
-        {
-            logs = await _auditLogRepository.GetAllAsync(cancellationToken);
-        }
+        var filtered = string.IsNullOrWhiteSpace(request.EntityType)
+            ? logs
+            : logs.Where(l => l.EntityType.ToString() == request.EntityType).ToList();
 
-        if (!string.IsNullOrWhiteSpace(request.EntityType))
-        {
-            logs = logs.Where(l => l.EntityType.ToString() == request.EntityType);
-        }
-
-        logs = logs.Where(l => l.ActionTime >= request.PeriodStart && l.ActionTime <= request.PeriodEnd);
-
-        return logs.Select(l => _mapper.Map<AuditLogDto>(l)).ToList();
+        return filtered.Select(l => _mapper.Map<AuditLogDto>(l)).ToList();
     }
 }

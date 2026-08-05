@@ -1,17 +1,16 @@
 using AutoMapper;
 using MediatR;
 using MasrLab.Application.Common.DTOs;
-using MasrLab.Domain.Entities.Administrative;
 using MasrLab.Domain.Interfaces;
 
 namespace MasrLab.Application.Features.AttendanceAndAudit.Queries.GetAttendanceLogs;
 
 public class GetAttendanceLogsQueryHandler : IRequestHandler<GetAttendanceLogsQuery, AttendanceDto>
 {
-    private readonly IRepository<AttendanceLog> _repository;
+    private readonly IAttendanceLogRepository _repository;
     private readonly IMapper _mapper;
 
-    public GetAttendanceLogsQueryHandler(IRepository<AttendanceLog> repository, IMapper mapper)
+    public GetAttendanceLogsQueryHandler(IAttendanceLogRepository repository, IMapper mapper)
     {
         _repository = repository;
         _mapper = mapper;
@@ -19,16 +18,8 @@ public class GetAttendanceLogsQueryHandler : IRequestHandler<GetAttendanceLogsQu
 
     public async Task<AttendanceDto> Handle(GetAttendanceLogsQuery request, CancellationToken cancellationToken)
     {
-        var logs = await _repository.GetAllAsync(cancellationToken);
+        var log = await _repository.GetByUserAndPeriodAsync(request.UserId, request.PeriodStart, request.PeriodEnd, cancellationToken);
 
-        var filtered = logs
-            .Where(l => l.UserId == request.UserId
-                     && l.WorkPeriod.Start >= request.PeriodStart
-                     && l.WorkPeriod.End <= request.PeriodEnd)
-            .ToList();
-
-        var log = filtered.FirstOrDefault()!;
-
-        return _mapper.Map<AttendanceDto>(log);
+        return _mapper.Map<AttendanceDto>(log!);
     }
 }

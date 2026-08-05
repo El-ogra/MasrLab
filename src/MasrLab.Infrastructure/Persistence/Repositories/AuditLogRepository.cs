@@ -23,4 +23,18 @@ public class AuditLogRepository : GenericRepository<AuditLog>, IAuditLogReposito
             .Where(a => a.ActionTime >= start && a.ActionTime <= end)
             .ToListAsync(cancellationToken);
     }
+
+    public async Task<IReadOnlyList<AuditLog>> GetByPeriodAsync(DateTime start, DateTime end, int? userId, CancellationToken cancellationToken = default)
+    {
+        var query = _context.AuditLogs
+            .AsNoTracking()
+            .Where(a => a.ActionTime >= start && a.ActionTime <= end);
+
+        if (userId.HasValue)
+        {
+            query = query.Where(a => a.UserId == userId.Value);
+        }
+
+        return await query.ToListAsync(cancellationToken);
+    }
 }

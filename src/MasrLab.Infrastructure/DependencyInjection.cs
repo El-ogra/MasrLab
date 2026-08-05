@@ -58,6 +58,15 @@ public static class DependencyInjection
         services.AddScoped<IAuditLogRepository, AuditLogRepository>();
         services.AddScoped<IRequestAuditLogRepository, RequestAuditLogRepository>();
         services.AddScoped<IPatientHistoryRepository, PatientHistoryRepository>();
+        services.AddScoped<IReferenceValueRepository, ReferenceValueRepository>();
+        services.AddScoped<IPriceListItemRepository, PriceListItemRepository>();
+        services.AddScoped<IPermissionRepository, PermissionRepository>();
+        services.AddScoped<IOutsourcedSampleRepository, OutsourcedSampleRepository>();
+        services.AddScoped<IAttendanceLogRepository, AttendanceLogRepository>();
+        services.AddScoped<ISystemSettingRepository, SystemSettingRepository>();
+        services.AddScoped<ISampleRepository, SampleRepository>();
+        services.AddScoped<ITestGroupItemRepository, TestGroupItemRepository>();
+        services.AddScoped<IAntibioticRepository, AntibioticRepository>();
 
         return services;
     }

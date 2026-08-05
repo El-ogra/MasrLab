@@ -1,6 +1,5 @@
 using MasrLab.Application.Common.DTOs;
 using MasrLab.Domain.Common.Enums;
-using MasrLab.Domain.Entities.Settings;
 using MasrLab.Domain.Interfaces;
 using MediatR;
 
@@ -8,16 +7,31 @@ namespace MasrLab.Application.Features.SystemSettings.Queries.GetSystemSettings;
 
 public class GetSystemSettingsQueryHandler : IRequestHandler<GetSystemSettingsQuery, SystemSettingsDto>
 {
-    private readonly IRepository<SystemSetting> _settingRepository;
+    private readonly ISystemSettingRepository _settingRepository;
 
-    public GetSystemSettingsQueryHandler(IRepository<SystemSetting> settingRepository)
+    public GetSystemSettingsQueryHandler(ISystemSettingRepository settingRepository)
     {
         _settingRepository = settingRepository;
     }
 
     public async Task<SystemSettingsDto> Handle(GetSystemSettingsQuery request, CancellationToken cancellationToken)
     {
-        var allSettings = await _settingRepository.GetAllAsync(cancellationToken);
+        var keys = new[]
+        {
+            "Receipt_HeaderText",
+            "Receipt_FooterText",
+            "Report_Margins",
+            "Report_PaperSize",
+            "Report_HeaderImage",
+            "Report_HeaderText",
+            "Report_FooterText",
+            "Report_HeaderColor",
+            "Report_FooterColor",
+            "Printer_Name",
+            "Printer_PurposeType"
+        };
+
+        var allSettings = await _settingRepository.GetByKeysAsync(keys, cancellationToken);
         var settings = allSettings.ToDictionary(s => s.SettingKey, s => s.SettingValue);
 
         return new SystemSettingsDto

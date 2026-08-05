@@ -6,10 +6,10 @@ namespace MasrLab.Application.Features.SystemSettings.Commands.UpdateReportSetti
 
 public class UpdateReportSettingsCommandHandler : IRequestHandler<UpdateReportSettingsCommand, Unit>
 {
-    private readonly IRepository<SystemSetting> _settingRepository;
+    private readonly ISystemSettingRepository _settingRepository;
     private readonly IUnitOfWork _unitOfWork;
 
-    public UpdateReportSettingsCommandHandler(IRepository<SystemSetting> settingRepository, IUnitOfWork unitOfWork)
+    public UpdateReportSettingsCommandHandler(ISystemSettingRepository settingRepository, IUnitOfWork unitOfWork)
     {
         _settingRepository = settingRepository;
         _unitOfWork = unitOfWork;
@@ -17,8 +17,6 @@ public class UpdateReportSettingsCommandHandler : IRequestHandler<UpdateReportSe
 
     public async Task<Unit> Handle(UpdateReportSettingsCommand request, CancellationToken cancellationToken)
     {
-        var settings = await _settingRepository.GetAllAsync(cancellationToken);
-
         var keys = new Dictionary<string, string>
         {
             { "Report_Margins", request.Margins },
@@ -29,6 +27,8 @@ public class UpdateReportSettingsCommandHandler : IRequestHandler<UpdateReportSe
             { "Report_HeaderColor", request.HeaderColor ?? string.Empty },
             { "Report_FooterColor", request.FooterColor ?? string.Empty }
         };
+
+        var settings = await _settingRepository.GetByKeysAsync(keys.Keys.ToList(), cancellationToken);
 
         foreach (var kvp in keys)
         {

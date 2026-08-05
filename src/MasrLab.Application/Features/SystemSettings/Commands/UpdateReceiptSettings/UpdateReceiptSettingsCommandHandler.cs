@@ -6,10 +6,10 @@ namespace MasrLab.Application.Features.SystemSettings.Commands.UpdateReceiptSett
 
 public class UpdateReceiptSettingsCommandHandler : IRequestHandler<UpdateReceiptSettingsCommand, Unit>
 {
-    private readonly IRepository<SystemSetting> _settingRepository;
+    private readonly ISystemSettingRepository _settingRepository;
     private readonly IUnitOfWork _unitOfWork;
 
-    public UpdateReceiptSettingsCommandHandler(IRepository<SystemSetting> settingRepository, IUnitOfWork unitOfWork)
+    public UpdateReceiptSettingsCommandHandler(ISystemSettingRepository settingRepository, IUnitOfWork unitOfWork)
     {
         _settingRepository = settingRepository;
         _unitOfWork = unitOfWork;
@@ -17,13 +17,13 @@ public class UpdateReceiptSettingsCommandHandler : IRequestHandler<UpdateReceipt
 
     public async Task<Unit> Handle(UpdateReceiptSettingsCommand request, CancellationToken cancellationToken)
     {
-        var settings = await _settingRepository.GetAllAsync(cancellationToken);
-
         var keys = new Dictionary<string, string>
         {
             { "Receipt_HeaderText", request.HeaderText ?? string.Empty },
             { "Receipt_FooterText", request.FooterText ?? string.Empty }
         };
+
+        var settings = await _settingRepository.GetByKeysAsync(keys.Keys.ToList(), cancellationToken);
 
         foreach (var kvp in keys)
         {

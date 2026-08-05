@@ -6,10 +6,10 @@ namespace MasrLab.Application.Features.SystemSettings.Commands.UpdateEnvelopeBar
 
 public class UpdateEnvelopeBarcodeSettingsCommandHandler : IRequestHandler<UpdateEnvelopeBarcodeSettingsCommand, Unit>
 {
-    private readonly IRepository<SystemSetting> _settingRepository;
+    private readonly ISystemSettingRepository _settingRepository;
     private readonly IUnitOfWork _unitOfWork;
 
-    public UpdateEnvelopeBarcodeSettingsCommandHandler(IRepository<SystemSetting> settingRepository, IUnitOfWork unitOfWork)
+    public UpdateEnvelopeBarcodeSettingsCommandHandler(ISystemSettingRepository settingRepository, IUnitOfWork unitOfWork)
     {
         _settingRepository = settingRepository;
         _unitOfWork = unitOfWork;
@@ -17,14 +17,14 @@ public class UpdateEnvelopeBarcodeSettingsCommandHandler : IRequestHandler<Updat
 
     public async Task<Unit> Handle(UpdateEnvelopeBarcodeSettingsCommand request, CancellationToken cancellationToken)
     {
-        var settings = await _settingRepository.GetAllAsync(cancellationToken);
-
         var keys = new Dictionary<string, string>
         {
             { "Envelope_UseBarcode", request.UseBarcode.ToString() },
             { "Envelope_BarcodeWidth", request.BarcodeWidth.ToString() },
             { "Envelope_BarcodeHeight", request.BarcodeHeight.ToString() }
         };
+
+        var settings = await _settingRepository.GetByKeysAsync(keys.Keys.ToList(), cancellationToken);
 
         foreach (var kvp in keys)
         {
