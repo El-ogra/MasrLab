@@ -19,7 +19,8 @@ public class PriceListResolverService : IPriceListResolverService
 
     /// <summary>
     /// يبحث عن سعر الاختبار بناءً على قائمة الأسعار المرجعية.
-    /// INV: يجب تمرير priceListId صالح. يُرجع 0 إذا لم يُوجد سعر للاختبار في القائمة.
+    /// INV: يجب تمرير priceListId صالح. غياب بند السعر للاختبار استثناء مجال،
+    /// ولا يُعاد صفر أبدًا نتيجة «لا يوجد بند» — الصفر قيمة مشروعة فقط لبند موجود فعلاً.
     /// </summary>
     public async Task<decimal> ResolvePriceAsync(int testId, int priceListId, CancellationToken ct = default)
     {
@@ -28,6 +29,10 @@ public class PriceListResolverService : IPriceListResolverService
 
         var item = await _priceListItems.GetByPriceListAndTestAsync(priceListId, testId, ct);
 
-        return item?.Price ?? 0;
+        if (item is null)
+            throw new BusinessRuleViolationException(
+                $"No price item found for test {testId} in price list {priceListId}.");
+
+        return item.Price;
     }
 }

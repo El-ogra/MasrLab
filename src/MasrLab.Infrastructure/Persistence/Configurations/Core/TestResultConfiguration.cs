@@ -19,6 +19,7 @@ public class TestResultConfiguration : IEntityTypeConfiguration<TestResult>
         builder.Property(e => e.Status).IsRequired();
         builder.Property(e => e.EnteredByUserId).IsRequired();
         builder.Property(e => e.EnteredAt).IsRequired();
+        builder.Property(e => e.OverrideReason).HasMaxLength(500);
         builder.Property(e => e.PrintedByUserId);
         builder.Property(e => e.PrintedAt);
         builder.Property(e => e.PrintCount).IsRequired();

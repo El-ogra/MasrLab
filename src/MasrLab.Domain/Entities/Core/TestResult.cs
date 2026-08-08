@@ -14,6 +14,12 @@ public class TestResult : BaseEntity
     public ResultStatus Status { get; set; }
     public int EnteredByUserId { get; set; }
     public DateTime EnteredAt { get; set; }
+
+    /// <summary>
+    /// مبرر التجاوز الموثق عند إدخال نتيجة لاختبار عينته غير مجمّعة (مسار استثنائي).
+    /// audit trail: يُحفظ مع النتيجة نفسها ليبقى قابلاً للتتبع لاحقاً؛ يبقى null في الإدخال العادي.
+    /// </summary>
+    public string? OverrideReason { get; set; }
     public int? PrintedByUserId { get; set; }
     public DateTime? PrintedAt { get; set; }
     public int PrintCount { get; set; }

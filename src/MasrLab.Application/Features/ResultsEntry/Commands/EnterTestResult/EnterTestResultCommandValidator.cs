@@ -23,5 +23,8 @@ public class EnterTestResultCommandValidator : AbstractValidator<EnterTestResult
 
         RuleFor(x => x.AgeYears)
             .GreaterThanOrEqualTo(0);
+
+        RuleFor(x => x.OverrideReason)
+            .MaximumLength(500);
     }
 }

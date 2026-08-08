@@ -11,6 +11,13 @@ public class VisitRepository : GenericRepository<PatientVisit>, IVisitRepository
     {
     }
 
+    public async Task<VisitTest?> GetVisitTestAsync(int visitTestId, CancellationToken cancellationToken = default)
+    {
+        return await _context.VisitTests
+            .AsNoTracking()
+            .FirstOrDefaultAsync(vt => vt.Id == visitTestId, cancellationToken);
+    }
+
     public async Task<IReadOnlyList<PatientVisit>> GetByPatientIdAsync(int patientId, CancellationToken cancellationToken = default)
     {
         return await _context.PatientVisits

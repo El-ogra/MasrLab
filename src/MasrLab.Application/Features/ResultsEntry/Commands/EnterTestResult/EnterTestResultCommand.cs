@@ -12,4 +12,5 @@ public record EnterTestResultCommand(
     int EnteredByUserId,
     int PatientId,
     string? Gender,
-    int AgeYears) : IRequest<Unit>;
+    int AgeYears,
+    string? OverrideReason) : IRequest<Unit>;

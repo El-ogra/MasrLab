@@ -6,32 +6,38 @@ namespace MasrLab.Application.Services;
 
 /// <summary>
 /// خدمة المحاسبة — تحسب صافي الربح وتعيد حسابه.
-/// INV: Account.NetProfit يُحسب كـ: TotalIncome − TotalDiscount − TotalOutsourcedCost − CashWithdrawals + CashDeposits
-/// (Account.cs:12).
+/// INV: Account.NetProfit يُحسب كـ: TotalIncome − TotalDiscount − CommissionsTotal
+/// حيث CommissionsTotal إجمالي عمولات الأطباء المُحيلين كبند مستقل وصريح.
 /// </summary>
 public class AccountingService : IAccountingService
 {
     private readonly IAccountingRepository _accountingRepo;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IReferralCommissionService _referralCommissionService;
 
-    public AccountingService(IAccountingRepository accountingRepo, IUnitOfWork unitOfWork)
+    public AccountingService(
+        IAccountingRepository accountingRepo,
+        IUnitOfWork unitOfWork,
+        IReferralCommissionService referralCommissionService)
     {
         _accountingRepo = accountingRepo ?? throw new ArgumentNullException(nameof(accountingRepo));
         _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
+        _referralCommissionService = referralCommissionService ?? throw new ArgumentNullException(nameof(referralCommissionService));
     }
 
     /// <summary>
-    /// يحسب صافي الربح للحساب بناءً على المعادلة الموثقة في Account.cs.
-    /// INV: NetProfit = TotalIncome − TotalDiscount (المكونات الأخرى تُحسب عند الحاجة).
+    /// يحسب صافي الربح للحساب بعد خصم إجمالي العمولات كخطوة صريحة.
+    /// INV: NetProfit = TotalIncome − TotalDiscount − CommissionsTotal.
     /// </summary>
-    public decimal CalculateNetProfit(Account account)
+    public decimal CalculateNetProfit(Account account, decimal commissionsTotal)
     {
-        return account.TotalIncome - account.TotalDiscount;
+        return account.TotalIncome - account.TotalDiscount - commissionsTotal;
     }
 
     /// <summary>
     /// يعيد حساب صافي الربح لحساب معين ويحفظه.
-    /// INV: Account.NetProfit له internal set (Account.cs:15).
+    /// الخطوة 1: حساب إجمالي عمولات الطبيب المُحيل لهذا الحساب.
+    /// الخطوة 2: خصم العمولات من صافي الربح كبند منفصل.
     /// </summary>
     public async Task RecalculateNetProfitAsync(int accountId, CancellationToken ct = default)
     {
@@ -39,8 +45,25 @@ public class AccountingService : IAccountingService
         if (account is null)
             return;
 
-        account.NetProfit = CalculateNetProfit(account);
+        // Step 1 — compute referring-doctor commissions for this account.
+        var commissionsTotal = await CalculateCommissionsAsync(account, ct);
+
+        // Step 2 — deduct commissions from net profit as an explicit, separate line.
+        account.NetProfit = CalculateNetProfit(account, commissionsTotal);
         _accountingRepo.Update(account);
         await _unitOfWork.SaveChangesAsync(ct);
+    }
+
+    /// <summary>
+    /// يحسب إجمالي عمولات الأطباء المُحيلين المرتبطين بالحساب.
+    /// قرار تصميم: أساس العمولة هو إجمالي دخل الحساب للفترة (Account.TotalIncome)
+    /// للطبيب المقترن بالحساب؛ إن لم يكن للحساب طبيب مُحيل، فلا عمولة.
+    /// </summary>
+    private async Task<decimal> CalculateCommissionsAsync(Account account, CancellationToken ct)
+    {
+        if (!account.DoctorId.HasValue)
+            return 0m;
+
+        return await _referralCommissionService.CalculateCommissionAsync(account.DoctorId, account.TotalIncome, ct);
     }
 }
