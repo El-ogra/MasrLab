@@ -1,5 +1,6 @@
 using MasrLab.Domain.Common.Enums;
 using MasrLab.Domain.Entities.Core;
+using MasrLab.Domain.Entities.Financial;
 using MasrLab.Domain.Interfaces;
 using Microsoft.EntityFrameworkCore;
 
@@ -73,5 +74,20 @@ public class VisitRepository : GenericRepository<PatientVisit>, IVisitRepository
         }
 
         return max;
+    }
+
+    public async Task<PatientVisit?> GetByIdWithTestsAsync(int id, CancellationToken cancellationToken = default)
+    {
+        return await _context.PatientVisits
+            .Include(v => v.VisitTests)
+            .FirstOrDefaultAsync(v => v.Id == id, cancellationToken);
+    }
+
+    public async Task<Receipt?> GetOpenReceiptAsync(int patientVisitId, CancellationToken cancellationToken = default)
+    {
+        return await _context.Receipts
+            .FirstOrDefaultAsync(
+                r => r.PatientVisitId == patientVisitId && r.Status != ReceiptStatus.Paid,
+                cancellationToken);
     }
 }
