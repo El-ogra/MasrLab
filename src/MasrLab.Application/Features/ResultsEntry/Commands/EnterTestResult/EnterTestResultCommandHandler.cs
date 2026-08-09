@@ -15,6 +15,7 @@ public class EnterTestResultCommandHandler : IRequestHandler<EnterTestResultComm
     private readonly IVisitRepository _visitRepository;
     private readonly ISampleTrackingService _sampleTrackingService;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IPatientRepository _patientRepository;
 
     public EnterTestResultCommandHandler(
         ITestResultRepository testResultRepository,
@@ -22,7 +23,8 @@ public class EnterTestResultCommandHandler : IRequestHandler<EnterTestResultComm
         IMedicalHistoryService medicalHistoryService,
         IVisitRepository visitRepository,
         ISampleTrackingService sampleTrackingService,
-        IUnitOfWork unitOfWork)
+        IUnitOfWork unitOfWork,
+        IPatientRepository patientRepository)
     {
         _testResultRepository = testResultRepository;
         _resultValidationService = resultValidationService;
@@ -30,12 +32,16 @@ public class EnterTestResultCommandHandler : IRequestHandler<EnterTestResultComm
         _visitRepository = visitRepository;
         _sampleTrackingService = sampleTrackingService;
         _unitOfWork = unitOfWork;
+        _patientRepository = patientRepository;
     }
 
     public async Task<Unit> Handle(EnterTestResultCommand request, CancellationToken cancellationToken)
     {
         var visitTest = await _visitRepository.GetVisitTestAsync(request.VisitTestId, cancellationToken)
             ?? throw new InvalidOperationException($"VisitTest with Id {request.VisitTestId} not found.");
+
+        var patient = await _patientRepository.GetByIdAsync(request.PatientId, cancellationToken)
+            ?? throw new InvalidOperationException($"Patient with Id {request.PatientId} not found.");
 
         var isSampleCollected = await _sampleTrackingService.IsSampleCollectedAsync(
             visitTest.PatientVisitId,
@@ -49,10 +55,13 @@ public class EnterTestResultCommandHandler : IRequestHandler<EnterTestResultComm
                 "Provide an override reason to proceed.");
         }
 
+        // Gender comes exclusively from the Patient record (single source of truth).
+        var gender = patient.Gender == Gender.Male ? "male" : "female";
+
         var status = await _resultValidationService.ValidateResultAsync(
             request.VisitTestId,
             request.Value,
-            request.Gender,
+            gender,
             request.AgeYears,
             cancellationToken);
 

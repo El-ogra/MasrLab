@@ -31,6 +31,9 @@ public class GeneratePatientWorkSheetQueryHandler : IRequestHandler<GeneratePati
         await _repository.AddAsync(workSheet, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
+        // WorkSheetDto is built manually because the AutoMapper WorkSheet profile does not
+        // flatten the Period (DateRange) value object into PeriodStart/PeriodEnd; mapping it
+        // here preserves the requested period instead of defaulting to DateTime.MinValue.
         return new WorkSheetDto
         {
             Id = workSheet.Id,

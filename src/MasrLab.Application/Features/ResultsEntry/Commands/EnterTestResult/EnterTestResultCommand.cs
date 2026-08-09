@@ -11,6 +11,5 @@ public record EnterTestResultCommand(
     ResultStatus Status,
     int EnteredByUserId,
     int PatientId,
-    string? Gender,
     int AgeYears,
     string? OverrideReason) : IRequest<Unit>;

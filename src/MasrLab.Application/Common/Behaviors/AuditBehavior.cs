@@ -2,6 +2,7 @@ using MasrLab.Application.Common.Interfaces;
 using MasrLab.Domain.Entities.Administrative;
 using MasrLab.Domain.Interfaces;
 using MediatR;
+using Microsoft.Extensions.Logging;
 
 namespace MasrLab.Application.Common.Behaviors;
 
@@ -12,17 +13,20 @@ public class AuditBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, TR
     private readonly IDateTimeService _dateTimeService;
     private readonly IRequestAuditLogRepository _auditLogRepository;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly ILogger<AuditBehavior<TRequest, TResponse>> _logger;
 
     public AuditBehavior(
         ICurrentUserService currentUserService,
         IDateTimeService dateTimeService,
         IRequestAuditLogRepository auditLogRepository,
-        IUnitOfWork unitOfWork)
+        IUnitOfWork unitOfWork,
+        ILogger<AuditBehavior<TRequest, TResponse>> logger)
     {
         _currentUserService = currentUserService;
         _dateTimeService = dateTimeService;
         _auditLogRepository = auditLogRepository;
         _unitOfWork = unitOfWork;
+        _logger = logger;
     }
 
     public async Task<TResponse> Handle(TRequest request, RequestHandlerDelegate<TResponse> next, CancellationToken cancellationToken)
@@ -65,9 +69,10 @@ public class AuditBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, TR
             await _auditLogRepository.AddAsync(entry, ct);
             await _unitOfWork.SaveChangesAsync(ct);
         }
-        catch
+        catch (Exception ex)
         {
             // Audit persistence failure must not abort the request.
+            _logger.LogWarning(ex, "Failed to persist audit entry for request {RequestName}.", requestName);
         }
     }
 }

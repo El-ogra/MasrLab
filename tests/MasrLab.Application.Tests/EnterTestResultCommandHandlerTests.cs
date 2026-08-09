@@ -16,6 +16,7 @@ public class EnterTestResultCommandHandlerTests
     private readonly Mock<IVisitRepository> _visitRepository;
     private readonly Mock<ISampleTrackingService> _sampleTrackingService;
     private readonly Mock<IUnitOfWork> _unitOfWork;
+    private readonly Mock<IPatientRepository> _patientRepository;
 
     public EnterTestResultCommandHandlerTests()
     {
@@ -25,6 +26,7 @@ public class EnterTestResultCommandHandlerTests
         _visitRepository = new Mock<IVisitRepository>();
         _sampleTrackingService = new Mock<ISampleTrackingService>();
         _unitOfWork = new Mock<IUnitOfWork>();
+        _patientRepository = new Mock<IPatientRepository>();
     }
 
     private EnterTestResultCommandHandler CreateHandler()
@@ -34,7 +36,8 @@ public class EnterTestResultCommandHandlerTests
             _medicalHistoryService.Object,
             _visitRepository.Object,
             _sampleTrackingService.Object,
-            _unitOfWork.Object);
+            _unitOfWork.Object,
+            _patientRepository.Object);
 
     private static EnterTestResultCommand CreateCommand(string? overrideReason = null)
         => new(
@@ -45,9 +48,15 @@ public class EnterTestResultCommandHandlerTests
             Status: ResultStatus.Normal,
             EnteredByUserId: 1,
             PatientId: 1,
-            Gender: "male",
             AgeYears: 30,
             OverrideReason: overrideReason);
+
+    private void SetupPatient(Gender gender = Gender.Male)
+    {
+        _patientRepository
+            .Setup(r => r.GetByIdAsync(1, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new Patient { Id = 1, Name = "Ahmed", Gender = gender });
+    }
 
     private void SetupVisitTest()
     {
@@ -66,6 +75,7 @@ public class EnterTestResultCommandHandlerTests
     [Fact]
     public async Task Handle_WhenSampleCollected_EntersResultNormally()
     {
+        SetupPatient();
         SetupVisitTest();
         SetupValidationNormal();
         _sampleTrackingService
@@ -87,6 +97,7 @@ public class EnterTestResultCommandHandlerTests
     [Fact]
     public async Task Handle_WhenSampleNotCollectedAndNoOverride_ThrowsAndDoesNotAdd()
     {
+        SetupPatient();
         SetupVisitTest();
         _sampleTrackingService
             .Setup(s => s.IsSampleCollectedAsync(10, 20, It.IsAny<CancellationToken>()))
@@ -101,6 +112,7 @@ public class EnterTestResultCommandHandlerTests
     [Fact]
     public async Task Handle_WhenSampleNotCollectedWithOverrideReason_EntersAndRecordsReason()
     {
+        SetupPatient();
         SetupVisitTest();
         SetupValidationNormal();
         _sampleTrackingService
@@ -122,6 +134,7 @@ public class EnterTestResultCommandHandlerTests
     [Fact]
     public async Task Handle_WhenSampleNotCollectedWithBlankOverrideReason_Throws()
     {
+        SetupPatient();
         SetupVisitTest();
         _sampleTrackingService
             .Setup(s => s.IsSampleCollectedAsync(10, 20, It.IsAny<CancellationToken>()))
@@ -130,6 +143,43 @@ public class EnterTestResultCommandHandlerTests
         await Assert.ThrowsAsync<BusinessRuleViolationException>(
             () => CreateHandler().Handle(CreateCommand(overrideReason: "   "), CancellationToken.None));
 
+        _testResultRepository.Verify(r => r.AddAsync(It.IsAny<TestResult>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task Handle_WhenPatientHasFemaleGender_UsesPatientGenderInValidation()
+    {
+        SetupPatient(Gender.Female);
+        SetupVisitTest();
+        SetupValidationNormal();
+        _sampleTrackingService
+            .Setup(s => s.IsSampleCollectedAsync(10, 20, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
+
+        await CreateHandler().Handle(CreateCommand(), CancellationToken.None);
+
+        _resultValidationService.Verify(
+            s => s.ValidateResultAsync(100, "5.0", "female", 30, It.IsAny<CancellationToken>()),
+            Times.Once);
+    }
+
+    [Fact]
+    public async Task Handle_WhenPatientNotFound_ThrowsBeforeAnyValidation()
+    {
+        SetupVisitTest();
+        _patientRepository
+            .Setup(r => r.GetByIdAsync(1, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((Patient?)null);
+        _sampleTrackingService
+            .Setup(s => s.IsSampleCollectedAsync(10, 20, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
+
+        await Assert.ThrowsAsync<InvalidOperationException>(
+            () => CreateHandler().Handle(CreateCommand(), CancellationToken.None));
+
+        _resultValidationService.Verify(
+            s => s.ValidateResultAsync(It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string?>(), It.IsAny<int>(), It.IsAny<CancellationToken>()),
+            Times.Never);
         _testResultRepository.Verify(r => r.AddAsync(It.IsAny<TestResult>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 }

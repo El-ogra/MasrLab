@@ -20,6 +20,8 @@ public class GetDoctorReferralReportQueryHandler : IRequestHandler<GetDoctorRefe
             .Where(a => a.Period.Start >= request.PeriodStart && a.Period.End <= request.PeriodEnd)
             .ToList();
 
+        // AccountDrawerDto aggregates the period totals across many Account rows; this is a
+        // composite transformation, so it is assembled manually rather than via AutoMapper.
         return new AccountDrawerDto
         {
             PeriodStart = request.PeriodStart,

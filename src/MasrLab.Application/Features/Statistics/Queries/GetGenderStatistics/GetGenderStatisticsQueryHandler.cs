@@ -16,6 +16,8 @@ public class GetGenderStatisticsQueryHandler : IRequestHandler<GetGenderStatisti
     public async Task<GenderStatisticsDto> Handle(GetGenderStatisticsQuery request, CancellationToken cancellationToken)
     {
         var domainResult = await _statisticsRepository.GetGenderStatisticsAsync(request.PeriodStart, request.PeriodEnd, cancellationToken);
+        // GenderStatisticsDto mirrors the Domain-level statistics DTO via its copy
+        // constructor; a cross-layer shape transfer kept manual (documented exception).
         return new GenderStatisticsDto(domainResult);
     }
 }

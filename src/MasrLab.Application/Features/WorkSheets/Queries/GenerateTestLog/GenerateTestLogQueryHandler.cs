@@ -37,6 +37,8 @@ public class GenerateTestLogQueryHandler : IRequestHandler<GenerateTestLogQuery,
                 patients[pid] = patient;
         }
 
+        // TestLogEntryDto combines data from visits, patients, tests and samples with derived
+        // fallbacks; this is a composite transformation, so it is built manually.
         var result = new List<TestLogEntryDto>();
         foreach (var visit in visits)
         {

@@ -16,6 +16,8 @@ public class GetPatientCountByPeriodQueryHandler : IRequestHandler<GetPatientCou
     public async Task<PatientCountByPeriodDto> Handle(GetPatientCountByPeriodQuery request, CancellationToken cancellationToken)
     {
         var domainResult = await _statisticsRepository.GetPatientCountByPeriodAsync(request.PeriodStart, request.PeriodEnd, cancellationToken);
+        // PatientCountByPeriodDto mirrors the Domain-level statistics DTO via its copy
+        // constructor; a cross-layer shape transfer kept manual (documented exception).
         return new PatientCountByPeriodDto(domainResult);
     }
 }

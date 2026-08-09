@@ -34,6 +34,9 @@ public class GetSystemSettingsQueryHandler : IRequestHandler<GetSystemSettingsQu
         var allSettings = await _settingRepository.GetByKeysAsync(keys, cancellationToken);
         var settings = allSettings.ToDictionary(s => s.SettingKey, s => s.SettingValue);
 
+        // SystemSettingsDto aggregates several unrelated setting groups resolved from a flat
+        // key/value store, including defaulting and enum parsing; this is a composite
+        // transformation, so it is assembled manually rather than via AutoMapper.
         return new SystemSettingsDto
         {
             ReceiptSettings = new ReceiptSettingsDto

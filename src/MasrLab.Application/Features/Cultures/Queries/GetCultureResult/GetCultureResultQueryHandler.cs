@@ -1,3 +1,4 @@
+using AutoMapper;
 using MediatR;
 using MasrLab.Application.Common.DTOs;
 using MasrLab.Domain.Interfaces;
@@ -7,10 +8,12 @@ namespace MasrLab.Application.Features.Cultures.Queries.GetCultureResult;
 public class GetCultureResultQueryHandler : IRequestHandler<GetCultureResultQuery, CultureResultDto?>
 {
     private readonly ICultureRepository _cultureRepository;
+    private readonly IMapper _mapper;
 
-    public GetCultureResultQueryHandler(ICultureRepository cultureRepository)
+    public GetCultureResultQueryHandler(ICultureRepository cultureRepository, IMapper mapper)
     {
         _cultureRepository = cultureRepository;
+        _mapper = mapper;
     }
 
     public async Task<CultureResultDto?> Handle(GetCultureResultQuery request, CancellationToken cancellationToken)
@@ -19,15 +22,6 @@ public class GetCultureResultQueryHandler : IRequestHandler<GetCultureResultQuer
         if (culture is null)
             throw new InvalidOperationException($"Culture with Id {request.CultureId} not found.");
 
-        return new CultureResultDto
-        {
-            Id = culture.Id,
-            SampleType = culture.SampleType,
-            OrganismA = culture.OrganismA,
-            OrganismB = culture.OrganismB,
-            OrganismC = culture.OrganismC,
-            CultureCondition = culture.CultureCondition,
-            ColonyCount = culture.ColonyCount
-        };
+        return _mapper.Map<CultureResultDto>(culture);
     }
 }

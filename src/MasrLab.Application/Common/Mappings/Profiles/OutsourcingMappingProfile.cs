@@ -9,6 +9,5 @@ public class OutsourcingMappingProfile : Profile
     public OutsourcingMappingProfile()
     {
         CreateMap<OutsourcedSample, OutsourcedSampleDto>();
-        CreateMap<ExternalLab, ExternalLabDto>();
     }
 }

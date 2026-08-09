@@ -18,6 +18,9 @@ public class GetPatientHistoryQueryHandler : IRequestHandler<GetPatientHistoryQu
     {
         var entries = await _medicalHistoryService.BuildHistoryAsync(request.PatientId, cancellationToken);
 
+        // PatientHistoryDto is built manually because the mapping combines multiple source
+        // properties and applies null-to-empty defaults (PreviousValue/CurrentValue/etc.);
+        // this is the documented exception to AutoMapper for composite transformations.
         return entries.Select(e => new PatientHistoryDto
         {
             PatientId = e.PatientId,

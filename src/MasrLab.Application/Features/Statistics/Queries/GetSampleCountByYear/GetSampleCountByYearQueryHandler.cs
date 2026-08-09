@@ -16,6 +16,8 @@ public class GetSampleCountByYearQueryHandler : IRequestHandler<GetSampleCountBy
     public async Task<SampleCountByYearDto> Handle(GetSampleCountByYearQuery request, CancellationToken cancellationToken)
     {
         var domainResult = await _statisticsRepository.GetSampleCountByYearAsync(request.Year, cancellationToken);
+        // SampleCountByYearDto mirrors the Domain-level statistics DTO via its copy
+        // constructor; a cross-layer shape transfer kept manual (documented exception).
         return new SampleCountByYearDto(domainResult);
     }
 }

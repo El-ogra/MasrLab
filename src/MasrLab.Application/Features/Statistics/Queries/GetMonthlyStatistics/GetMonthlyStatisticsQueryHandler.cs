@@ -16,6 +16,8 @@ public class GetMonthlyStatisticsQueryHandler : IRequestHandler<GetMonthlyStatis
     public async Task<MonthlyStatisticsDto> Handle(GetMonthlyStatisticsQuery request, CancellationToken cancellationToken)
     {
         var domainResult = await _statisticsRepository.GetMonthlyStatisticsAsync(request.PeriodStart, request.PeriodEnd, cancellationToken);
+        // MonthlyStatisticsDto mirrors the Domain-level statistics DTO via its copy
+        // constructor; a cross-layer shape transfer kept manual (documented exception).
         return new MonthlyStatisticsDto(domainResult);
     }
 }

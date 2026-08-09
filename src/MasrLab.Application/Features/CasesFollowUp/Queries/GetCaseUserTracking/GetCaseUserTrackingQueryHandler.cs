@@ -49,6 +49,8 @@ public class GetCaseUserTrackingQueryHandler : IRequestHandler<GetCaseUserTracki
                 doctors[did] = doctor;
         }
 
+        // CaseUserTrackingDto combines data from visits, patients and doctors and computes
+        // derived counts; this is a composite transformation, so it is built manually.
         var result = filteredVisits.Select(v =>
         {
             var totalTests = v.VisitTests.Count;

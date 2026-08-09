@@ -10,7 +10,5 @@ public class CultureMappingProfile : Profile
     {
         CreateMap<CultureEntity, CultureResultDto>();
         CreateMap<Domain.Entities.Culture.Antibiotic, AntibioticDto>();
-        CreateMap<Domain.Entities.Culture.Sensitivity, SensitivityDto>();
-        CreateMap<Domain.Entities.Culture.Organism, OrganismDto>();
     }
 }

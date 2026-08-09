@@ -17,6 +17,8 @@ public class GetDrawerReportQueryHandler : IRequestHandler<GetDrawerReportQuery,
     {
         var accounts = await _accountingRepository.GetByDateRangeAsync(request.PeriodStart, request.PeriodEnd, cancellationToken);
 
+        // AccountDrawerDto aggregates the period totals across many Account rows; this is a
+        // composite transformation, so it is assembled manually rather than via AutoMapper.
         return new AccountDrawerDto
         {
             PeriodStart = request.PeriodStart,

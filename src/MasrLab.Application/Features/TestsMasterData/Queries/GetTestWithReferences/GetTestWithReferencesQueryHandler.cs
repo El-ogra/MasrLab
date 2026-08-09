@@ -1,3 +1,4 @@
+using AutoMapper;
 using MasrLab.Application.Common.DTOs;
 using MasrLab.Application.Features.TestsMasterData.Queries.GetTestWithReferences;
 using MasrLab.Domain.Entities.Core;
@@ -10,11 +11,16 @@ public class GetTestWithReferencesQueryHandler : IRequestHandler<GetTestWithRefe
 {
     private readonly IRepository<Test> _testRepository;
     private readonly IReferenceValueRepository _referenceValueRepository;
+    private readonly IMapper _mapper;
 
-    public GetTestWithReferencesQueryHandler(IRepository<Test> testRepository, IReferenceValueRepository referenceValueRepository)
+    public GetTestWithReferencesQueryHandler(
+        IRepository<Test> testRepository,
+        IReferenceValueRepository referenceValueRepository,
+        IMapper mapper)
     {
         _testRepository = testRepository;
         _referenceValueRepository = referenceValueRepository;
+        _mapper = mapper;
     }
 
     public async Task<TestWithReferencesDto?> Handle(GetTestWithReferencesQuery request, CancellationToken cancellationToken)
@@ -25,6 +31,8 @@ public class GetTestWithReferencesQueryHandler : IRequestHandler<GetTestWithRefe
 
         var referenceValues = await _referenceValueRepository.GetByTestIdAsync(request.TestId, cancellationToken);
 
+        // TestWithReferencesDto aggregates a Test with its reference values, so the outer
+        // object is assembled manually; the inner ReferenceValueDto is a simple map.
         return new TestWithReferencesDto
         {
             Id = test.Id,
@@ -37,17 +45,7 @@ public class GetTestWithReferencesQueryHandler : IRequestHandler<GetTestWithRefe
             TurnaroundTime = test.TurnaroundTime,
             LabToLabFlag = test.LabToLabFlag,
             Unit = test.Unit,
-            ReferenceValues = referenceValues.Select(rv => new ReferenceValueDto
-            {
-                Id = rv.Id,
-                Gender = rv.Gender,
-                AgeMin = rv.AgeMin,
-                AgeMax = rv.AgeMax,
-                AgeUnit = rv.AgeUnit,
-                NormalRange = rv.NormalRange,
-                HighComment = rv.HighComment,
-                LowComment = rv.LowComment
-            }).ToList()
+            ReferenceValues = referenceValues.Select(rv => _mapper.Map<ReferenceValueDto>(rv)).ToList()
         };
     }
 }
