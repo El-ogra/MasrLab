@@ -25,6 +25,10 @@ public class UnitOfWork : IUnitOfWork
         {
             throw new DuplicateLabIdException("A patient with the same LabId already exists.", ex);
         }
+        catch (DbUpdateException ex) when (IsDuplicateVisitLabIdViolation(ex))
+        {
+            throw new DuplicateVisitLabIdException("A patient visit with the same LabId already exists.", ex);
+        }
     }
 
     private static bool IsDuplicateLabIdViolation(DbUpdateException ex)
@@ -36,6 +40,20 @@ public class UnitOfWork : IUnitOfWork
         // objects (e.g. Patient.Age) surface as separate change-tracker entries, so they
         // must be allowed here; otherwise the check never matches on a real Patient save.
         if (ex.Entries.Any(e => e.Entity is not Patient && !e.Metadata.IsOwned()))
+            return false;
+
+        var sqlException = ex.GetBaseException() as SqlException;
+        return sqlException is not null
+            && (sqlException.Number == 2601 || sqlException.Number == 2627);
+    }
+
+    private static bool IsDuplicateVisitLabIdViolation(DbUpdateException ex)
+    {
+        if (ex.Entries.Count == 0)
+            return false;
+
+        // Only map when the failing save involves the PatientVisit aggregate.
+        if (ex.Entries.Any(e => e.Entity is not PatientVisit && !e.Metadata.IsOwned()))
             return false;
 
         var sqlException = ex.GetBaseException() as SqlException;

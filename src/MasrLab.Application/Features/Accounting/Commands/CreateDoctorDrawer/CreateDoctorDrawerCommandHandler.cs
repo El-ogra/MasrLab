@@ -26,7 +26,7 @@ public class CreateDoctorDrawerCommandHandler : IRequestHandler<CreateDoctorDraw
 
         var totalIncome = periodAccounts.Sum(a => a.TotalIncome);
         var totalDiscount = periodAccounts.Sum(a => a.TotalDiscount);
-        var netProfit = periodAccounts.Sum(a => a.NetProfit);
+        var netActivityAfterCommission = periodAccounts.Sum(a => a.NetActivityAfterCommission);
 
         var account = new Account
         {
@@ -35,7 +35,7 @@ public class CreateDoctorDrawerCommandHandler : IRequestHandler<CreateDoctorDraw
             AccountType = AccountType.Insurance,
             TotalIncome = totalIncome,
             TotalDiscount = totalDiscount,
-            NetProfit = netProfit
+            NetActivityAfterCommission = netActivityAfterCommission
         };
 
         await _accountingRepository.AddAsync(account, cancellationToken);

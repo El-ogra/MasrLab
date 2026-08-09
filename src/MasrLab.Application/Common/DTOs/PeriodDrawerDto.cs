@@ -6,5 +6,5 @@ public record PeriodDrawerDto
     public DateTime PeriodEnd { get; init; }
     public decimal TotalIncome { get; init; }
     public decimal TotalDiscount { get; init; }
-    public decimal NetProfit { get; init; }
+    public decimal NetActivityAfterCommission { get; init; }
 }

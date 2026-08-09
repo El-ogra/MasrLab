@@ -25,7 +25,7 @@ public class GetDrawerReportQueryHandler : IRequestHandler<GetDrawerReportQuery,
             PeriodEnd = request.PeriodEnd,
             TotalIncome = accounts.Sum(a => a.TotalIncome),
             TotalDiscount = accounts.Sum(a => a.TotalDiscount),
-            NetProfit = accounts.Sum(a => a.NetProfit)
+            NetActivityAfterCommission = accounts.Sum(a => a.NetActivityAfterCommission)
         };
     }
 }

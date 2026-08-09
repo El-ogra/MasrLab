@@ -49,4 +49,29 @@ public class VisitRepository : GenericRepository<PatientVisit>, IVisitRepository
             .Where(v => v.Status == VisitStatus.Registered)
             .ToListAsync(cancellationToken);
     }
+
+    public async Task<int?> GetMaxVisitLabIdSuffixAsync(string datePrefix, CancellationToken cancellationToken = default)
+    {
+        var labIds = await _context.PatientVisits
+            .AsNoTracking()
+            .Where(v => v.LabId.StartsWith(datePrefix))
+            .Select(v => v.LabId)
+            .ToListAsync(cancellationToken);
+
+        int? max = null;
+        foreach (var labId in labIds)
+        {
+            var dashIndex = labId.LastIndexOf('-');
+            if (dashIndex < 0 || dashIndex == labId.Length - 1)
+                continue;
+
+            if (int.TryParse(labId.Substring(dashIndex + 1), out var suffix))
+            {
+                if (max is null || suffix > max.Value)
+                    max = suffix;
+            }
+        }
+
+        return max;
+    }
 }

@@ -5,8 +5,8 @@ using MasrLab.Domain.Services;
 namespace MasrLab.Application.Services;
 
 /// <summary>
-/// خدمة المحاسبة — تحسب صافي الربح وتعيد حسابه.
-/// INV: Account.NetProfit يُحسب كـ: TotalIncome − TotalDiscount − CommissionsTotal
+/// خدمة المحاسبة — تحسب صافي النشاط بعد عمولات الأطباء وتعيد حسابه.
+/// INV: Account.NetActivityAfterCommission يُحسب كـ: TotalIncome − TotalDiscount − CommissionsTotal
 /// حيث CommissionsTotal إجمالي عمولات الأطباء المُحيلين كبند مستقل وصريح.
 /// </summary>
 public class AccountingService : IAccountingService
@@ -26,20 +26,20 @@ public class AccountingService : IAccountingService
     }
 
     /// <summary>
-    /// يحسب صافي الربح للحساب بعد خصم إجمالي العمولات كخطوة صريحة.
-    /// INV: NetProfit = TotalIncome − TotalDiscount − CommissionsTotal.
+    /// يحسب صافي النشاط بعد عمولات الأطباء للحساب بعد خصم إجمالي العمولات كخطوة صريحة.
+    /// INV: NetActivityAfterCommission = TotalIncome − TotalDiscount − CommissionsTotal.
     /// </summary>
-    public decimal CalculateNetProfit(Account account, decimal commissionsTotal)
+    public decimal CalculateNetActivityAfterCommission(Account account, decimal commissionsTotal)
     {
         return account.TotalIncome - account.TotalDiscount - commissionsTotal;
     }
 
     /// <summary>
-    /// يعيد حساب صافي الربح لحساب معين ويحفظه.
+    /// يعيد حساب صافي النشاط بعد عمولات الأطباء لحساب معين ويحفظه.
     /// الخطوة 1: حساب إجمالي عمولات الطبيب المُحيل لهذا الحساب.
-    /// الخطوة 2: خصم العمولات من صافي الربح كبند منفصل.
+    /// الخطوة 2: خصم العمولات من صافي النشاط كبند منفصل.
     /// </summary>
-    public async Task RecalculateNetProfitAsync(int accountId, CancellationToken ct = default)
+    public async Task RecalculateNetActivityAfterCommissionAsync(int accountId, CancellationToken ct = default)
     {
         var account = await _accountingRepo.GetByIdAsync(accountId, ct);
         if (account is null)
@@ -48,8 +48,8 @@ public class AccountingService : IAccountingService
         // Step 1 — compute referring-doctor commissions for this account.
         var commissionsTotal = await CalculateCommissionsAsync(account, ct);
 
-        // Step 2 — deduct commissions from net profit as an explicit, separate line.
-        account.NetProfit = CalculateNetProfit(account, commissionsTotal);
+        // Step 2 — deduct commissions from net activity as an explicit, separate line.
+        account.NetActivityAfterCommission = CalculateNetActivityAfterCommission(account, commissionsTotal);
         _accountingRepo.Update(account);
         await _unitOfWork.SaveChangesAsync(ct);
     }

@@ -20,6 +20,7 @@ public static class DependencyInjection
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(Common.Behaviors.ValidationBehavior<,>));
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(Common.Behaviors.AuditBehavior<,>));
         services.AddScoped<LabIdGenerator>();
+        services.AddScoped<IVisitLabIdGenerator, VisitLabIdGenerator>();
 
         // Domain services
         services.AddScoped<IAccountingService, AccountingService>();

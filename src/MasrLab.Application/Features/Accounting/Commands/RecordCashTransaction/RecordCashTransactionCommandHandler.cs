@@ -47,7 +47,7 @@ public class RecordCashTransactionCommandHandler : IRequestHandler<RecordCashTra
         await _transactionRepository.AddAsync(transaction, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
-        await _accountingService.RecalculateNetProfitAsync(request.EntityId, cancellationToken);
+        await _accountingService.RecalculateNetActivityAfterCommissionAsync(request.EntityId, cancellationToken);
 
         return Unit.Value;
     }

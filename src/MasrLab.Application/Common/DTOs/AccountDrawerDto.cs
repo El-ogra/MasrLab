@@ -9,7 +9,7 @@ public record AccountDrawerDto
     public DateTime PeriodEnd { get; init; }
     public decimal TotalIncome { get; init; }
     public decimal TotalDiscount { get; init; }
-    public decimal NetProfit { get; init; }
+    public decimal NetActivityAfterCommission { get; init; }
     public int? DoctorId { get; init; }
     public int? ReferralEntityId { get; init; }
     public AccountType AccountType { get; init; }

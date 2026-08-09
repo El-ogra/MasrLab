@@ -23,7 +23,7 @@ public class CreatePeriodDrawerCommandHandler : IRequestHandler<CreatePeriodDraw
 
         var totalIncome = accounts.Sum(a => a.TotalIncome);
         var totalDiscount = accounts.Sum(a => a.TotalDiscount);
-        var netProfit = accounts.Sum(a => a.NetProfit);
+        var netActivityAfterCommission = accounts.Sum(a => a.NetActivityAfterCommission);
 
         var account = new Account
         {
@@ -31,7 +31,7 @@ public class CreatePeriodDrawerCommandHandler : IRequestHandler<CreatePeriodDraw
             AccountType = AccountType.Cash,
             TotalIncome = totalIncome,
             TotalDiscount = totalDiscount,
-            NetProfit = netProfit
+            NetActivityAfterCommission = netActivityAfterCommission
         };
 
         await _accountingRepository.AddAsync(account, cancellationToken);

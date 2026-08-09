@@ -4,6 +4,6 @@ namespace MasrLab.Domain.Services;
 
 public interface IAccountingService
 {
-    decimal CalculateNetProfit(Account account, decimal commissionsTotal);
-    Task RecalculateNetProfitAsync(int accountId, CancellationToken ct = default);
+    decimal CalculateNetActivityAfterCommission(Account account, decimal commissionsTotal);
+    Task RecalculateNetActivityAfterCommissionAsync(int accountId, CancellationToken ct = default);
 }

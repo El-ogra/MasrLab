@@ -28,7 +28,7 @@ public class GetDoctorReferralReportQueryHandler : IRequestHandler<GetDoctorRefe
             PeriodEnd = request.PeriodEnd,
             TotalIncome = periodAccounts.Sum(a => a.TotalIncome),
             TotalDiscount = periodAccounts.Sum(a => a.TotalDiscount),
-            NetProfit = periodAccounts.Sum(a => a.NetProfit),
+            NetActivityAfterCommission = periodAccounts.Sum(a => a.NetActivityAfterCommission),
             DoctorId = request.DoctorId
         };
     }

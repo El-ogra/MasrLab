@@ -20,7 +20,7 @@ public class PatientVisitConfiguration : IEntityTypeConfiguration<PatientVisit>
         builder.Property(e => e.TakenOutsideLab).IsRequired();
 
         builder.HasIndex(e => e.PatientId);
-        builder.HasIndex(e => e.LabId);
+        builder.HasIndex(e => e.LabId).IsUnique();
         builder.HasIndex(e => e.VisitDate);
         builder.HasIndex(e => e.Status);
         builder.HasIndex(e => e.RegisteredByUserId);
