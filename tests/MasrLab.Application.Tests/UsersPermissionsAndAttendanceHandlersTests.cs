@@ -1,0 +1,48 @@
+using AutoMapper;
+using MasrLab.Application.Common.DTOs;
+using MasrLab.Application.Features.AttendanceAndAudit.Commands.RecordBreak;
+using MasrLab.Application.Features.AttendanceAndAudit.Commands.RecordLogin;
+using MasrLab.Application.Features.AttendanceAndAudit.Commands.RecordLogout;
+using MasrLab.Application.Features.AttendanceAndAudit.Queries.GetAttendanceLogs;
+using MasrLab.Application.Features.AttendanceAndAudit.Queries.GetAuditLogs;
+using MasrLab.Application.Features.UsersAndPermissions.Commands.CreateUser;
+using MasrLab.Application.Features.UsersAndPermissions.Commands.SetPermissions;
+using MasrLab.Application.Features.UsersAndPermissions.Commands.UpdateUser;
+using MasrLab.Application.Features.UsersAndPermissions.Queries.CheckPermission;
+using MasrLab.Domain.Common.Enums;
+using MasrLab.Domain.Entities.Administrative;
+using MasrLab.Domain.Exceptions;
+using MasrLab.Domain.Interfaces;
+using Moq;
+
+namespace MasrLab.Application.Tests;
+
+public class UsersPermissionsAndAttendanceHandlersTests
+{
+    [Fact] public async Task CreateUser_persists_active_user() { var r = new Mock<IRepository<User>>(); User? saved = null; r.Setup(x => x.AddAsync(It.IsAny<User>(), It.IsAny<CancellationToken>())).Callback<User,CancellationToken>((u,_)=>saved=u); await new CreateUserCommandHandler(r.Object,new Mock<IUnitOfWork>().Object).Handle(new("mona","pw",true),default); Assert.NotNull(saved); Assert.True(saved!.IsActive); Assert.True(saved.IsAdmin); }
+    [Fact] public async Task CreateUser_propagates_save_failure() { var u = new Mock<IUnitOfWork>(); u.Setup(x=>x.SaveChangesAsync(It.IsAny<CancellationToken>())).ThrowsAsync(new InvalidOperationException("save")); await Assert.ThrowsAsync<InvalidOperationException>(()=>new CreateUserCommandHandler(new Mock<IRepository<User>>().Object,u.Object).Handle(new("m","p",false),default)); }
+
+    [Fact] public async Task UpdateUser_changes_existing_user() { var r=new Mock<IRepository<User>>(); var user=new User{Id=1}; r.Setup(x=>x.GetByIdAsync(1,It.IsAny<CancellationToken>())).ReturnsAsync(user); await new UpdateUserCommandHandler(r.Object,new Mock<IUnitOfWork>().Object).Handle(new(1,"new","pw",true,false),default); Assert.Equal("new",user.Username); Assert.False(user.IsActive); r.Verify(x=>x.Update(user),Times.Once); }
+    [Fact] public async Task UpdateUser_throws_when_missing() { var r=new Mock<IRepository<User>>(); r.Setup(x=>x.GetByIdAsync(1,It.IsAny<CancellationToken>())).ReturnsAsync((User?)null); await Assert.ThrowsAsync<EntityNotFoundException>(()=>new UpdateUserCommandHandler(r.Object,new Mock<IUnitOfWork>().Object).Handle(new(1,"n","p",false,true),default)); }
+
+    [Fact] public async Task SetPermissions_persists_allowed_permission() { var r=new Mock<IRepository<Permission>>(); Permission? p=null; r.Setup(x=>x.AddAsync(It.IsAny<Permission>(),It.IsAny<CancellationToken>())).Callback<Permission,CancellationToken>((v,_)=>p=v); await new SetPermissionsCommandHandler(r.Object,new Mock<IUnitOfWork>().Object).Handle(new(2,(int)default(ScreenType),(int)default(PermissionOperation),true),default); Assert.NotNull(p); Assert.True(p!.Allowed); Assert.Equal(2,p.UserId); }
+    [Fact] public async Task SetPermissions_propagates_save_failure() { var u=new Mock<IUnitOfWork>();u.Setup(x=>x.SaveChangesAsync(It.IsAny<CancellationToken>())).ThrowsAsync(new InvalidOperationException());await Assert.ThrowsAsync<InvalidOperationException>(()=>new SetPermissionsCommandHandler(new Mock<IRepository<Permission>>().Object,u.Object).Handle(new(1,0,0,true),default)); }
+
+    [Fact] public async Task CheckPermission_returns_allowed_value_for_valid_enums() { var r=new Mock<IPermissionRepository>(); r.Setup(x=>x.GetByUserScreenOperationAsync(1,default,default,It.IsAny<CancellationToken>())).ReturnsAsync(new Permission{Allowed=true}); var result=await new CheckPermissionQueryHandler(r.Object).Handle(new(1,0,0),default); Assert.True(result); }
+    [Fact] public async Task CheckPermission_returns_false_when_no_permission_exists() { var r=new Mock<IPermissionRepository>(); r.Setup(x=>x.GetByUserScreenOperationAsync(It.IsAny<int>(),It.IsAny<ScreenType>(),It.IsAny<PermissionOperation>(),It.IsAny<CancellationToken>())).ReturnsAsync((Permission?)null); Assert.False(await new CheckPermissionQueryHandler(r.Object).Handle(new(1,0,0),default)); }
+
+    [Fact] public async Task RecordLogin_creates_log_with_single_point_period() { var r=new Mock<IRepository<AttendanceLog>>(); AttendanceLog? log=null;r.Setup(x=>x.AddAsync(It.IsAny<AttendanceLog>(),It.IsAny<CancellationToken>())).Callback<AttendanceLog,CancellationToken>((v,_)=>log=v);var time=new DateTime(2026,1,1,8,0,0);await new RecordLoginCommandHandler(r.Object,new Mock<IUnitOfWork>().Object).Handle(new(3,time),default);Assert.NotNull(log);Assert.Equal(time,log!.WorkPeriod.Start);Assert.Equal(3,log.UserId); }
+    [Fact] public async Task RecordLogin_propagates_save_failure() { var u=new Mock<IUnitOfWork>();u.Setup(x=>x.SaveChangesAsync(It.IsAny<CancellationToken>())).ThrowsAsync(new InvalidOperationException());await Assert.ThrowsAsync<InvalidOperationException>(()=>new RecordLoginCommandHandler(new Mock<IRepository<AttendanceLog>>().Object,u.Object).Handle(new(1,DateTime.Today),default)); }
+
+    [Fact] public async Task RecordLogout_sets_end_and_overtime() { var r=new Mock<IRepository<AttendanceLog>>();var log=new AttendanceLog{Id=2,WorkPeriod=new(new DateTime(2026,1,1,8,0,0),new DateTime(2026,1,1,8,0,0))};r.Setup(x=>x.GetByIdAsync(2,It.IsAny<CancellationToken>())).ReturnsAsync(log);await new RecordLogoutCommandHandler(r.Object,new Mock<IUnitOfWork>().Object).Handle(new(1,2,new DateTime(2026,1,1,18,0,0)),default);Assert.Equal(new DateTime(2026,1,1,18,0,0),log.WorkPeriod.End);Assert.Equal(TimeSpan.FromHours(1),log.Overtime); }
+    [Fact] public async Task RecordLogout_throws_when_log_missing() { var r=new Mock<IRepository<AttendanceLog>>();r.Setup(x=>x.GetByIdAsync(2,It.IsAny<CancellationToken>())).ReturnsAsync((AttendanceLog?)null);await Assert.ThrowsAsync<EntityNotFoundException>(()=>new RecordLogoutCommandHandler(r.Object,new Mock<IUnitOfWork>().Object).Handle(new(1,2,DateTime.Today),default)); }
+
+    [Fact] public async Task RecordBreak_updates_existing_log() { var r=new Mock<IRepository<AttendanceLog>>();var log=new AttendanceLog{Id=2};r.Setup(x=>x.GetByIdAsync(2,It.IsAny<CancellationToken>())).ReturnsAsync(log);await new RecordBreakCommandHandler(r.Object,new Mock<IUnitOfWork>().Object).Handle(new(2,"12-13"),default);Assert.Equal("12-13",log.BreakPeriods);r.Verify(x=>x.Update(log),Times.Once); }
+    [Fact] public async Task RecordBreak_throws_when_log_missing() { var r=new Mock<IRepository<AttendanceLog>>();r.Setup(x=>x.GetByIdAsync(2,It.IsAny<CancellationToken>())).ReturnsAsync((AttendanceLog?)null);await Assert.ThrowsAsync<EntityNotFoundException>(()=>new RecordBreakCommandHandler(r.Object,new Mock<IUnitOfWork>().Object).Handle(new(2,"x"),default)); }
+
+    [Fact] public async Task GetAttendanceLogs_maps_repository_log() { var r=new Mock<IAttendanceLogRepository>();var m=new Mock<IMapper>();var log=new AttendanceLog{Id=1};r.Setup(x=>x.GetByUserAndPeriodAsync(2,It.IsAny<DateTime>(),It.IsAny<DateTime>(),It.IsAny<CancellationToken>())).ReturnsAsync(log);m.Setup(x=>x.Map<AttendanceDto>(log)).Returns(new AttendanceDto{Id=1,UserId=2});var result=await new GetAttendanceLogsQueryHandler(r.Object,m.Object).Handle(new(2,DateTime.Today,DateTime.Today),default);Assert.Equal(2,result.UserId); }
+    [Fact] public async Task GetAttendanceLogs_propagates_missing_log_mapping_failure() { var r=new Mock<IAttendanceLogRepository>();r.Setup(x=>x.GetByUserAndPeriodAsync(It.IsAny<int>(),It.IsAny<DateTime>(),It.IsAny<DateTime>(),It.IsAny<CancellationToken>())).ReturnsAsync((AttendanceLog?)null);var m=new Mock<IMapper>();m.Setup(x=>x.Map<AttendanceDto>(null!)).Throws(new InvalidOperationException("missing"));await Assert.ThrowsAsync<InvalidOperationException>(()=>new GetAttendanceLogsQueryHandler(r.Object,m.Object).Handle(new(2,DateTime.Today,DateTime.Today),default)); }
+
+    [Fact] public async Task GetAuditLogs_maps_entries_without_entity_filter() { var r=new Mock<IAuditLogRepository>();var m=new Mock<IMapper>();var log=new AuditLog{Id=1};r.Setup(x=>x.GetByPeriodAsync(It.IsAny<DateTime>(),It.IsAny<DateTime>(),null,It.IsAny<CancellationToken>())).ReturnsAsync(new List<AuditLog>{log});m.Setup(x=>x.Map<AuditLogDto>(log)).Returns(new AuditLogDto{Id=1});var result=await new GetAuditLogsQueryHandler(r.Object,m.Object).Handle(new(null,null,DateTime.Today,DateTime.Today),default);Assert.Single(result);Assert.Equal(1,result[0].Id); }
+    [Fact] public async Task GetAuditLogs_returns_empty_when_filter_matches_nothing() { var r=new Mock<IAuditLogRepository>();r.Setup(x=>x.GetByPeriodAsync(It.IsAny<DateTime>(),It.IsAny<DateTime>(),It.IsAny<int?>(),It.IsAny<CancellationToken>())).ReturnsAsync(new List<AuditLog>());var result=await new GetAuditLogsQueryHandler(r.Object,new Mock<IMapper>().Object).Handle(new(null,null,DateTime.Today,DateTime.Today),default);Assert.Empty(result); }
+}
