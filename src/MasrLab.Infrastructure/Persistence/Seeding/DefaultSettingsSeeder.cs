@@ -5,9 +5,9 @@ namespace MasrLab.Infrastructure.Persistence.Seeding;
 
 public static class DefaultSettingsSeeder
 {
-    public static async Task SeedAsync(MasrLabDbContext context)
+    public static async Task SeedAsync(MasrLabDbContext context, CancellationToken cancellationToken)
     {
-        if (await context.SystemSettings.AnyAsync())
+        if (await context.SystemSettings.AnyAsync(cancellationToken))
             return;
 
         var settings = new List<SystemSetting>
@@ -19,6 +19,6 @@ public static class DefaultSettingsSeeder
         };
 
         context.SystemSettings.AddRange(settings);
-        await context.SaveChangesAsync();
+        await context.SaveChangesAsync(cancellationToken);
     }
 }

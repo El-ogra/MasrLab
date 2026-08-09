@@ -5,9 +5,9 @@ namespace MasrLab.Infrastructure.Persistence.Seeding;
 
 public static class DefaultAdminSeeder
 {
-    public static async Task SeedAsync(MasrLabDbContext context)
+    public static async Task SeedAsync(MasrLabDbContext context, CancellationToken cancellationToken)
     {
-        if (await context.Users.AnyAsync())
+        if (await context.Users.AnyAsync(cancellationToken))
             return;
 
         var admin = new User
@@ -19,6 +19,6 @@ public static class DefaultAdminSeeder
         };
 
         context.Users.Add(admin);
-        await context.SaveChangesAsync();
+        await context.SaveChangesAsync(cancellationToken);
     }
 }

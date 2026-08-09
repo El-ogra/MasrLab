@@ -11,7 +11,8 @@ namespace MasrLab.Application.Features.PatientManagement.Commands.RegisterPatien
 
 public class RegisterPatientCommandHandler : IRequestHandler<RegisterPatientCommand, Unit>
 {
-    private const int MaxLabIdRetries = 3;
+    private const int MaxLabIdRetries = 5;
+    private const int RetryBaseDelayMilliseconds = 50;
 
     private readonly IPatientRepository _patientRepository;
     private readonly IUnitOfWork _unitOfWork;
@@ -62,6 +63,8 @@ public class RegisterPatientCommandHandler : IRequestHandler<RegisterPatientComm
             }
             catch (DuplicateLabIdException) when (attempt < MaxLabIdRetries - 1)
             {
+                var delayMilliseconds = (RetryBaseDelayMilliseconds * (1 << attempt)) + Random.Shared.Next(0, 31);
+                await Task.Delay(delayMilliseconds, cancellationToken);
                 patient.LabId = await _labIdGenerator.GenerateAsync(cancellationToken);
             }
         }

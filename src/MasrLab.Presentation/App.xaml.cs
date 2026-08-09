@@ -35,8 +35,8 @@ public partial class App : System.Windows.Application
         using var scope = _serviceProvider.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<MasrLabDbContext>();
         await context.Database.EnsureCreatedAsync();
-        await DefaultAdminSeeder.SeedAsync(context);
-        await DefaultSettingsSeeder.SeedAsync(context);
+        await DefaultAdminSeeder.SeedAsync(context, CancellationToken.None);
+        await DefaultSettingsSeeder.SeedAsync(context, CancellationToken.None);
 
         var mainWindow = _serviceProvider.GetRequiredService<MainWindow>();
         mainWindow.DataContext = _serviceProvider.GetRequiredService<MainViewModel>();

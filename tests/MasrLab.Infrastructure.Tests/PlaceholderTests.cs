@@ -24,7 +24,7 @@ public class GenericRepositoryTests
 
         var patient = new Patient { Name = "Test Patient", LabId = "LAB-001", DoctorId = 1, ReferralEntityId = 1 };
         await repo.AddAsync(patient);
-        await context.SaveChangesAsync();
+        await context.SaveChangesAsync(CancellationToken.None);
 
         var result = await repo.GetByIdAsync(patient.Id);
         Assert.NotNull(result);
@@ -39,9 +39,9 @@ public class GenericRepositoryTests
 
         await repo.AddAsync(new Patient { Name = "Patient 1", LabId = "L1", DoctorId = 1, ReferralEntityId = 1 });
         await repo.AddAsync(new Patient { Name = "Patient 2", LabId = "L2", DoctorId = 1, ReferralEntityId = 1 });
-        await context.SaveChangesAsync();
+        await context.SaveChangesAsync(CancellationToken.None);
 
-        var result = await repo.GetAllAsync();
+        var result = await repo.GetAllAsync(CancellationToken.None);
         Assert.Equal(2, result.Count);
     }
 
@@ -63,11 +63,11 @@ public class GenericRepositoryTests
 
         var patient = new Patient { Name = "Original", LabId = "L1", DoctorId = 1, ReferralEntityId = 1 };
         await repo.AddAsync(patient);
-        await context.SaveChangesAsync();
+        await context.SaveChangesAsync(CancellationToken.None);
 
         patient.Name = "Updated";
         repo.Update(patient);
-        await context.SaveChangesAsync();
+        await context.SaveChangesAsync(CancellationToken.None);
 
         var result = await repo.GetByIdAsync(patient.Id);
         Assert.Equal("Updated", result!.Name);
@@ -81,10 +81,10 @@ public class GenericRepositoryTests
 
         var patient = new Patient { Name = "To Delete", LabId = "L1", DoctorId = 1, ReferralEntityId = 1 };
         await repo.AddAsync(patient);
-        await context.SaveChangesAsync();
+        await context.SaveChangesAsync(CancellationToken.None);
 
         repo.Delete(patient);
-        await context.SaveChangesAsync();
+        await context.SaveChangesAsync(CancellationToken.None);
 
         var result = await repo.GetByIdAsync(patient.Id);
         Assert.Null(result);
@@ -134,7 +134,7 @@ public class PatientRepositoryTests
         await repo.AddAsync(new Patient { Name = "Ahmed Ali", LabId = "L1", DoctorId = 1, ReferralEntityId = 1 });
         await repo.AddAsync(new Patient { Name = "Sara Mohamed", LabId = "L2", DoctorId = 1, ReferralEntityId = 1 });
         await repo.AddAsync(new Patient { Name = "Ahmed Hassan", LabId = "L3", DoctorId = 1, ReferralEntityId = 1 });
-        await context.SaveChangesAsync();
+        await context.SaveChangesAsync(CancellationToken.None);
 
         var result = await repo.SearchByNameAsync("Ahmed");
         Assert.Equal(2, result.Count);
@@ -148,7 +148,7 @@ public class PatientRepositoryTests
 
         await repo.AddAsync(new Patient { Name = "Test", LabId = "LAB-001", DoctorId = 1, ReferralEntityId = 1 });
         await repo.AddAsync(new Patient { Name = "Test2", LabId = "LAB-002", DoctorId = 1, ReferralEntityId = 1 });
-        await context.SaveChangesAsync();
+        await context.SaveChangesAsync(CancellationToken.None);
 
         var result = await repo.GetByLabIdAsync("LAB-001");
         Assert.NotNull(result);
@@ -164,7 +164,7 @@ public class PatientRepositoryTests
         await repo.AddAsync(new Patient { Name = "P1", LabId = "L1", DoctorId = 1, ReferralEntityId = 1 });
         await repo.AddAsync(new Patient { Name = "P2", LabId = "L2", DoctorId = 2, ReferralEntityId = 1 });
         await repo.AddAsync(new Patient { Name = "P3", LabId = "L3", DoctorId = 1, ReferralEntityId = 1 });
-        await context.SaveChangesAsync();
+        await context.SaveChangesAsync(CancellationToken.None);
 
         var result = await repo.GetByDoctorIdAsync(1);
         Assert.Equal(2, result.Count);
