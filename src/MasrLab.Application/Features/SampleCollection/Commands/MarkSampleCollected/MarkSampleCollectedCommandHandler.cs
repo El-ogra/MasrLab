@@ -1,5 +1,6 @@
 using MediatR;
 using MasrLab.Domain.Entities.Core;
+using MasrLab.Domain.Exceptions;
 using MasrLab.Domain.Interfaces;
 
 namespace MasrLab.Application.Features.SampleCollection.Commands.MarkSampleCollected;
@@ -18,7 +19,7 @@ public class MarkSampleCollectedCommandHandler : IRequestHandler<MarkSampleColle
     public async Task<Unit> Handle(MarkSampleCollectedCommand request, CancellationToken cancellationToken)
     {
         var sample = await _sampleRepository.GetByIdAsync(request.SampleId, cancellationToken)
-            ?? throw new Exception($"Sample with ID {request.SampleId} not found.");
+            ?? throw new EntityNotFoundException(nameof(Sample), request.SampleId);
 
         if (request.IsCollected)
         {

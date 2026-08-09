@@ -33,7 +33,7 @@ public class AddTestToVisitCommandHandler : IRequestHandler<AddTestToVisitComman
         // 1. Load the tracked visit
         var visit = await _visitRepository.GetByIdAsync(request.PatientVisitId, cancellationToken);
         if (visit is null)
-            throw new InvalidOperationException($"PatientVisit with Id {request.PatientVisitId} not found.");
+            throw new EntityNotFoundException(nameof(PatientVisit), request.PatientVisitId);
 
         // 2. Resolve the price list
         var priceListId = await ResolvePriceListIdAsync(request.PriceListId, cancellationToken);

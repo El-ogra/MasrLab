@@ -36,7 +36,7 @@ public class CreatePatientVisitCommandHandler : IRequestHandler<CreatePatientVis
     {
         var patient = await _patientRepository.GetByIdAsync(request.PatientId, cancellationToken);
         if (patient is null)
-            throw new InvalidOperationException($"Patient with Id {request.PatientId} not found.");
+            throw new EntityNotFoundException(nameof(Patient), request.PatientId);
 
         var doctorId = request.DoctorId ?? patient.DoctorId;
         var labId = await _visitLabIdGenerator.GenerateAsync(cancellationToken);

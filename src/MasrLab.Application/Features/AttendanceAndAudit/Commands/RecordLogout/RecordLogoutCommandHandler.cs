@@ -1,5 +1,6 @@
 using MediatR;
 using MasrLab.Domain.Entities.Administrative;
+using MasrLab.Domain.Exceptions;
 using MasrLab.Domain.Interfaces;
 using MasrLab.Domain.ValueObjects;
 
@@ -20,7 +21,7 @@ public class RecordLogoutCommandHandler : IRequestHandler<RecordLogoutCommand, U
     {
         var attendanceLog = await _repository.GetByIdAsync(request.AttendanceLogId, cancellationToken);
         if (attendanceLog is null)
-            throw new InvalidOperationException($"AttendanceLog with Id {request.AttendanceLogId} not found.");
+            throw new EntityNotFoundException(nameof(AttendanceLog), request.AttendanceLogId);
 
         attendanceLog.WorkPeriod = new DateRange(attendanceLog.WorkPeriod.Start, request.LogoutTime);
 

@@ -142,13 +142,13 @@ public class AddTestToVisitCommandHandlerTests
     }
 
     [Fact]
-    public async Task Handle_WhenVisitNotFound_ThrowsInvalidOperationException()
+    public async Task Handle_WhenVisitNotFound_ThrowsEntityNotFoundException()
     {
         _visitRepository
             .Setup(r => r.GetByIdAsync(99, It.IsAny<CancellationToken>()))
             .ReturnsAsync((PatientVisit?)null);
 
-        await Assert.ThrowsAsync<InvalidOperationException>(
+        await Assert.ThrowsAsync<EntityNotFoundException>(
             () => CreateHandler().Handle(
                 new AddTestToVisitCommand(99, new[] { 5 }, 10, false),
                 CancellationToken.None));

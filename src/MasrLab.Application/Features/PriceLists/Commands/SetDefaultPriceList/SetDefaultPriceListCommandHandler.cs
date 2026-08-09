@@ -1,5 +1,6 @@
 using MediatR;
 using MasrLab.Domain.Entities.Settings;
+using MasrLab.Domain.Exceptions;
 using MasrLab.Domain.Interfaces;
 
 namespace MasrLab.Application.Features.PriceLists.Commands.SetDefaultPriceList;
@@ -24,8 +25,7 @@ public class SetDefaultPriceListCommandHandler : IRequestHandler<SetDefaultPrice
     {
         var priceList = await _repository.GetByIdAsync(request.PriceListId, cancellationToken);
         if (priceList is null)
-            throw new InvalidOperationException(
-                $"PriceList with Id {request.PriceListId} not found.");
+            throw new EntityNotFoundException(nameof(PriceList), request.PriceListId);
 
         // Clear the current default if it's a different list
         var currentDefault = await _priceListRepository.GetDefaultAsync(cancellationToken);

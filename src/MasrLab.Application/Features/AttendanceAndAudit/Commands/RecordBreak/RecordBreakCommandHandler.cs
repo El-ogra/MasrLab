@@ -1,5 +1,6 @@
 using MediatR;
 using MasrLab.Domain.Entities.Administrative;
+using MasrLab.Domain.Exceptions;
 using MasrLab.Domain.Interfaces;
 
 namespace MasrLab.Application.Features.AttendanceAndAudit.Commands.RecordBreak;
@@ -19,7 +20,7 @@ public class RecordBreakCommandHandler : IRequestHandler<RecordBreakCommand, Uni
     {
         var attendanceLog = await _repository.GetByIdAsync(request.AttendanceLogId, cancellationToken);
         if (attendanceLog is null)
-            throw new InvalidOperationException($"AttendanceLog with Id {request.AttendanceLogId} not found.");
+            throw new EntityNotFoundException(nameof(AttendanceLog), request.AttendanceLogId);
 
         attendanceLog.BreakPeriods = request.BreakPeriod;
 

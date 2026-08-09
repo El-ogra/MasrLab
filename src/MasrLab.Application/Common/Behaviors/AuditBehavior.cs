@@ -72,7 +72,7 @@ public class AuditBehavior<TRequest, TResponse> : IPipelineBehavior<TRequest, TR
         catch (Exception ex)
         {
             // Audit persistence failure must not abort the request.
-            _logger.LogWarning(ex, "Failed to persist audit entry for request {RequestName}.", requestName);
+            _logger.LogError(ex, "Failed to persist audit entry for request {RequestName}.", requestName);
         }
     }
 }

@@ -1,5 +1,6 @@
 using MasrLab.Application.Features.PriceLists.Commands.SetDefaultPriceList;
 using MasrLab.Domain.Entities.Settings;
+using MasrLab.Domain.Exceptions;
 using MasrLab.Domain.Interfaces;
 using Moq;
 
@@ -45,13 +46,13 @@ public class SetDefaultPriceListCommandHandlerTests
     }
 
     [Fact]
-    public async Task Handle_WhenListNotFound_ThrowsInvalidOperationException()
+    public async Task Handle_WhenListNotFound_ThrowsEntityNotFoundException()
     {
         _repository
             .Setup(r => r.GetByIdAsync(99, It.IsAny<CancellationToken>()))
             .ReturnsAsync((PriceList?)null);
 
-        await Assert.ThrowsAsync<InvalidOperationException>(
+        await Assert.ThrowsAsync<EntityNotFoundException>(
             () => CreateHandler().Handle(
                 new SetDefaultPriceListCommand(99), CancellationToken.None));
     }

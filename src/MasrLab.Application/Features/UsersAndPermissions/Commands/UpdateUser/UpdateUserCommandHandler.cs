@@ -1,5 +1,6 @@
 using MediatR;
 using MasrLab.Domain.Entities.Administrative;
+using MasrLab.Domain.Exceptions;
 using MasrLab.Domain.Interfaces;
 
 namespace MasrLab.Application.Features.UsersAndPermissions.Commands.UpdateUser;
@@ -18,7 +19,7 @@ public class UpdateUserCommandHandler : IRequestHandler<UpdateUserCommand, Unit>
     public async Task<Unit> Handle(UpdateUserCommand request, CancellationToken cancellationToken)
     {
         var user = await _userRepository.GetByIdAsync(request.Id, cancellationToken)
-            ?? throw new Exception($"User with ID {request.Id} not found.");
+            ?? throw new EntityNotFoundException(nameof(User), request.Id);
 
         user.Username = request.Username;
         user.Password = request.Password;

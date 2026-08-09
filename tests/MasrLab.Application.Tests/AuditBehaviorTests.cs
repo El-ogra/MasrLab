@@ -97,7 +97,7 @@ public class AuditBehaviorTests
     }
 
     [Fact]
-    public async Task Handle_WhenAuditPersistenceFails_DoesNotAbortRequestAndLogsWarning()
+    public async Task Handle_WhenAuditPersistenceFails_DoesNotAbortRequestAndLogsError()
     {
         _unitOfWork
             .Setup(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()))
@@ -117,11 +117,19 @@ public class AuditBehaviorTests
         Assert.Equal(Unit.Value, result);
         _logger.Verify(
             x => x.Log(
-                LogLevel.Warning,
+                LogLevel.Error,
                 It.IsAny<EventId>(),
                 It.Is<It.IsAnyType>((state, _) => state.ToString()!.Contains("EnterTestResultCommand")),
                 It.Is<Exception>(ex => ex.Message == "db down"),
                 It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
             Times.Once);
+        _logger.Verify(
+            x => x.Log(
+                LogLevel.Warning,
+                It.IsAny<EventId>(),
+                It.IsAny<It.IsAnyType>(),
+                It.IsAny<Exception>(),
+                It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+            Times.Never);
     }
 }

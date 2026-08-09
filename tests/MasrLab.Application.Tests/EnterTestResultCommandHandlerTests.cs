@@ -174,7 +174,7 @@ public class EnterTestResultCommandHandlerTests
             .Setup(s => s.IsSampleCollectedAsync(10, 20, It.IsAny<CancellationToken>()))
             .ReturnsAsync(true);
 
-        await Assert.ThrowsAsync<InvalidOperationException>(
+        await Assert.ThrowsAsync<EntityNotFoundException>(
             () => CreateHandler().Handle(CreateCommand(), CancellationToken.None));
 
         _resultValidationService.Verify(

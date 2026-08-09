@@ -15,4 +15,9 @@ public class EntityNotFoundException : Exception
         : base(message, innerException)
     {
     }
+
+    public EntityNotFoundException(string entityName, object id)
+        : base($"Entity \"{entityName}\" ({id}) was not found.")
+    {
+    }
 }

@@ -1,5 +1,6 @@
 using MediatR;
 using MasrLab.Domain.Entities.Core;
+using MasrLab.Domain.Exceptions;
 using MasrLab.Domain.Interfaces;
 
 namespace MasrLab.Application.Features.TestGroups.Commands.ManageTestGroups;
@@ -25,7 +26,7 @@ public class ManageTestGroupsCommandHandler : IRequestHandler<ManageTestGroupsCo
         if (request.Id.HasValue)
         {
             var existingGroup = await _testGroupRepository.GetByIdAsync(request.Id.Value, cancellationToken)
-                ?? throw new Exception($"Test group with ID {request.Id.Value} not found.");
+                ?? throw new EntityNotFoundException(nameof(TestGroup), request.Id.Value);
 
             existingGroup.GroupName = request.GroupName;
             existingGroup.GroupPrice = request.GroupPrice;

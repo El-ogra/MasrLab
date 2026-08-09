@@ -178,13 +178,13 @@ public class IssueReceiptCommandHandlerTests
     }
 
     [Fact]
-    public async Task Handle_WhenVisitNotFound_ThrowsInvalidOperationException()
+    public async Task Handle_WhenVisitNotFound_ThrowsEntityNotFoundException()
     {
         _visitRepository
             .Setup(r => r.GetByIdWithTestsAsync(99, It.IsAny<CancellationToken>()))
             .ReturnsAsync((PatientVisit?)null);
 
-        await Assert.ThrowsAsync<InvalidOperationException>(
+        await Assert.ThrowsAsync<EntityNotFoundException>(
             () => CreateHandler().Handle(
                 new IssueReceiptCommand(99, 0m, 0m, 1, null),
                 CancellationToken.None));

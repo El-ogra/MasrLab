@@ -1,5 +1,6 @@
 using MediatR;
 using MasrLab.Domain.Entities.Culture;
+using MasrLab.Domain.Exceptions;
 using MasrLab.Domain.Interfaces;
 
 namespace MasrLab.Application.Features.Cultures.Commands.EnterCultureResult;
@@ -19,7 +20,7 @@ public class EnterCultureResultCommandHandler : IRequestHandler<EnterCultureResu
     {
         var culture = await _cultureRepository.GetWithSensitivitiesAsync(request.CultureId, cancellationToken);
         if (culture is null)
-            throw new InvalidOperationException($"Culture with Id {request.CultureId} not found.");
+            throw new EntityNotFoundException(nameof(Culture), request.CultureId);
 
         culture.Record(
             request.ColonyCount,

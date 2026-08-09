@@ -1,5 +1,6 @@
 using MasrLab.Application.Features.PatientManagement.Commands.UpdatePatientData;
 using MasrLab.Domain.Entities.Core;
+using MasrLab.Domain.Exceptions;
 using MasrLab.Domain.Interfaces;
 using MasrLab.Domain.ValueObjects;
 using MediatR;
@@ -21,7 +22,7 @@ public class UpdatePatientDataCommandHandler : IRequestHandler<UpdatePatientData
     {
         var patient = await _patientRepository.GetByIdAsync(request.Id, cancellationToken);
         if (patient is null)
-            throw new InvalidOperationException($"Patient with Id {request.Id} not found.");
+            throw new EntityNotFoundException(nameof(Patient), request.Id);
 
         patient.UpdateProfile(request.Name, request.Address, request.Notes, request.NationalId);
 

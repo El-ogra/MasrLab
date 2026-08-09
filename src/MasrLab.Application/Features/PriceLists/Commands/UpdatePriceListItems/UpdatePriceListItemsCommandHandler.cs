@@ -1,5 +1,6 @@
 using MediatR;
 using MasrLab.Domain.Entities.Settings;
+using MasrLab.Domain.Exceptions;
 using MasrLab.Domain.Interfaces;
 
 namespace MasrLab.Application.Features.PriceLists.Commands.UpdatePriceListItems;
@@ -24,7 +25,7 @@ public class UpdatePriceListItemsCommandHandler : IRequestHandler<UpdatePriceLis
     {
         var priceList = await _priceListRepository.GetByIdAsync(request.PriceListId, cancellationToken);
         if (priceList is null)
-            throw new InvalidOperationException($"PriceList with Id {request.PriceListId} not found.");
+            throw new EntityNotFoundException(nameof(PriceList), request.PriceListId);
 
         if (priceList.PriceListItems?.Any() == true)
         {

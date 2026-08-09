@@ -4,15 +4,10 @@ using MasrLab.Domain.Services;
 namespace MasrLab.Application.Services;
 
 /// <summary>
-/// حسابات أسعار الزيارة — يعتمد على IPriceListResolverService لحساب الأسعار.
+/// حسابات أسعار الزيارة من لقطات الأسعار المحفوظة على VisitTest.
 /// </summary>
 public class PricingService : IPricingService
 {
-    private readonly IPriceListResolverService _priceResolver;
-
-    public PricingService(IPriceListResolverService priceResolver)
-        => _priceResolver = priceResolver ?? throw new ArgumentNullException(nameof(priceResolver));
-
     /// <summary>
     /// يحسب المجموع الفرعي لجميع اختبارات الزيارة.
     /// INV: يقرأ فقط من VisitTest.Price (محفوظ كـ snapshot عند إضافة الاختبار).

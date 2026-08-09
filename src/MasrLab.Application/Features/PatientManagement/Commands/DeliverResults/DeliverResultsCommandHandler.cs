@@ -1,5 +1,7 @@
 using MasrLab.Application.Features.PatientManagement.Commands.DeliverResults;
 using MasrLab.Domain.Interfaces;
+using MasrLab.Domain.Entities.Core;
+using MasrLab.Domain.Exceptions;
 using MediatR;
 
 namespace MasrLab.Application.Features.PatientManagement.Commands.DeliverResults;
@@ -19,7 +21,7 @@ public class DeliverResultsCommandHandler : IRequestHandler<DeliverResultsComman
     {
         var visit = await _visitRepository.GetByIdAsync(request.PatientVisitId, cancellationToken);
         if (visit is null)
-            throw new InvalidOperationException($"PatientVisit with Id {request.PatientVisitId} not found.");
+            throw new EntityNotFoundException(nameof(PatientVisit), request.PatientVisitId);
 
         visit.MarkAsPrinted();
 

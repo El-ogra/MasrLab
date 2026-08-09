@@ -76,7 +76,7 @@ public class CreatePatientVisitCommandHandlerTests
     }
 
     [Fact]
-    public async Task Handle_WhenPatientNotFound_ThrowsInvalidOperationException()
+    public async Task Handle_WhenPatientNotFound_ThrowsEntityNotFoundException()
     {
         _patientRepository
             .Setup(r => r.GetByIdAsync(99, It.IsAny<CancellationToken>()))
@@ -84,7 +84,7 @@ public class CreatePatientVisitCommandHandlerTests
         SetupCurrentUser();
         SetupLabIdGenerator();
 
-        await Assert.ThrowsAsync<InvalidOperationException>(
+        await Assert.ThrowsAsync<EntityNotFoundException>(
             () => CreateHandler().Handle(
                 new CreatePatientVisitCommand(99, null, null),
                 CancellationToken.None));

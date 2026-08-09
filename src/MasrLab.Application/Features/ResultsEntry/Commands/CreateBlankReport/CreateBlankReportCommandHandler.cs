@@ -1,4 +1,6 @@
 using MediatR;
+using MasrLab.Domain.Entities.Core;
+using MasrLab.Domain.Exceptions;
 using MasrLab.Domain.Interfaces;
 
 namespace MasrLab.Application.Features.ResultsEntry.Commands.CreateBlankReport;
@@ -17,7 +19,7 @@ public class CreateBlankReportCommandHandler : IRequestHandler<CreateBlankReport
     public async Task<Unit> Handle(CreateBlankReportCommand request, CancellationToken cancellationToken)
     {
         var visit = await _visitRepository.GetByIdAsync(request.PatientVisitId, cancellationToken)
-            ?? throw new Exception($"Patient visit with ID {request.PatientVisitId} not found.");
+            ?? throw new EntityNotFoundException(nameof(PatientVisit), request.PatientVisitId);
 
         visit.IssueReceipt();
         await _unitOfWork.SaveChangesAsync(cancellationToken);

@@ -39,8 +39,7 @@ public class IssueReceiptCommandHandler : IRequestHandler<IssueReceiptCommand, i
         // 1. Load the tracked visit with its tests
         var visit = await _visitRepository.GetByIdWithTestsAsync(request.PatientVisitId, cancellationToken);
         if (visit is null)
-            throw new InvalidOperationException(
-                $"PatientVisit with Id {request.PatientVisitId} not found.");
+            throw new EntityNotFoundException(nameof(PatientVisit), request.PatientVisitId);
 
         // 2. Prevent double open receipt
         var existingOpenReceipt = await _visitRepository.GetOpenReceiptAsync(

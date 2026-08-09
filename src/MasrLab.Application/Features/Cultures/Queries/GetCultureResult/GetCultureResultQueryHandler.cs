@@ -2,6 +2,8 @@ using AutoMapper;
 using MediatR;
 using MasrLab.Application.Common.DTOs;
 using MasrLab.Domain.Interfaces;
+using MasrLab.Domain.Entities.Culture;
+using MasrLab.Domain.Exceptions;
 
 namespace MasrLab.Application.Features.Cultures.Queries.GetCultureResult;
 
@@ -20,7 +22,7 @@ public class GetCultureResultQueryHandler : IRequestHandler<GetCultureResultQuer
     {
         var culture = await _cultureRepository.GetWithSensitivitiesAsync(request.CultureId, cancellationToken);
         if (culture is null)
-            throw new InvalidOperationException($"Culture with Id {request.CultureId} not found.");
+            throw new EntityNotFoundException(nameof(Culture), request.CultureId);
 
         return _mapper.Map<CultureResultDto>(culture);
     }

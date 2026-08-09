@@ -1,5 +1,6 @@
 using MasrLab.Application.Features.TestsMasterData.Commands.UpdateTest;
 using MasrLab.Domain.Entities.Core;
+using MasrLab.Domain.Exceptions;
 using MasrLab.Domain.Interfaces;
 using MediatR;
 
@@ -20,7 +21,7 @@ public class UpdateTestCommandHandler : IRequestHandler<UpdateTestCommand, Unit>
     {
         var test = await _testRepository.GetByIdAsync(request.Id, cancellationToken);
         if (test is null)
-            throw new InvalidOperationException($"Test with Id {request.Id} not found.");
+            throw new EntityNotFoundException(nameof(Test), request.Id);
 
         test.Name = request.Name;
         test.ReportName = request.ReportName;

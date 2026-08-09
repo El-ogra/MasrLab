@@ -38,10 +38,10 @@ public class EnterTestResultCommandHandler : IRequestHandler<EnterTestResultComm
     public async Task<Unit> Handle(EnterTestResultCommand request, CancellationToken cancellationToken)
     {
         var visitTest = await _visitRepository.GetVisitTestAsync(request.VisitTestId, cancellationToken)
-            ?? throw new InvalidOperationException($"VisitTest with Id {request.VisitTestId} not found.");
+            ?? throw new EntityNotFoundException(nameof(VisitTest), request.VisitTestId);
 
         var patient = await _patientRepository.GetByIdAsync(request.PatientId, cancellationToken)
-            ?? throw new InvalidOperationException($"Patient with Id {request.PatientId} not found.");
+            ?? throw new EntityNotFoundException(nameof(Patient), request.PatientId);
 
         var isSampleCollected = await _sampleTrackingService.IsSampleCollectedAsync(
             visitTest.PatientVisitId,

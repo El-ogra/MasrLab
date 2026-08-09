@@ -1,5 +1,6 @@
 using MediatR;
 using MasrLab.Domain.Entities.Financial;
+using MasrLab.Domain.Exceptions;
 using MasrLab.Domain.Common.Enums;
 using MasrLab.Domain.Interfaces;
 using MasrLab.Domain.Services;
@@ -29,7 +30,7 @@ public class RecordCashTransactionCommandHandler : IRequestHandler<RecordCashTra
     {
         var account = await _accountRepository.GetByIdAsync(request.EntityId, cancellationToken);
         if (account is null)
-            throw new InvalidOperationException($"Account with Id {request.EntityId} not found.");
+            throw new EntityNotFoundException(nameof(Account), request.EntityId);
 
         CashTransaction transaction;
 
