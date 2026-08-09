@@ -1,0 +1,69 @@
+using AutoMapper;
+using MasrLab.Application.Common.DTOs;
+using MasrLab.Application.Features.PatientManagement.Commands.DeliverResults;
+using MasrLab.Application.Features.ResultsEntry.Commands.CreateBlankReport;
+using MasrLab.Application.Features.ResultsEntry.Commands.CreateCombinedReport;
+using MasrLab.Application.Features.ResultsEntry.Queries.GetTestResultForVisit;
+using MasrLab.Application.Features.SampleCollection.Commands.MarkSampleCollected;
+using MasrLab.Application.Features.SampleCollection.Queries.GetPendingSamples;
+using MasrLab.Domain.Common.Enums;
+using MasrLab.Domain.Entities.Core;
+using MasrLab.Domain.Exceptions;
+using MasrLab.Domain.Interfaces;
+using Moq;
+
+namespace MasrLab.Application.Tests;
+
+public class ResultsAndSamplesHandlersTests
+{
+    private static PatientVisit VisitWithResults() { var visit = PatientVisit.Create(1, 1, "L-1", null, null); visit.AddTest(1, 10m, false); visit.EnterAllResults(); return visit; }
+    private static PatientVisit OpenVisit() => PatientVisit.Create(1, 1, "L-1", null, null);
+
+    [Fact]
+    public async Task DeliverResults_marks_results_entered_visit_as_printed_and_missing_visit_fails()
+    {
+        var repo = new Mock<IVisitRepository>(); var uow = new Mock<IUnitOfWork>(); var visit = VisitWithResults();
+        repo.Setup(x => x.GetByIdAsync(1, It.IsAny<CancellationToken>())).ReturnsAsync(visit);
+        var handler = new DeliverResultsCommandHandler(repo.Object, uow.Object);
+        await handler.Handle(new(1), default);
+        Assert.Equal(VisitStatus.Printed, visit.Status);
+        repo.Setup(x => x.GetByIdAsync(2, It.IsAny<CancellationToken>())).ReturnsAsync((PatientVisit?)null);
+        await Assert.ThrowsAsync<EntityNotFoundException>(() => handler.Handle(new(2), default));
+    }
+
+    [Fact]
+    public async Task Report_handlers_update_open_visit_and_reject_missing_visit()
+    {
+        var blankRepo = new Mock<IVisitRepository>(); var blankVisit = OpenVisit(); blankRepo.Setup(x => x.GetByIdAsync(1, It.IsAny<CancellationToken>())).ReturnsAsync(blankVisit);
+        await new CreateBlankReportCommandHandler(blankRepo.Object, new Mock<IUnitOfWork>().Object).Handle(new(1), default);
+        Assert.Equal(VisitStatus.ResultsEntered, blankVisit.Status);
+        var combinedRepo = new Mock<IVisitRepository>(); var combinedVisit = OpenVisit(); combinedVisit.AddTest(1, 10m, false); combinedRepo.Setup(x => x.GetByIdAsync(3, It.IsAny<CancellationToken>())).ReturnsAsync(combinedVisit);
+        await new CreateCombinedReportCommandHandler(combinedRepo.Object, new Mock<IUnitOfWork>().Object).Handle(new(3, "1"), default);
+        Assert.Equal(VisitStatus.ResultsEntered, combinedVisit.Status);
+        combinedRepo.Setup(x => x.GetByIdAsync(4, It.IsAny<CancellationToken>())).ReturnsAsync((PatientVisit?)null);
+        await Assert.ThrowsAsync<EntityNotFoundException>(() => new CreateCombinedReportCommandHandler(combinedRepo.Object, new Mock<IUnitOfWork>().Object).Handle(new(4, "1"), default));
+    }
+
+    [Fact]
+    public async Task MarkSampleCollected_changes_state_and_missing_sample_fails()
+    {
+        var repo = new Mock<IRepository<Sample>>(); var sample = Sample.Create(1, 2); repo.Setup(x => x.GetByIdAsync(1, It.IsAny<CancellationToken>())).ReturnsAsync(sample);
+        var handler = new MarkSampleCollectedCommandHandler(repo.Object, new Mock<IUnitOfWork>().Object);
+        await handler.Handle(new(1, 5, true), default);
+        Assert.Equal(SampleStatus.Collected, sample.CollectionStatus); Assert.Equal(5, sample.CollectedByUserId);
+        repo.Setup(x => x.GetByIdAsync(2, It.IsAny<CancellationToken>())).ReturnsAsync((Sample?)null);
+        await Assert.ThrowsAsync<EntityNotFoundException>(() => handler.Handle(new(2, 5, true), default));
+    }
+
+    [Fact]
+    public async Task Result_and_pending_sample_queries_map_results_and_support_empty_lists()
+    {
+        var results = new Mock<ITestResultRepository>(); var mapper = new Mock<IMapper>(); var domainResult = TestResult.Enter(7, "12", 1); mapper.Setup(x => x.Map<TestResultDto>(domainResult)).Returns(new TestResultDto { Value = "12" });
+        results.Setup(x => x.GetByVisitTestIdAsync(7, It.IsAny<CancellationToken>())).ReturnsAsync(new[] { domainResult });
+        var mapped = await new GetTestResultForVisitQueryHandler(results.Object, mapper.Object).Handle(new(7), default);
+        Assert.Single(mapped); Assert.Equal("12", mapped[0].Value);
+        var samples = new Mock<ISampleRepository>(); samples.Setup(x => x.GetPendingAsync(null, It.IsAny<CancellationToken>())).ReturnsAsync(Array.Empty<Sample>());
+        var pending = await new GetPendingSamplesQueryHandler(samples.Object, mapper.Object).Handle(new(null), default);
+        Assert.Empty(pending);
+    }
+}
