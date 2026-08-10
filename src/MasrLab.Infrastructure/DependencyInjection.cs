@@ -42,7 +42,7 @@ public static class DependencyInjection
         // Services
         services.AddScoped<IAuthenticationService, AuthenticationService>();
         services.AddScoped<IDateTimeService, DateTimeService>();
-        services.AddScoped<ICurrentUserService, CurrentUserService>();
+        services.AddSingleton<ICurrentUserService, CurrentUserService>();
         services.AddScoped<IPrintService, PrintService>();
         services.AddScoped<IBackupService, BackupService>();
         services.AddScoped<IBarcodeService, BarcodeService>();
