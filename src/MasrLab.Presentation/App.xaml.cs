@@ -3,6 +3,7 @@ using MasrLab.Infrastructure;
 using MasrLab.Infrastructure.Persistence;
 using MasrLab.Infrastructure.Persistence.Seeding;
 using MasrLab.Presentation.ViewModels;
+using MasrLab.Presentation.Views;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -42,8 +43,8 @@ public partial class App : System.Windows.Application
 
         if (isFirstRun)
         {
-            // TODO: FirstRunSetupWindow — المهمة 7
-            var firstRunWindow = new MainWindow();
+            var firstRunWindow = _serviceProvider.GetRequiredService<FirstRunSetupWindow>();
+            firstRunWindow.DataContext = _serviceProvider.GetRequiredService<FirstRunSetupViewModel>();
             if (firstRunWindow.ShowDialog() != true)
             {
                 Shutdown();
@@ -52,8 +53,8 @@ public partial class App : System.Windows.Application
         }
         else
         {
-            // TODO: LoginWindow — المهمة 6
-            var loginWindow = new MainWindow();
+            var loginWindow = _serviceProvider.GetRequiredService<LoginWindow>();
+            loginWindow.DataContext = _serviceProvider.GetRequiredService<LoginViewModel>();
             if (loginWindow.ShowDialog() != true)
             {
                 Shutdown();

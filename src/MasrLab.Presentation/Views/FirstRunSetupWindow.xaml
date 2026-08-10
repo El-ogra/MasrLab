@@ -1,0 +1,78 @@
+<Window x:Class="MasrLab.Presentation.Views.FirstRunSetupWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="clr-namespace:MasrLab.Presentation.ViewModels"
+        Title="MasrLab - الإعداد الأول للنظام" Height="450" Width="450"
+        WindowStartupLocation="CenterScreen"
+        ResizeMode="NoResize"
+        FlowDirection="RightToLeft"
+        Language="ar-EG">
+    <Window.DataContext>
+        <vm:FirstRunSetupViewModel/>
+    </Window.DataContext>
+    <Grid Margin="30">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="10"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="15"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="8"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="8"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="8"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="8"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="15"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <TextBlock Grid.Row="0" Text="الإعداد الأول للنظام" 
+                   FontSize="22" FontWeight="Bold" 
+                   HorizontalAlignment="Center"/>
+
+        <TextBlock Grid.Row="2" 
+                   Text="هذه الشاشة تظهر مرة واحدة فقط. يرجى إعداد حساب المسؤول واسم المختبر."
+                   TextWrapping="Wrap" Foreground="Gray"
+                   HorizontalAlignment="Center"/>
+
+        <TextBlock Grid.Row="4" Text="اسم المختبر:" 
+                   FontWeight="SemiBold" Margin="0,0,0,5"/>
+        <TextBox Grid.Row="5" 
+                 Text="{Binding LabName, UpdateSourceTrigger=PropertyChanged}"
+                 Padding="5" FontSize="14"/>
+
+        <TextBlock Grid.Row="6" Text="اسم المستخدم المسؤول:" 
+                   FontWeight="SemiBold" Margin="0,0,0,5"/>
+        <TextBox Grid.Row="7" 
+                 Text="{Binding AdminUsername, UpdateSourceTrigger=PropertyChanged}"
+                 Padding="5" FontSize="14"/>
+
+        <TextBlock Grid.Row="8" Text="كلمة المرور:" 
+                   FontWeight="SemiBold" Margin="0,0,0,5"/>
+        <PasswordBox Grid.Row="9" x:Name="PasswordBox"
+                     PasswordChanged="PasswordBox_PasswordChanged"
+                     Padding="5" FontSize="14"/>
+
+        <TextBlock Grid.Row="10" Text="تأكيد كلمة المرور:" 
+                   FontWeight="SemiBold" Margin="0,0,0,5"/>
+        <PasswordBox Grid.Row="11" x:Name="PasswordConfirmBox"
+                     PasswordChanged="PasswordConfirmBox_PasswordChanged"
+                     Padding="5" FontSize="14"/>
+
+        <TextBlock Grid.Row="14" 
+                   Text="{Binding ErrorMessage}" 
+                   Foreground="Red" 
+                   TextWrapping="Wrap"
+                   HorizontalAlignment="Center"/>
+
+        <Button Grid.Row="16" Content="حفظ والمتابعة"
+                Command="{Binding SaveCommand}"
+                Padding="10,8" FontSize="14" FontWeight="SemiBold"
+                HorizontalAlignment="Center" MinWidth="150"/>
+    </Grid>
+</Window>

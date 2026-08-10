@@ -34,6 +34,8 @@ public static class DependencyInjection
 
         services.AddTransient<LoginWindow>();
         services.AddTransient<LoginViewModel>();
+        services.AddTransient<FirstRunSetupWindow>();
+        services.AddTransient<FirstRunSetupViewModel>();
         services.AddTransient<AccountTypeDrawerViewModel>();
         services.AddTransient<DoctorReferralDrawerViewModel>();
         services.AddTransient<PeriodDrawerViewModel>();
