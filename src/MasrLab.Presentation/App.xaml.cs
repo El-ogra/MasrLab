@@ -2,6 +2,7 @@
 using MasrLab.Infrastructure;
 using MasrLab.Infrastructure.Persistence;
 using MasrLab.Infrastructure.Persistence.Seeding;
+using MasrLab.Infrastructure.Services;
 using MasrLab.Presentation.ViewModels;
 using MasrLab.Presentation.Views;
 using Microsoft.EntityFrameworkCore;
@@ -32,6 +33,21 @@ public partial class App : System.Windows.Application
         services.AddPresentation();
 
         _serviceProvider = services.BuildServiceProvider();
+
+        try
+        {
+            await _serviceProvider.GetRequiredService<IRestoreAccessModeRecovery>().EnsureMultiUserIfNeededAsync();
+        }
+        catch (Exception exception)
+        {
+            System.Windows.MessageBox.Show(
+                $"تعذر التحقق من حالة قاعدة البيانات قبل بدء التطبيق.{Environment.NewLine}{exception.Message}",
+                "MasrLab",
+                System.Windows.MessageBoxButton.OK,
+                System.Windows.MessageBoxImage.Error);
+            Shutdown();
+            return;
+        }
 
         using var scope = _serviceProvider.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<MasrLabDbContext>();

@@ -43,6 +43,8 @@ public static class DependencyInjection
         services.AddScoped<IAuthenticationService, AuthenticationService>();
         services.AddScoped<IDateTimeService, DateTimeService>();
         services.AddSingleton<ICurrentUserService, CurrentUserService>();
+        services.AddSingleton<ISqlServerBackupExecutor, SqlServerBackupExecutor>();
+        services.AddSingleton<IRestoreAccessModeRecovery, RestoreAccessModeRecovery>();
         services.AddSingleton<IPdfPrinter, WindowsPdfPrinter>();
         services.AddScoped<IPrintService, PrintService>();
         services.AddScoped<IBackupService, BackupService>();

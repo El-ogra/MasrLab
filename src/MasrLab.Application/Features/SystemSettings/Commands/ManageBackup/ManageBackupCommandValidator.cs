@@ -1,4 +1,5 @@
 using FluentValidation;
+using MasrLab.Application.Common.Models;
 
 namespace MasrLab.Application.Features.SystemSettings.Commands.ManageBackup;
 
@@ -6,10 +7,16 @@ public class ManageBackupCommandValidator : AbstractValidator<ManageBackupComman
 {
     public ManageBackupCommandValidator()
     {
-        RuleFor(x => x.BackupAction)
-            .NotEmpty();
+        RuleFor(x => x.Operation)
+            .IsInEnum();
 
         RuleFor(x => x.FilePath)
             .NotEmpty();
+
+        When(x => x.Operation == BackupOperation.Restore, () =>
+        {
+            RuleFor(x => x.RestoreConfirmation)
+                .Equal("RESTORE");
+        });
     }
 }

@@ -1,20 +1,25 @@
 using MediatR;
-using MasrLab.Domain.Interfaces;
+using MasrLab.Application.Common.Interfaces;
+using MasrLab.Application.Common.Models;
 
 namespace MasrLab.Application.Features.SystemSettings.Commands.ManageBackup;
 
 public class ManageBackupCommandHandler : IRequestHandler<ManageBackupCommand, Unit>
 {
-    private readonly IUnitOfWork _unitOfWork;
+    private readonly IBackupService _backupService;
 
-    public ManageBackupCommandHandler(IUnitOfWork unitOfWork)
+    public ManageBackupCommandHandler(IBackupService backupService)
     {
-        _unitOfWork = unitOfWork;
+        _backupService = backupService;
     }
 
     public async Task<Unit> Handle(ManageBackupCommand request, CancellationToken cancellationToken)
     {
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
+        if (request.Operation == BackupOperation.Backup)
+            await _backupService.BackupAsync(request.FilePath, cancellationToken);
+        else
+            await _backupService.RestoreAsync(request.FilePath, request.RestoreConfirmation!, cancellationToken);
+
         return Unit.Value;
     }
 }
