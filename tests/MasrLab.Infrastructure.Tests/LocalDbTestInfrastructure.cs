@@ -82,4 +82,75 @@ public static class LocalDbTestDatabase
         context.Database.EnsureCreated();
         return context;
     }
+
+    /// <summary>
+    /// Creates an isolated database through the master catalog and applies the production migrations.
+    /// Dispose the returned lease to remove the database, including any abandoned test connections.
+    /// </summary>
+    public static async Task<TemporaryLocalDbDatabase> CreateMigratedDatabaseAsync(
+        string prefix,
+        CancellationToken cancellationToken = default)
+    {
+        var databaseName = NewDatabaseName(prefix);
+        var database = new TemporaryLocalDbDatabase(databaseName);
+
+        try
+        {
+            await database.CreateAsync(cancellationToken);
+            await using var context = CreateContext(databaseName);
+            await context.Database.MigrateAsync(cancellationToken);
+            return database;
+        }
+        catch
+        {
+            await database.DisposeAsync();
+            throw;
+        }
+    }
+}
+
+/// <summary>Owns a disposable, migration-backed LocalDB database for one integration test.</summary>
+public sealed class TemporaryLocalDbDatabase : IAsyncDisposable
+{
+    private readonly string _quotedName;
+    private bool _disposed;
+
+    internal TemporaryLocalDbDatabase(string databaseName)
+    {
+        if (string.IsNullOrWhiteSpace(databaseName) || databaseName.Any(c => !char.IsLetterOrDigit(c) && c != '_'))
+            throw new ArgumentException("Database names may contain only letters, digits, and underscores.", nameof(databaseName));
+
+        DatabaseName = databaseName;
+        _quotedName = $"[{databaseName}]";
+    }
+
+    public string DatabaseName { get; }
+
+    public MasrLabDbContext CreateContext() => LocalDbTestDatabase.CreateContext(DatabaseName);
+
+    internal async Task CreateAsync(CancellationToken cancellationToken)
+    {
+        await using var connection = new SqlConnection(CreateMasterConnectionString());
+        await connection.OpenAsync(cancellationToken);
+        await using var command = new SqlCommand($"CREATE DATABASE {_quotedName};", connection);
+        await command.ExecuteNonQueryAsync(cancellationToken);
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_disposed)
+            return;
+
+        _disposed = true;
+        await using var connection = new SqlConnection(CreateMasterConnectionString());
+        await connection.OpenAsync();
+        await using var command = new SqlCommand(
+            $"IF DB_ID(N'{DatabaseName}') IS NOT NULL BEGIN " +
+            $"ALTER DATABASE {_quotedName} SET SINGLE_USER WITH ROLLBACK IMMEDIATE; " +
+            $"DROP DATABASE {_quotedName}; END;", connection);
+        await command.ExecuteNonQueryAsync();
+    }
+
+    private static string CreateMasterConnectionString() =>
+        $"Server={LocalDbAvailability.Server};Database=master;Trusted_Connection=True;TrustServerCertificate=True;Connect Timeout=15;";
 }

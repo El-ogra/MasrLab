@@ -19,7 +19,7 @@ public class UpdateAccountSettingsCommandHandler : IRequestHandler<UpdateAccount
     {
         var keys = new Dictionary<string, string>
         {
-            { "Account_LabName", request.LabName ?? string.Empty },
+            { "LabName", request.LabName ?? string.Empty },
             { "Account_Currency", request.Currency ?? string.Empty }
         };
 

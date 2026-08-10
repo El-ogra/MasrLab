@@ -34,7 +34,7 @@ public class PatientHistoryRepository : IPatientHistoryRepository
         return rows.Select(MapToEntry).ToList();
     }
 
-    private static PatientHistoryEntry MapToEntry(PatientHistoryView v) => new()
+    internal static PatientHistoryEntry MapToEntry(PatientHistoryView v) => new()
     {
         PatientId = v.PatientId,
         LabId = v.LabId,
@@ -51,8 +51,6 @@ public class PatientHistoryRepository : IPatientHistoryRepository
         CurrentReferenceRange = v.CurrentReferenceRange,
         CurrentStatus = v.CurrentStatus ?? string.Empty,
         CurrentVisitDate = v.CurrentVisitDate,
-        ComparisonFlag = v.CurrentValue != v.PreviousValue
-            || v.CurrentUnit != v.PreviousUnit
-            || v.CurrentReferenceRange != v.PreviousReferenceRange
+        ComparisonFlag = v.ComparisonFlag
     };
 }

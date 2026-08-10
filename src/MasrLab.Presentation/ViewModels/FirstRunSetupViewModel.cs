@@ -1,22 +1,17 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using MasrLab.Application.Features.UsersAndPermissions.Commands.CreateUser;
-using MasrLab.Domain.Entities.Settings;
-using MasrLab.Infrastructure.Persistence;
 using MediatR;
-using Microsoft.EntityFrameworkCore;
 
 namespace MasrLab.Presentation.ViewModels;
 
 public partial class FirstRunSetupViewModel : ObservableObject
 {
     private readonly IMediator _mediator;
-    private readonly MasrLabDbContext _context;
 
-    public FirstRunSetupViewModel(IMediator mediator, MasrLabDbContext context)
+    public FirstRunSetupViewModel(IMediator mediator)
     {
         _mediator = mediator;
-        _context = context;
     }
 
     [ObservableProperty]
@@ -27,9 +22,6 @@ public partial class FirstRunSetupViewModel : ObservableObject
 
     [ObservableProperty]
     private string _adminPasswordConfirm = string.Empty;
-
-    [ObservableProperty]
-    private string _labName = string.Empty;
 
     [ObservableProperty]
     private string _errorMessage = string.Empty;
@@ -58,22 +50,6 @@ public partial class FirstRunSetupViewModel : ObservableObject
         try
         {
             await _mediator.Send(new CreateUserCommand(AdminUsername, AdminPassword, IsAdmin: true));
-
-            if (!string.IsNullOrWhiteSpace(LabName))
-            {
-                var existingSetting = await _context.SystemSettings
-                    .FirstOrDefaultAsync(s => s.SettingKey == "LabName" && !s.IsDeleted);
-
-                if (existingSetting is null)
-                {
-                    _context.SystemSettings.Add(new SystemSetting
-                    {
-                        SettingKey = "LabName",
-                        SettingValue = LabName
-                    });
-                    await _context.SaveChangesAsync(CancellationToken.None);
-                }
-            }
 
             if (System.Windows.Application.Current.MainWindow is System.Windows.Window setupWindow)
             {
