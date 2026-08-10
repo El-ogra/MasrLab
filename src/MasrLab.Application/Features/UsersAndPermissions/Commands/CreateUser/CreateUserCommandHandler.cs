@@ -1,6 +1,7 @@
-using MediatR;
+using MasrLab.Application.Common.Interfaces;
 using MasrLab.Domain.Entities.Administrative;
 using MasrLab.Domain.Interfaces;
+using MediatR;
 
 namespace MasrLab.Application.Features.UsersAndPermissions.Commands.CreateUser;
 
@@ -8,11 +9,16 @@ public class CreateUserCommandHandler : IRequestHandler<CreateUserCommand, Unit>
 {
     private readonly IRepository<User> _userRepository;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IPasswordHasher _passwordHasher;
 
-    public CreateUserCommandHandler(IRepository<User> userRepository, IUnitOfWork unitOfWork)
+    public CreateUserCommandHandler(
+        IRepository<User> userRepository,
+        IUnitOfWork unitOfWork,
+        IPasswordHasher passwordHasher)
     {
         _userRepository = userRepository;
         _unitOfWork = unitOfWork;
+        _passwordHasher = passwordHasher;
     }
 
     public async Task<Unit> Handle(CreateUserCommand request, CancellationToken cancellationToken)
@@ -20,7 +26,7 @@ public class CreateUserCommandHandler : IRequestHandler<CreateUserCommand, Unit>
         var user = new User
         {
             Username = request.Username,
-            Password = request.Password,
+            Password = _passwordHasher.HashPassword(request.Password),
             IsAdmin = request.IsAdmin,
             IsActive = true
         };

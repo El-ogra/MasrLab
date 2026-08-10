@@ -1,16 +1,20 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using MasrLab.Application.Common.Interfaces;
+using MasrLab.Application.Features.AttendanceAndAudit.Commands.RecordLogin;
+using MediatR;
 
 namespace MasrLab.Presentation.ViewModels;
 
 public partial class LoginViewModel : ObservableObject
 {
     private readonly IAuthenticationService _authenticationService;
+    private readonly IMediator _mediator;
 
-    public LoginViewModel(IAuthenticationService authenticationService)
+    public LoginViewModel(IAuthenticationService authenticationService, IMediator mediator)
     {
         _authenticationService = authenticationService;
+        _mediator = mediator;
     }
 
     [ObservableProperty]
@@ -46,6 +50,8 @@ public partial class LoginViewModel : ObservableObject
                 ErrorMessage = "اسم المستخدم أو كلمة المرور غير صحيحة";
                 return;
             }
+
+            await _mediator.Send(new RecordLoginCommand(result.UserId, DateTime.UtcNow));
 
             if (System.Windows.Application.Current.MainWindow is System.Windows.Window loginWindow)
             {

@@ -5,6 +5,7 @@ using MasrLab.Application.Features.AttendanceAndAudit.Commands.RecordLogin;
 using MasrLab.Application.Features.AttendanceAndAudit.Commands.RecordLogout;
 using MasrLab.Application.Features.AttendanceAndAudit.Queries.GetAttendanceLogs;
 using MasrLab.Application.Features.AttendanceAndAudit.Queries.GetAuditLogs;
+using MasrLab.Application.Common.Interfaces;
 using MasrLab.Application.Features.UsersAndPermissions.Commands.CreateUser;
 using MasrLab.Application.Features.UsersAndPermissions.Commands.SetPermissions;
 using MasrLab.Application.Features.UsersAndPermissions.Commands.UpdateUser;
@@ -19,8 +20,8 @@ namespace MasrLab.Application.Tests;
 
 public class UsersPermissionsAndAttendanceHandlersTests
 {
-    [Fact] public async Task CreateUser_persists_active_user() { var r = new Mock<IRepository<User>>(); User? saved = null; r.Setup(x => x.AddAsync(It.IsAny<User>(), It.IsAny<CancellationToken>())).Callback<User,CancellationToken>((u,_)=>saved=u); await new CreateUserCommandHandler(r.Object,new Mock<IUnitOfWork>().Object).Handle(new("mona","pw",true),default); Assert.NotNull(saved); Assert.True(saved!.IsActive); Assert.True(saved.IsAdmin); }
-    [Fact] public async Task CreateUser_propagates_save_failure() { var u = new Mock<IUnitOfWork>(); u.Setup(x=>x.SaveChangesAsync(It.IsAny<CancellationToken>())).ThrowsAsync(new InvalidOperationException("save")); await Assert.ThrowsAsync<InvalidOperationException>(()=>new CreateUserCommandHandler(new Mock<IRepository<User>>().Object,u.Object).Handle(new("m","p",false),default)); }
+    [Fact] public async Task CreateUser_persists_active_user() { var r = new Mock<IRepository<User>>(); var h = new Mock<IPasswordHasher>(); User? saved = null; r.Setup(x => x.AddAsync(It.IsAny<User>(), It.IsAny<CancellationToken>())).Callback<User,CancellationToken>((u,_)=>saved=u); await new CreateUserCommandHandler(r.Object,new Mock<IUnitOfWork>().Object,h.Object).Handle(new("mona","pw",true),default); Assert.NotNull(saved); Assert.True(saved!.IsActive); Assert.True(saved.IsAdmin); }
+    [Fact] public async Task CreateUser_propagates_save_failure() { var u = new Mock<IUnitOfWork>(); var h = new Mock<IPasswordHasher>(); u.Setup(x=>x.SaveChangesAsync(It.IsAny<CancellationToken>())).ThrowsAsync(new InvalidOperationException("save")); await Assert.ThrowsAsync<InvalidOperationException>(()=>new CreateUserCommandHandler(new Mock<IRepository<User>>().Object,u.Object,h.Object).Handle(new("m","p",false),default)); }
 
     [Fact] public async Task UpdateUser_changes_existing_user() { var r=new Mock<IRepository<User>>(); var user=new User{Id=1}; r.Setup(x=>x.GetByIdAsync(1,It.IsAny<CancellationToken>())).ReturnsAsync(user); await new UpdateUserCommandHandler(r.Object,new Mock<IUnitOfWork>().Object).Handle(new(1,"new","pw",true,false),default); Assert.Equal("new",user.Username); Assert.False(user.IsActive); r.Verify(x=>x.Update(user),Times.Once); }
     [Fact] public async Task UpdateUser_throws_when_missing() { var r=new Mock<IRepository<User>>(); r.Setup(x=>x.GetByIdAsync(1,It.IsAny<CancellationToken>())).ReturnsAsync((User?)null); await Assert.ThrowsAsync<EntityNotFoundException>(()=>new UpdateUserCommandHandler(r.Object,new Mock<IUnitOfWork>().Object).Handle(new(1,"n","p",false,true),default)); }

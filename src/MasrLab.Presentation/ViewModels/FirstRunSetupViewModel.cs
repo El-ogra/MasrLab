@@ -1,18 +1,21 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using MasrLab.Domain.Entities.Administrative;
+using MasrLab.Application.Features.UsersAndPermissions.Commands.CreateUser;
 using MasrLab.Domain.Entities.Settings;
 using MasrLab.Infrastructure.Persistence;
+using MediatR;
 using Microsoft.EntityFrameworkCore;
 
 namespace MasrLab.Presentation.ViewModels;
 
 public partial class FirstRunSetupViewModel : ObservableObject
 {
+    private readonly IMediator _mediator;
     private readonly MasrLabDbContext _context;
 
-    public FirstRunSetupViewModel(MasrLabDbContext context)
+    public FirstRunSetupViewModel(IMediator mediator, MasrLabDbContext context)
     {
+        _mediator = mediator;
         _context = context;
     }
 
@@ -54,16 +57,7 @@ public partial class FirstRunSetupViewModel : ObservableObject
 
         try
         {
-            var hashedPassword = BCrypt.Net.BCrypt.HashPassword(AdminPassword);
-
-            var adminUser = new User
-            {
-                Username = AdminUsername,
-                Password = hashedPassword,
-                IsAdmin = true,
-                IsActive = true
-            };
-            _context.Users.Add(adminUser);
+            await _mediator.Send(new CreateUserCommand(AdminUsername, AdminPassword, IsAdmin: true));
 
             if (!string.IsNullOrWhiteSpace(LabName))
             {
@@ -77,10 +71,9 @@ public partial class FirstRunSetupViewModel : ObservableObject
                         SettingKey = "LabName",
                         SettingValue = LabName
                     });
+                    await _context.SaveChangesAsync(CancellationToken.None);
                 }
             }
-
-            await _context.SaveChangesAsync(CancellationToken.None);
 
             if (System.Windows.Application.Current.MainWindow is System.Windows.Window setupWindow)
             {
