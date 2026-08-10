@@ -54,6 +54,7 @@ public partial class App : System.Windows.Application
         await context.Database.MigrateAsync();
         await DefaultAdminSeeder.SeedAsync(context, CancellationToken.None);
         await DefaultSettingsSeeder.SeedAsync(context, CancellationToken.None);
+        await DefaultStatisticsSettingsSeeder.SeedAsync(context, CancellationToken.None);
 
         bool isFirstRun = await DefaultAdminSeeder.IsFirstRunAsync(context, CancellationToken.None);
 

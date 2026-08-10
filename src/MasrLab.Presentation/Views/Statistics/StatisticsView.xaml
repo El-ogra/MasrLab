@@ -2,5 +2,15 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              FlowDirection="RightToLeft">
-    <Grid/>
+    <Grid Margin="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Left">
+            <Button Content="تحميل الإعدادات" Command="{Binding LoadCommand}" Margin="4" />
+            <Button Content="حفظ" Command="{Binding SaveCommand}" Margin="4" />
+        </StackPanel>
+        <DataGrid Grid.Row="1" ItemsSource="{Binding Settings}" AutoGenerateColumns="True" IsReadOnly="False" />
+    </Grid>
 </UserControl>

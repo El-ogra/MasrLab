@@ -61,6 +61,7 @@ public class MasrLabDbContext : DbContext
     public DbSet<Printer> Printers => Set<Printer>();
     public DbSet<ReportTemplate> ReportTemplates => Set<ReportTemplate>();
     public DbSet<WorkSheet> WorkSheets => Set<WorkSheet>();
+    public DbSet<StatisticsSetting> StatisticsSettings => Set<StatisticsSetting>();
     public DbSet<CardSetting> CardSettings => Set<CardSetting>();
 
     // Views

@@ -1,4 +1,5 @@
 using MasrLab.Presentation.Navigation;
+using MasrLab.Presentation.Printing;
 using MasrLab.Presentation.ViewModels;
 using MasrLab.Presentation.ViewModels.Accounting;
 using MasrLab.Presentation.ViewModels.AttendanceAndAudit;
@@ -31,6 +32,7 @@ public static class DependencyInjection
         services.AddSingleton<NavigationStore>();
         services.AddSingleton<MainWindow>();
         services.AddSingleton<MainViewModel>();
+        services.AddTransient<EnvelopePrinter>();
 
         services.AddTransient<LoginWindow>();
         services.AddTransient<LoginViewModel>();

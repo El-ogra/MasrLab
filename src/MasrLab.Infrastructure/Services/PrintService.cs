@@ -1,8 +1,7 @@
 using MasrLab.Application.Common.Interfaces;
+using MasrLab.Application.Common.Printing;
 using MasrLab.Domain.Interfaces;
-using QuestPDF.Fluent;
-using QuestPDF.Helpers;
-using QuestPDF.Infrastructure;
+using MasrLab.Infrastructure.Printing;
 
 namespace MasrLab.Infrastructure.Services;
 
@@ -11,11 +10,13 @@ public class PrintService : IPrintService
     private const string DefaultPrinterSettingKey = "DefaultPrinter";
     private readonly ISystemSettingRepository _settingRepository;
     private readonly IPdfPrinter _pdfPrinter;
+    private readonly ReportDefinitionRegistry _reportDefinitions;
 
-    public PrintService(ISystemSettingRepository settingRepository, IPdfPrinter pdfPrinter)
+    public PrintService(ISystemSettingRepository settingRepository, IPdfPrinter pdfPrinter, ReportDefinitionRegistry reportDefinitions)
     {
         _settingRepository = settingRepository;
         _pdfPrinter = pdfPrinter;
+        _reportDefinitions = reportDefinitions;
     }
 
     public async Task PrintAsync(string reportName, object payload, string? printerName = null, CancellationToken ct = default)
@@ -42,23 +43,13 @@ public class PrintService : IPrintService
         ArgumentException.ThrowIfNullOrWhiteSpace(reportName);
         ct.ThrowIfCancellationRequested();
 
-        return Task.Run(() =>
-        {
-            ct.ThrowIfCancellationRequested();
-            QuestPDF.Settings.License = LicenseType.Community;
+        if (payload is not IPrintPayload printPayload)
+            throw new ArgumentException("A print payload must implement IPrintPayload.", nameof(payload));
 
-            return Document.Create(container =>
-            {
-                container.Page(page =>
-                {
-                    page.Margin(40);
-                    page.Size(PageSizes.A4);
-                    page.DefaultTextStyle(text => text.FontSize(12));
-                    page.Header().Text(reportName).SemiBold().FontSize(18);
-                    page.Content().PaddingVertical(20).Text(payload?.ToString() ?? string.Empty);
-                    page.Footer().AlignCenter().Text("MasrLab reference report");
-                });
-            }).GeneratePdf();
-        }, ct);
+        var definition = _reportDefinitions.Get(reportName);
+        if (!definition.PayloadType.IsInstanceOfType(printPayload))
+            throw new ArgumentException($"Report '{reportName}' requires a payload of type {definition.PayloadType.Name}.", nameof(payload));
+
+        return Task.Run(() => definition.Render(printPayload), ct);
     }
 }

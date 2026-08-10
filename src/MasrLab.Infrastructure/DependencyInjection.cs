@@ -1,8 +1,12 @@
 using MasrLab.Application.Common.Interfaces;
+using MasrLab.Application.Common.Printing;
 using MasrLab.Domain.Interfaces;
 using MasrLab.Infrastructure.Persistence;
 using MasrLab.Infrastructure.Persistence.Interceptors;
 using MasrLab.Infrastructure.Persistence.Repositories;
+using MasrLab.Infrastructure.Persistence.Readers;
+using MasrLab.Infrastructure.Printing;
+using MasrLab.Infrastructure.Printing.Reports;
 using MasrLab.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
@@ -48,6 +52,13 @@ public static class DependencyInjection
         services.AddSingleton<IRestoreAccessModeRecovery, RestoreAccessModeRecovery>();
         services.AddSingleton<IPdfPrinter, WindowsPdfPrinter>();
         services.AddScoped<IPrintService, PrintService>();
+        services.AddSingleton<IReportDefinition, ReceiptReport>();
+        services.AddSingleton<IReportDefinition, EnvelopeReport>();
+        services.AddSingleton<IReportDefinition, IndividualResultReport>();
+        services.AddSingleton<IReportDefinition, CombinedReport>();
+        services.AddSingleton<IReportDefinition, BlankReport>();
+        services.AddSingleton<IReportDefinition, CultureReport>();
+        services.AddSingleton<ReportDefinitionRegistry>();
         services.AddScoped<IBackupService, BackupService>();
         services.AddScoped<IBarcodeService, BarcodeService>();
         services.AddScoped<IPasswordHasher, BCryptPasswordHasher>();
@@ -60,6 +71,7 @@ public static class DependencyInjection
         services.AddScoped<ICultureRepository, CultureRepository>();
         services.AddScoped<IAccountingRepository, AccountingRepository>();
         services.AddScoped<IStatisticsRepository, StatisticsRepository>();
+        services.AddScoped<IStatisticsSettingsRepository, StatisticsSettingsRepository>();
         services.AddScoped<IAuditLogRepository, AuditLogRepository>();
         services.AddScoped<IRequestAuditLogRepository, RequestAuditLogRepository>();
         services.AddScoped<IPatientHistoryRepository, PatientHistoryRepository>();
@@ -73,6 +85,8 @@ public static class DependencyInjection
         services.AddScoped<ITestGroupItemRepository, TestGroupItemRepository>();
         services.AddScoped<IAntibioticRepository, AntibioticRepository>();
         services.AddScoped<IPriceListRepository, PriceListRepository>();
+        services.AddScoped<IReceiptPrintDataReader, ReceiptPrintDataReader>();
+        services.AddScoped<IEnvelopePrintDataReader, EnvelopePrintDataReader>();
 
         return services;
     }
