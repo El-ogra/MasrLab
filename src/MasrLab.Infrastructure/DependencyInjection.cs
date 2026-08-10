@@ -24,7 +24,8 @@ public static class DependencyInjection
         {
             var interceptors = provider.GetServices<SaveChangesInterceptor>();
             var optionsBuilder = new DbContextOptionsBuilder<MasrLabDbContext>();
-            optionsBuilder.UseSqlServer(configuration.GetConnectionString("DefaultConnection"));
+            var connectionString = ConnectionStringBuilder.GetProductionConnectionString(configuration);
+            optionsBuilder.UseSqlServer(connectionString);
             foreach (var interceptor in interceptors)
             {
                 optionsBuilder.AddInterceptors(interceptor);

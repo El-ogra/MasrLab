@@ -45,13 +45,13 @@ public partial class LoginViewModel : ObservableObject
         {
             var result = await _authenticationService.LoginAsync(Username, Password);
 
-            if (result.UserId == 0)
+            if (!result.IsSuccess)
             {
-                ErrorMessage = "اسم المستخدم أو كلمة المرور غير صحيحة";
+                ErrorMessage = result.FailureReason;
                 return;
             }
 
-            await _mediator.Send(new RecordLoginCommand(result.UserId, DateTime.UtcNow));
+            await _mediator.Send(new RecordLoginCommand(result.UserId!.Value, DateTime.UtcNow));
 
             if (System.Windows.Application.Current.MainWindow is System.Windows.Window loginWindow)
             {

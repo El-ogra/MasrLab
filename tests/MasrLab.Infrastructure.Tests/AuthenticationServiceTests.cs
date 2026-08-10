@@ -33,7 +33,9 @@ public class AuthenticationServiceTests
     private AuthenticationService CreateService(MasrLabDbContext context)
     {
         var currentUserService = new Mock<ICurrentUserService>();
-        return new AuthenticationService(context, currentUserService.Object);
+        var dateTimeService = new Mock<IDateTimeService>();
+        dateTimeService.Setup(x => x.Now).Returns(DateTime.UtcNow);
+        return new AuthenticationService(context, currentUserService.Object, dateTimeService.Object);
     }
 
     [Fact]
@@ -45,6 +47,7 @@ public class AuthenticationServiceTests
 
         var result = await service.LoginAsync("admin", ValidPassword);
 
+        Assert.True(result.IsSuccess);
         Assert.True(result.UserId > 0);
         Assert.Equal("admin", result.Username);
         Assert.Contains("Admin", result.Permissions);
@@ -59,8 +62,9 @@ public class AuthenticationServiceTests
 
         var result = await service.LoginAsync("admin", "WrongPassword123");
 
-        Assert.Equal(0, result.UserId);
-        Assert.Empty(result.Permissions);
+        Assert.False(result.IsSuccess);
+        Assert.Null(result.UserId);
+        Assert.NotEmpty(result.FailureReason);
     }
 
     [Fact]
@@ -72,8 +76,8 @@ public class AuthenticationServiceTests
 
         var result = await service.LoginAsync("nonexistent", ValidPassword);
 
-        Assert.Equal(0, result.UserId);
-        Assert.Empty(result.Permissions);
+        Assert.False(result.IsSuccess);
+        Assert.Null(result.UserId);
     }
 
     [Fact]
@@ -85,7 +89,8 @@ public class AuthenticationServiceTests
 
         var result = await service.LoginAsync("admin", ValidPassword);
 
-        Assert.Equal(0, result.UserId);
+        Assert.False(result.IsSuccess);
+        Assert.Null(result.UserId);
     }
 
     [Fact]
@@ -97,9 +102,26 @@ public class AuthenticationServiceTests
 
         var result = await service.LoginAsync("user", ValidPassword);
 
+        Assert.True(result.IsSuccess);
         Assert.True(result.UserId > 0);
         Assert.Contains("User", result.Permissions);
         Assert.DoesNotContain("Admin", result.Permissions);
+    }
+
+    [Fact]
+    public async Task LoginAsync_LocksOutAfterFiveFailedAttempts()
+    {
+        var hashedPassword = BCrypt.Net.BCrypt.HashPassword(ValidPassword);
+        using var context = CreateContextWithUser("admin", hashedPassword);
+        var service = CreateService(context);
+
+        for (int i = 0; i < 5; i++)
+            await service.LoginAsync("admin", "WrongPassword");
+
+        var result = await service.LoginAsync("admin", "WrongPassword");
+
+        Assert.False(result.IsSuccess);
+        Assert.Contains("مقفل", result.FailureReason);
     }
 
     [Fact]
@@ -108,7 +130,8 @@ public class AuthenticationServiceTests
         var hashedPassword = BCrypt.Net.BCrypt.HashPassword(ValidPassword);
         using var context = CreateContextWithUser("admin", hashedPassword);
         var currentUserService = new Mock<ICurrentUserService>();
-        var service = new AuthenticationService(context, currentUserService.Object);
+        var dateTimeService = new Mock<IDateTimeService>();
+        var service = new AuthenticationService(context, currentUserService.Object, dateTimeService.Object);
 
         await service.LogoutAsync(1);
 
