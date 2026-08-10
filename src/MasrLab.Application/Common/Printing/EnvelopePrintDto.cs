@@ -1,3 +1,5 @@
+using MasrLab.Application.Common.DTOs;
+
 namespace MasrLab.Application.Common.Printing;
 
 public sealed record EnvelopePrintDto : IPrintPayload
@@ -8,6 +10,7 @@ public sealed record EnvelopePrintDto : IPrintPayload
     public int VisitNumber { get; init; }
     public DateTime DeliveryDate { get; init; }
     public string DeliveryTicketNumber { get; init; } = string.Empty;
+    public EnvelopeBarcodeSettingsDto BarcodeSettings { get; init; } = new();
 }
 
 public sealed record ClinicalReportPrintDto : IPrintPayload

@@ -7,9 +7,9 @@ public class UpdateEnvelopeBarcodeSettingsCommandValidator : AbstractValidator<U
     public UpdateEnvelopeBarcodeSettingsCommandValidator()
     {
         RuleFor(x => x.BarcodeWidth)
-            .GreaterThan(0);
+            .InclusiveBetween(1, 600);
 
         RuleFor(x => x.BarcodeHeight)
-            .GreaterThan(0);
+            .InclusiveBetween(1, 180);
     }
 }

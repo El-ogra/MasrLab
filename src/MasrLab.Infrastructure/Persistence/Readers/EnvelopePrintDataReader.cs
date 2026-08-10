@@ -1,3 +1,4 @@
+using MasrLab.Application.Common.DTOs;
 using MasrLab.Application.Common.Printing;
 using Microsoft.EntityFrameworkCore;
 
@@ -12,10 +13,25 @@ public sealed class EnvelopePrintDataReader(MasrLabDbContext context) : IEnvelop
                           where visit.Id == patientVisitId
                           select new { patient.Name, PatientCode = patient.LabId, LaboratoryNumber = visit.LabId, visit.Id, visit.VisitDate })
             .SingleOrDefaultAsync(ct);
-        return data is null ? null : new EnvelopePrintDto
+        if (data is null)
+            return null;
+
+        var settingValues = await context.SystemSettings.AsNoTracking()
+            .Where(setting => setting.SettingKey == "Envelope_UseBarcode"
+                           || setting.SettingKey == "Envelope_BarcodeWidth"
+                           || setting.SettingKey == "Envelope_BarcodeHeight")
+            .ToDictionaryAsync(setting => setting.SettingKey, setting => setting.SettingValue, ct);
+
+        return new EnvelopePrintDto
         {
             PatientName = data.Name, PatientCode = data.PatientCode, LaboratoryNumber = data.LaboratoryNumber,
-            VisitNumber = data.Id, DeliveryDate = data.VisitDate, DeliveryTicketNumber = $"DLV-{data.Id:D6}"
+            VisitNumber = data.Id, DeliveryDate = data.VisitDate, DeliveryTicketNumber = $"DLV-{data.Id:D6}",
+            BarcodeSettings = new EnvelopeBarcodeSettingsDto
+            {
+                UseBarcode = settingValues.TryGetValue("Envelope_UseBarcode", out var enabled) && bool.TryParse(enabled, out var useBarcode) && useBarcode,
+                BarcodeWidth = GetIntInRangeOrDefault(settingValues, "Envelope_BarcodeWidth", 1, 600, 300),
+                BarcodeHeight = GetIntInRangeOrDefault(settingValues, "Envelope_BarcodeHeight", 1, 180, 100)
+            }
         };
     }
 
@@ -41,4 +57,7 @@ public sealed class EnvelopePrintDataReader(MasrLabDbContext context) : IEnvelop
         return new ClinicalReportPrintDto { PatientName = visit.Name, LaboratoryNumber = visit.LabId, VisitDate = visit.VisitDate,
             Results = results, CultureSummary = string.Join(", ", organisms.SelectMany(x => x).Where(x => !string.IsNullOrWhiteSpace(x))) };
     }
+
+    private static int GetIntInRangeOrDefault(IReadOnlyDictionary<string, string> settings, string key, int minimum, int maximum, int defaultValue) =>
+        settings.TryGetValue(key, out var value) && int.TryParse(value, out var parsed) && parsed >= minimum && parsed <= maximum ? parsed : defaultValue;
 }

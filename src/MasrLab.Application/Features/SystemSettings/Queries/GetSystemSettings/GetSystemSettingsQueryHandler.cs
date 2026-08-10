@@ -28,7 +28,10 @@ public class GetSystemSettingsQueryHandler : IRequestHandler<GetSystemSettingsQu
             "Report_HeaderColor",
             "Report_FooterColor",
             "Printer_Name",
-            "Printer_PurposeType"
+            "Printer_PurposeType",
+            "Envelope_UseBarcode",
+            "Envelope_BarcodeWidth",
+            "Envelope_BarcodeHeight"
         };
 
         var allSettings = await _settingRepository.GetByKeysAsync(keys, cancellationToken);
@@ -64,6 +67,9 @@ public class GetSystemSettingsQueryHandler : IRequestHandler<GetSystemSettingsQu
             },
             EnvelopeBarcodeSettings = new EnvelopeBarcodeSettingsDto
             {
+                UseBarcode = bool.TryParse(GetSetting(settings, "Envelope_UseBarcode"), out var useBarcode) && useBarcode,
+                BarcodeWidth = GetIntInRangeOrDefault(settings, "Envelope_BarcodeWidth", 1, 600, 300),
+                BarcodeHeight = GetIntInRangeOrDefault(settings, "Envelope_BarcodeHeight", 1, 180, 100)
             }
         };
     }
@@ -72,4 +78,7 @@ public class GetSystemSettingsQueryHandler : IRequestHandler<GetSystemSettingsQu
     {
         return settings.TryGetValue(key, out var value) ? value : string.Empty;
     }
+
+    private static int GetIntInRangeOrDefault(Dictionary<string, string> settings, string key, int minimum, int maximum, int defaultValue) =>
+        int.TryParse(GetSetting(settings, key), out var value) && value >= minimum && value <= maximum ? value : defaultValue;
 }
