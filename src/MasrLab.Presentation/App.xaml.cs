@@ -34,8 +34,32 @@ public partial class App : System.Windows.Application
 
         using var scope = _serviceProvider.CreateScope();
         var context = scope.ServiceProvider.GetRequiredService<MasrLabDbContext>();
-        await context.Database.MigrateAsync(); await DefaultAdminSeeder.SeedAsync(context, CancellationToken.None);
+        await context.Database.MigrateAsync();
+        await DefaultAdminSeeder.SeedAsync(context, CancellationToken.None);
         await DefaultSettingsSeeder.SeedAsync(context, CancellationToken.None);
+
+        bool isFirstRun = await DefaultAdminSeeder.IsFirstRunAsync(context, CancellationToken.None);
+
+        if (isFirstRun)
+        {
+            // TODO: FirstRunSetupWindow — المهمة 7
+            var firstRunWindow = new MainWindow();
+            if (firstRunWindow.ShowDialog() != true)
+            {
+                Shutdown();
+                return;
+            }
+        }
+        else
+        {
+            // TODO: LoginWindow — المهمة 6
+            var loginWindow = new MainWindow();
+            if (loginWindow.ShowDialog() != true)
+            {
+                Shutdown();
+                return;
+            }
+        }
 
         var mainWindow = _serviceProvider.GetRequiredService<MainWindow>();
         mainWindow.DataContext = _serviceProvider.GetRequiredService<MainViewModel>();
