@@ -19,6 +19,7 @@ using MasrLab.Presentation.ViewModels.TestGroups;
 using MasrLab.Presentation.ViewModels.TestsMasterData;
 using MasrLab.Presentation.ViewModels.UsersAndPermissions;
 using MasrLab.Presentation.ViewModels.WorkSheets;
+using MasrLab.Presentation.Views;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace MasrLab.Presentation;
@@ -31,6 +32,7 @@ public static class DependencyInjection
         services.AddSingleton<MainWindow>();
         services.AddSingleton<MainViewModel>();
 
+        services.AddTransient<LoginWindow>();
         services.AddTransient<LoginViewModel>();
         services.AddTransient<AccountTypeDrawerViewModel>();
         services.AddTransient<DoctorReferralDrawerViewModel>();

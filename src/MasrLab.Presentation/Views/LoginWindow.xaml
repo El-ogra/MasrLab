@@ -1,0 +1,55 @@
+<Window x:Class="MasrLab.Presentation.Views.LoginWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="clr-namespace:MasrLab.Presentation.ViewModels"
+        Title="MasrLab - تسجيل الدخول" Height="350" Width="400"
+        WindowStartupLocation="CenterScreen"
+        ResizeMode="NoResize"
+        FlowDirection="RightToLeft"
+        Language="ar-EG">
+    <Window.DataContext>
+        <vm:LoginViewModel/>
+    </Window.DataContext>
+    <Grid Margin="30">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="20"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="10"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="10"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="15"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <TextBlock Grid.Row="0" Text="MasrLab" 
+                   FontSize="24" FontWeight="Bold" 
+                   HorizontalAlignment="Center"/>
+
+        <TextBlock Grid.Row="2" Text="اسم المستخدم:" 
+                   FontWeight="SemiBold" Margin="0,0,0,5"/>
+        <TextBox Grid.Row="3" 
+                 Text="{Binding Username, UpdateSourceTrigger=PropertyChanged}"
+                 Padding="5" FontSize="14"/>
+
+        <TextBlock Grid.Row="4" Text="كلمة المرور:" 
+                   FontWeight="SemiBold" Margin="0,0,0,5"/>
+        <PasswordBox Grid.Row="5" x:Name="PasswordBox"
+                     PasswordChanged="PasswordBox_PasswordChanged"
+                     Padding="5" FontSize="14"/>
+
+        <TextBlock Grid.Row="8" 
+                   Text="{Binding ErrorMessage}" 
+                   Foreground="Red" 
+                   TextWrapping="Wrap"
+                   HorizontalAlignment="Center"/>
+
+        <Button Grid.Row="10" Content="تسجيل الدخول"
+                Command="{Binding LoginCommand}"
+                Padding="10,8" FontSize="14" FontWeight="SemiBold"
+                HorizontalAlignment="Center" MinWidth="150"/>
+    </Grid>
+</Window>
