@@ -1,0 +1,1 @@
+using MasrLab.Application.Common.Printing; namespace MasrLab.Infrastructure.Printing.Reports; public sealed class AttendanceReport:IReportDefinition {public string ReportName=>PrintReportNames.Attendance;public Type PayloadType=>typeof(OperationalReportPrintDto);public byte[] Render(IPrintPayload p)=>new OperationalDocument((OperationalReportPrintDto)p).RenderPdf();}

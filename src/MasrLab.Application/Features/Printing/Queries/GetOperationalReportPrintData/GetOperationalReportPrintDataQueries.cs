@@ -1,0 +1,12 @@
+using MasrLab.Application.Common.Printing;
+using MediatR;
+namespace MasrLab.Application.Features.Printing.Queries.GetOperationalReportPrintData;
+public abstract record OperationalReportPrintQuery(DateTime From, DateTime To, int? Id = null) : IRequest<OperationalReportPrintDto>;
+public sealed record GetWorkSheetPrintDataQuery(DateTime From, DateTime To, int? Id = null) : OperationalReportPrintQuery(From, To, Id);
+public sealed record GetPatientHistoryPrintDataQuery(DateTime From, DateTime To, int? Id = null) : OperationalReportPrintQuery(From, To, Id);
+public sealed record GetAttendancePrintDataQuery(DateTime From, DateTime To) : OperationalReportPrintQuery(From, To);
+public sealed record GetPriceListPrintDataQuery(DateTime From, DateTime To, int? Id = null) : OperationalReportPrintQuery(From, To, Id);
+public sealed record GetDrawerPrintDataQuery(DateTime From, DateTime To) : OperationalReportPrintQuery(From, To);
+public sealed record GetStatisticsPrintDataQuery(DateTime From, DateTime To) : OperationalReportPrintQuery(From, To);
+public sealed class OperationalReportPrintQueryHandler(IOperationalReportDataReader reader) : IRequestHandler<GetWorkSheetPrintDataQuery, OperationalReportPrintDto>, IRequestHandler<GetPatientHistoryPrintDataQuery, OperationalReportPrintDto>, IRequestHandler<GetAttendancePrintDataQuery, OperationalReportPrintDto>, IRequestHandler<GetPriceListPrintDataQuery, OperationalReportPrintDto>, IRequestHandler<GetDrawerPrintDataQuery, OperationalReportPrintDto>, IRequestHandler<GetStatisticsPrintDataQuery, OperationalReportPrintDto>
+{ private Task<OperationalReportPrintDto> Read(OperationalReportPrintQuery q, string n, CancellationToken ct) => reader.ReadAsync(n,q.From,q.To,q.Id,ct); public Task<OperationalReportPrintDto> Handle(GetWorkSheetPrintDataQuery q,CancellationToken ct)=>Read(q,PrintReportNames.WorkSheet,ct); public Task<OperationalReportPrintDto> Handle(GetPatientHistoryPrintDataQuery q,CancellationToken ct)=>Read(q,PrintReportNames.PatientHistory,ct); public Task<OperationalReportPrintDto> Handle(GetAttendancePrintDataQuery q,CancellationToken ct)=>Read(q,PrintReportNames.Attendance,ct); public Task<OperationalReportPrintDto> Handle(GetPriceListPrintDataQuery q,CancellationToken ct)=>Read(q,PrintReportNames.PriceList,ct); public Task<OperationalReportPrintDto> Handle(GetDrawerPrintDataQuery q,CancellationToken ct)=>Read(q,PrintReportNames.Drawer,ct); public Task<OperationalReportPrintDto> Handle(GetStatisticsPrintDataQuery q,CancellationToken ct)=>Read(q,PrintReportNames.Statistics,ct); }

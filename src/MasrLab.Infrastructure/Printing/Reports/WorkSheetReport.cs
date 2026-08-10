@@ -1,0 +1,4 @@
+using MasrLab.Application.Common.Printing; using MasrLab.Infrastructure.Printing.Templates; using QuestPDF.Fluent; using QuestPDF.Infrastructure;
+namespace MasrLab.Infrastructure.Printing.Reports;
+public sealed class WorkSheetReport : IReportDefinition { public string ReportName=>PrintReportNames.WorkSheet; public Type PayloadType=>typeof(OperationalReportPrintDto); public byte[] Render(IPrintPayload p)=>new OperationalDocument((OperationalReportPrintDto)p).RenderPdf(); }
+internal sealed class OperationalDocument(OperationalReportPrintDto d) : ReportBaseTemplate { protected override string Title=>d.Title; protected override void ComposeContent(IContainer c)=>c.Column(x=>{x.Item().Text($"{d.From:yyyy-MM-dd} - {d.To:yyyy-MM-dd}"); foreach(var l in d.Lines)x.Item().Text($"{l.Label}: {l.Value} {l.Detail}");}); }

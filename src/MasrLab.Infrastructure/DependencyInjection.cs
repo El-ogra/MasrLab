@@ -58,6 +58,7 @@ public static class DependencyInjection
         services.AddSingleton<IReportDefinition, CombinedReport>();
         services.AddSingleton<IReportDefinition, BlankReport>();
         services.AddSingleton<IReportDefinition, CultureReport>();
+        services.AddSingleton<IReportDefinition, WorkSheetReport>(); services.AddSingleton<IReportDefinition, PatientHistoryReport>(); services.AddSingleton<IReportDefinition, AttendanceReport>(); services.AddSingleton<IReportDefinition, PriceListReport>(); services.AddSingleton<IReportDefinition, DrawerReport>(); services.AddSingleton<IReportDefinition, StatisticsReport>();
         services.AddSingleton<ReportDefinitionRegistry>();
         services.AddScoped<IBackupService, BackupService>();
         services.AddScoped<IBarcodeService, BarcodeService>();
@@ -87,6 +88,7 @@ public static class DependencyInjection
         services.AddScoped<IPriceListRepository, PriceListRepository>();
         services.AddScoped<IReceiptPrintDataReader, ReceiptPrintDataReader>();
         services.AddScoped<IEnvelopePrintDataReader, EnvelopePrintDataReader>();
+        services.AddScoped<IOperationalReportDataReader, OperationalReportPrintDataReader>();
 
         return services;
     }
