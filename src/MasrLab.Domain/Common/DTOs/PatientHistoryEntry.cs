@@ -11,7 +11,7 @@ public record PatientHistoryEntry
     public string? PreviousUnit { get; init; }
     public string? PreviousReferenceRange { get; init; }
     public string PreviousStatus { get; init; } = string.Empty;
-    public DateTime PreviousVisitDate { get; init; }
+    public DateTime? PreviousVisitDate { get; init; }
     public string? CurrentValue { get; init; }
     public string? CurrentUnit { get; init; }
     public string? CurrentReferenceRange { get; init; }

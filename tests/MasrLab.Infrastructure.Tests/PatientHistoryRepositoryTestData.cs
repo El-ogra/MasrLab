@@ -16,7 +16,7 @@ internal sealed class PatientHistoryRepositoryTestData(MasrLabDbContext context)
         };
 
         context.Patients.Add(patient);
-        await context.SaveChangesAsync();
+        await context.SaveChangesAsync(CancellationToken.None);
         return patient;
     }
 
@@ -34,7 +34,7 @@ internal sealed class PatientHistoryRepositoryTestData(MasrLabDbContext context)
         };
 
         context.Tests.Add(test);
-        await context.SaveChangesAsync();
+        await context.SaveChangesAsync(CancellationToken.None);
         return test;
     }
 
@@ -55,17 +55,17 @@ internal sealed class PatientHistoryRepositoryTestData(MasrLabDbContext context)
             referralEntityId: null);
         visit.VisitDate = visitDate;
         context.PatientVisits.Add(visit);
-        await context.SaveChangesAsync();
+        await context.SaveChangesAsync(CancellationToken.None);
 
         var visitTest = new VisitTest(visit.Id, test.Id, 100m, isOutsourced: false);
         context.VisitTests.Add(visitTest);
-        await context.SaveChangesAsync();
+        await context.SaveChangesAsync(CancellationToken.None);
 
         var result = TestResult.Enter(visitTest.Id, value, enteredByUserId: 1);
         result.Unit = unit;
         result.ReferenceRange = referenceRange;
         result.Status = status;
         context.TestResults.Add(result);
-        await context.SaveChangesAsync();
+        await context.SaveChangesAsync(CancellationToken.None);
     }
 }

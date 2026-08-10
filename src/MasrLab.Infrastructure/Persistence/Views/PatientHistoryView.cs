@@ -11,7 +11,7 @@ public class PatientHistoryView
     public string? PreviousUnit { get; set; }
     public string? PreviousReferenceRange { get; set; }
     public string? PreviousStatus { get; set; }
-    public DateTime PreviousVisitDate { get; set; }
+    public DateTime? PreviousVisitDate { get; set; }
     public string? CurrentValue { get; set; }
     public string? CurrentUnit { get; set; }
     public string? CurrentReferenceRange { get; set; }
