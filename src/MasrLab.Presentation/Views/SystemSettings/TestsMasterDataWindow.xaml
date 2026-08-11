@@ -300,7 +300,7 @@
                         Padding="20,8" Margin="5" Background="#9C27B0" Foreground="White" FontWeight="Bold"/>
                 <Button Content="حذف" Command="{Binding DeleteTestCommand}"
                         Padding="20,8" Margin="5" Background="#f44336" Foreground="White" FontWeight="Bold"/>
-                <Button Content="ترحيل" Command="{Binding TransferCommand}"
+                <Button Content="تراجع" Command="{Binding TransferCommand}"
                         Padding="20,8" Margin="5" Background="#FF9800" Foreground="White" FontWeight="Bold"/>
                 <Button Content="حفظ" Command="{Binding SaveTestCommand}"
                         Padding="20,8" Margin="5" Background="#4CAF50" Foreground="White" FontWeight="Bold"/>
