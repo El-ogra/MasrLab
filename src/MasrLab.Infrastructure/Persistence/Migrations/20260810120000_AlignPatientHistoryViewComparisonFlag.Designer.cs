@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace MasrLab.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(MasrLabDbContext))]
-    [Migration("20260811032651_AlignPatientHistoryViewComparisonFlag")]
+    [Migration("20260810120000_AlignPatientHistoryViewComparisonFlag")]
     partial class AlignPatientHistoryViewComparisonFlag
     {
         /// <inheritdoc />
