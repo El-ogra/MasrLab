@@ -1,6 +1,9 @@
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using MasrLab.Application.Common.Interfaces;
+using MasrLab.Application.Features.AttendanceAndAudit.Commands.RecordLogin;
 using MasrLab.Application.Features.UsersAndPermissions.Commands.CreateUser;
+using MasrLab.Presentation.Views;
 using MediatR;
 
 namespace MasrLab.Presentation.ViewModels;
@@ -8,10 +11,12 @@ namespace MasrLab.Presentation.ViewModels;
 public partial class FirstRunSetupViewModel : ObservableObject
 {
     private readonly IMediator _mediator;
+    private readonly IAuthenticationService _authenticationService;
 
-    public FirstRunSetupViewModel(IMediator mediator)
+    public FirstRunSetupViewModel(IMediator mediator, IAuthenticationService authenticationService)
     {
         _mediator = mediator;
+        _authenticationService = authenticationService;
     }
 
     [ObservableProperty]
@@ -32,7 +37,9 @@ public partial class FirstRunSetupViewModel : ObservableObject
     [RelayCommand]
     private async Task SaveAsync()
     {
-        if (string.IsNullOrWhiteSpace(AdminUsername) || string.IsNullOrWhiteSpace(AdminPassword))
+        if (string.IsNullOrWhiteSpace(AdminUsername) ||
+            string.IsNullOrWhiteSpace(AdminPassword) ||
+            string.IsNullOrWhiteSpace(AdminPasswordConfirm))
         {
             ErrorMessage = "يرجى إدخال اسم المستخدم وكلمة المرور";
             return;
@@ -51,7 +58,20 @@ public partial class FirstRunSetupViewModel : ObservableObject
         {
             await _mediator.Send(new CreateUserCommand(AdminUsername, AdminPassword, IsAdmin: true));
 
-            if (System.Windows.Application.Current.MainWindow is System.Windows.Window setupWindow)
+            var authResult = await _authenticationService.LoginAsync(AdminUsername, AdminPassword);
+
+            if (!authResult.IsSuccess)
+            {
+                ErrorMessage = authResult.FailureReason;
+                return;
+            }
+
+            await _mediator.Send(new RecordLoginCommand(authResult.UserId!.Value, DateTime.UtcNow));
+
+            var setupWindow = System.Windows.Application.Current?.Windows
+                .OfType<FirstRunSetupWindow>()
+                .FirstOrDefault();
+            if (setupWindow is not null)
             {
                 setupWindow.DialogResult = true;
                 setupWindow.Close();

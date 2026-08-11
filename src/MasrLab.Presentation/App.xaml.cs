@@ -58,6 +58,8 @@ public partial class App : System.Windows.Application
 
         bool isFirstRun = await DefaultAdminSeeder.IsFirstRunAsync(context, CancellationToken.None);
 
+        System.Windows.Application.Current.ShutdownMode = System.Windows.ShutdownMode.OnExplicitShutdown;
+
         if (isFirstRun)
         {
             var firstRunWindow = _serviceProvider.GetRequiredService<FirstRunSetupWindow>();
@@ -82,5 +84,8 @@ public partial class App : System.Windows.Application
         var mainWindow = _serviceProvider.GetRequiredService<MainWindow>();
         mainWindow.DataContext = _serviceProvider.GetRequiredService<MainViewModel>();
         mainWindow.Show();
+
+        System.Windows.Application.Current.MainWindow = mainWindow;
+        System.Windows.Application.Current.ShutdownMode = System.Windows.ShutdownMode.OnMainWindowClose;
     }
 }

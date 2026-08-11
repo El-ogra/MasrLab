@@ -1,6 +1,9 @@
-<UserControl x:Class="MasrLab.Presentation.Views.PatientManagement.DeliverResultsView"
-             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
-             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             FlowDirection="RightToLeft">
+<Window x:Class="MasrLab.Presentation.Views.PatientManagement.DeliverResultsView"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="MasrLab - تسليم نتائج المرضى" Width="800" Height="600"
+        WindowStartupLocation="CenterScreen"
+        FlowDirection="RightToLeft"
+        Language="ar-EG">
     <Grid/>
-</UserControl>
+</Window>

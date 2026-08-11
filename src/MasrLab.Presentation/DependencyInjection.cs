@@ -1,4 +1,3 @@
-using MasrLab.Presentation.Navigation;
 using MasrLab.Presentation.Printing;
 using MasrLab.Presentation.ViewModels;
 using MasrLab.Presentation.ViewModels.Accounting;
@@ -29,7 +28,6 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddPresentation(this IServiceCollection services)
     {
-        services.AddSingleton<NavigationStore>();
         services.AddSingleton<MainWindow>();
         services.AddSingleton<MainViewModel>();
         services.AddTransient<EnvelopePrinter>();

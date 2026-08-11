@@ -10,6 +10,7 @@ using MasrLab.Application.Features.UsersAndPermissions.Commands.CreateUser;
 using MasrLab.Application.Features.UsersAndPermissions.Commands.SetPermissions;
 using MasrLab.Application.Features.UsersAndPermissions.Commands.UpdateUser;
 using MasrLab.Application.Features.UsersAndPermissions.Queries.CheckPermission;
+using MasrLab.Application.Features.UsersAndPermissions.Queries.GetRegisteredUsernames;
 using MasrLab.Domain.Common.Enums;
 using MasrLab.Domain.Entities.Administrative;
 using MasrLab.Domain.Exceptions;
@@ -33,6 +34,9 @@ public class UsersPermissionsAndAttendanceHandlersTests
 
     [Fact] public async Task CheckPermission_returns_allowed_value_for_valid_enums() { var r=new Mock<IPermissionRepository>(); r.Setup(x=>x.GetByUserScreenOperationAsync(1,default,default,It.IsAny<CancellationToken>())).ReturnsAsync(new Permission{Allowed=true}); var result=await new CheckPermissionQueryHandler(r.Object).Handle(new(1,0,0),default); Assert.True(result); }
     [Fact] public async Task CheckPermission_returns_false_when_no_permission_exists() { var r=new Mock<IPermissionRepository>(); r.Setup(x=>x.GetByUserScreenOperationAsync(It.IsAny<int>(),It.IsAny<ScreenType>(),It.IsAny<PermissionOperation>(),It.IsAny<CancellationToken>())).ReturnsAsync((Permission?)null); Assert.False(await new CheckPermissionQueryHandler(r.Object).Handle(new(1,0,0),default)); }
+
+    [Fact] public async Task GetRegisteredUsernames_returns_all_usernames() { var r=new Mock<IRepository<User>>(); r.Setup(x=>x.GetAllAsync(It.IsAny<CancellationToken>())).ReturnsAsync(new List<User>{new(){Username="admin"},new(){Username="mona"}}); var result=await new GetRegisteredUsernamesQueryHandler(r.Object).Handle(new(),default); Assert.Equal(2,result.Count); Assert.Contains("admin",result); Assert.Contains("mona",result); }
+    [Fact] public async Task GetRegisteredUsernames_returns_empty_when_no_users() { var r=new Mock<IRepository<User>>(); r.Setup(x=>x.GetAllAsync(It.IsAny<CancellationToken>())).ReturnsAsync(new List<User>()); var result=await new GetRegisteredUsernamesQueryHandler(r.Object).Handle(new(),default); Assert.Empty(result); }
 
     [Fact] public async Task RecordLogin_creates_log_with_single_point_period() { var r=new Mock<IRepository<AttendanceLog>>(); AttendanceLog? log=null;r.Setup(x=>x.AddAsync(It.IsAny<AttendanceLog>(),It.IsAny<CancellationToken>())).Callback<AttendanceLog,CancellationToken>((v,_)=>log=v);var time=new DateTime(2026,1,1,8,0,0);await new RecordLoginCommandHandler(r.Object,new Mock<IUnitOfWork>().Object).Handle(new(3,time),default);Assert.NotNull(log);Assert.Equal(time,log!.WorkPeriod.Start);Assert.Equal(3,log.UserId); }
     [Fact] public async Task RecordLogin_propagates_save_failure() { var u=new Mock<IUnitOfWork>();u.Setup(x=>x.SaveChangesAsync(It.IsAny<CancellationToken>())).ThrowsAsync(new InvalidOperationException());await Assert.ThrowsAsync<InvalidOperationException>(()=>new RecordLoginCommandHandler(new Mock<IRepository<AttendanceLog>>().Object,u.Object).Handle(new(1,DateTime.Today),default)); }

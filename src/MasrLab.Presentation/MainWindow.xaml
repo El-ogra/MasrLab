@@ -3,11 +3,52 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:converters="clr-namespace:MasrLab.Presentation.Resources.Converters"
         mc:Ignorable="d"
         Title="MasrLab" Height="600" Width="1000"
         FlowDirection="RightToLeft"
         Language="ar-EG">
+    <Window.Resources>
+        <converters:BooleanToVisibilityConverter x:Key="BoolToVisibilityConverter"/>
+    </Window.Resources>
     <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
 
+        <StackPanel Grid.Row="0" Orientation="Horizontal" Background="LightGray">
+            <Button Content="المرضى" Command="{Binding SelectPatientsCommand}" Margin="10">
+                <Button.Style>
+                    <Style TargetType="Button">
+                        <Setter Property="Padding" Value="15,8"/>
+                        <Setter Property="FontWeight" Value="Bold"/>
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsPatientsSelected}" Value="True">
+                                <Setter Property="Background" Value="Gray"/>
+                                <Setter Property="FontWeight" Value="ExtraBold"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Button.Style>
+            </Button>
+        </StackPanel>
+
+        <StackPanel Grid.Row="1"
+                    Visibility="{Binding IsPatientsSelected, Converter={StaticResource BoolToVisibilityConverter}}"
+                    HorizontalAlignment="Center" VerticalAlignment="Center">
+            <Button Content="إدخال وإضافة مريض جديد"
+                    Command="{Binding ShowRegisterPatientCommand}"
+                    Width="250" Height="50" Margin="10" FontSize="14"/>
+            <Button Content="إدخال نتائج التحاليل"
+                    Command="{Binding ShowEnterResultsCommand}"
+                    Width="250" Height="50" Margin="10" FontSize="14"/>
+            <Button Content="البحث عن مريض"
+                    Command="{Binding ShowSearchPatientsCommand}"
+                    Width="250" Height="50" Margin="10" FontSize="14"/>
+            <Button Content="تسليم نتائج المرضى"
+                    Command="{Binding ShowDeliverResultsCommand}"
+                    Width="250" Height="50" Margin="10" FontSize="14"/>
+        </StackPanel>
     </Grid>
 </Window>

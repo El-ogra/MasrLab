@@ -1,7 +1,10 @@
+using System.Collections.ObjectModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using MasrLab.Application.Common.Interfaces;
 using MasrLab.Application.Features.AttendanceAndAudit.Commands.RecordLogin;
+using MasrLab.Application.Features.UsersAndPermissions.Queries.GetRegisteredUsernames;
+using MasrLab.Presentation.Views;
 using MediatR;
 
 namespace MasrLab.Presentation.ViewModels;
@@ -15,6 +18,7 @@ public partial class LoginViewModel : ObservableObject
     {
         _authenticationService = authenticationService;
         _mediator = mediator;
+        _ = LoadUsernamesAsync();
     }
 
     [ObservableProperty]
@@ -28,6 +32,22 @@ public partial class LoginViewModel : ObservableObject
 
     [ObservableProperty]
     private bool _isLoading;
+
+    [ObservableProperty]
+    private ObservableCollection<string> _usernames = new();
+
+    private async Task LoadUsernamesAsync()
+    {
+        try
+        {
+            var usernames = await _mediator.Send(new GetRegisteredUsernamesQuery());
+            Usernames = new ObservableCollection<string>(usernames);
+        }
+        catch (Exception)
+        {
+            ErrorMessage = "فشل تحميل قائمة المستخدمين";
+        }
+    }
 
     [RelayCommand]
     private async Task LoginAsync()
@@ -53,7 +73,10 @@ public partial class LoginViewModel : ObservableObject
 
             await _mediator.Send(new RecordLoginCommand(result.UserId!.Value, DateTime.UtcNow));
 
-            if (System.Windows.Application.Current.MainWindow is System.Windows.Window loginWindow)
+            var loginWindow = System.Windows.Application.Current?.Windows
+                .OfType<LoginWindow>()
+                .FirstOrDefault();
+            if (loginWindow is not null)
             {
                 loginWindow.DialogResult = true;
                 loginWindow.Close();

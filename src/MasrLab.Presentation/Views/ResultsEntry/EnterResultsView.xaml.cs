@@ -1,6 +1,6 @@
 namespace MasrLab.Presentation.Views.ResultsEntry;
 
-public partial class EnterResultsView : System.Windows.Controls.UserControl
+public partial class EnterResultsView : System.Windows.Window
 {
     public EnterResultsView()
     {
