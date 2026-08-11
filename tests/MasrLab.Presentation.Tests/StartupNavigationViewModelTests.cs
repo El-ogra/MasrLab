@@ -8,9 +8,11 @@ using MasrLab.Presentation.ViewModels;
 using MasrLab.Presentation.ViewModels.PatientManagement;
 using MasrLab.Presentation.ViewModels.PatientSearch;
 using MasrLab.Presentation.ViewModels.ResultsEntry;
+using MasrLab.Presentation.ViewModels.SystemSettings;
 using MasrLab.Presentation.Views.PatientManagement;
 using MasrLab.Presentation.Views.PatientSearch;
 using MasrLab.Presentation.Views.ResultsEntry;
+using MasrLab.Presentation.Views.SystemSettings;
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using Moq;
@@ -193,6 +195,136 @@ public class StartupNavigationViewModelTests
         Assert.False(vm.IsPatientsSelected);
     }
 
+    [Fact]
+    public void MainViewModel_SelectSystem_ShowsSystemMenu()
+    {
+        var (vm, _) = CreateMainViewModel();
+        var raised = false;
+        vm.PropertyChanged += (_, e) =>
+        {
+            if (e.PropertyName == nameof(MainViewModel.IsSystemSelected))
+                raised = true;
+        };
+
+        vm.SelectSystemCommand.Execute(null);
+
+        Assert.True(vm.IsSystemSelected);
+        Assert.False(vm.IsPatientsSelected);
+        Assert.True(raised);
+    }
+
+    [Fact]
+    public void MainViewModel_SelectSystem_HidesPatientsMenu()
+    {
+        var (vm, _) = CreateMainViewModel();
+        vm.SelectPatientsCommand.Execute(null);
+        Assert.True(vm.IsPatientsSelected);
+
+        vm.SelectSystemCommand.Execute(null);
+
+        Assert.True(vm.IsSystemSelected);
+        Assert.False(vm.IsPatientsSelected);
+    }
+
+    [Fact]
+    public void MainViewModel_ShowTestsMasterData_OpensTestsMasterDataWindow()
+    {
+        var (vm, _) = CreateMainViewModel();
+        var testVm = (TestMainViewModel)vm;
+
+        vm.ShowTestsMasterDataCommand.Execute(null);
+
+        Assert.Equal(typeof(TestsMasterDataWindow), testVm.LastRequestedWindow);
+    }
+
+    [Fact]
+    public void MainViewModel_ShowBarcodeTypes_OpensBarcodeTypesWindow()
+    {
+        var (vm, _) = CreateMainViewModel();
+        var testVm = (TestMainViewModel)vm;
+
+        vm.ShowBarcodeTypesCommand.Execute(null);
+
+        Assert.Equal(typeof(BarcodeTypesWindow), testVm.LastRequestedWindow);
+    }
+
+    [Fact]
+    public void MainViewModel_ShowCultureAntibiotics_OpensCultureAntibioticsWindow()
+    {
+        var (vm, _) = CreateMainViewModel();
+        var testVm = (TestMainViewModel)vm;
+
+        vm.ShowCultureAntibioticsCommand.Execute(null);
+
+        Assert.Equal(typeof(CultureAntibioticsWindow), testVm.LastRequestedWindow);
+    }
+
+    [Fact]
+    public void MainViewModel_ShowExternalLabs_OpensExternalLabsWindow()
+    {
+        var (vm, _) = CreateMainViewModel();
+        var testVm = (TestMainViewModel)vm;
+
+        vm.ShowExternalLabsCommand.Execute(null);
+
+        Assert.Equal(typeof(ExternalLabsWindow), testVm.LastRequestedWindow);
+    }
+
+    [Fact]
+    public void MainViewModel_ShowTestGroups_OpensTestGroupsWindow()
+    {
+        var (vm, _) = CreateMainViewModel();
+        var testVm = (TestMainViewModel)vm;
+
+        vm.ShowTestGroupsCommand.Execute(null);
+
+        Assert.Equal(typeof(TestGroupsWindow), testVm.LastRequestedWindow);
+    }
+
+    [Fact]
+    public void MainViewModel_ShowTestUnits_OpensTestUnitsWindow()
+    {
+        var (vm, _) = CreateMainViewModel();
+        var testVm = (TestMainViewModel)vm;
+
+        vm.ShowTestUnitsCommand.Execute(null);
+
+        Assert.Equal(typeof(TestUnitsWindow), testVm.LastRequestedWindow);
+    }
+
+    [Fact]
+    public void MainViewModel_ShowTestComments_OpensTestCommentsWindow()
+    {
+        var (vm, _) = CreateMainViewModel();
+        var testVm = (TestMainViewModel)vm;
+
+        vm.ShowTestCommentsCommand.Execute(null);
+
+        Assert.Equal(typeof(TestCommentsWindow), testVm.LastRequestedWindow);
+    }
+
+    [Fact]
+    public void MainViewModel_ShowPatientTitles_OpensPatientTitlesWindow()
+    {
+        var (vm, _) = CreateMainViewModel();
+        var testVm = (TestMainViewModel)vm;
+
+        vm.ShowPatientTitlesCommand.Execute(null);
+
+        Assert.Equal(typeof(PatientTitlesWindow), testVm.LastRequestedWindow);
+    }
+
+    [Fact]
+    public void MainViewModel_ShowPriceListPrint_OpensPriceListPrintWindow()
+    {
+        var (vm, _) = CreateMainViewModel();
+        var testVm = (TestMainViewModel)vm;
+
+        vm.ShowPriceListPrintCommand.Execute(null);
+
+        Assert.Equal(typeof(PriceListPrintWindow), testVm.LastRequestedWindow);
+    }
+
     private static Mock<IMediator> CreateMediator()
     {
         var mediator = new Mock<IMediator>();
@@ -214,6 +346,15 @@ public class StartupNavigationViewModelTests
         services.AddTransient<EnterResultsViewModel>();
         services.AddTransient<SearchPatientsViewModel>();
         services.AddTransient<DeliverResultsViewModel>();
+        services.AddTransient<TestsMasterDataViewModel>();
+        services.AddTransient<BarcodeTypesViewModel>();
+        services.AddTransient<CultureAntibioticsViewModel>();
+        services.AddTransient<ExternalLabsViewModel>();
+        services.AddTransient<TestGroupsViewModel>();
+        services.AddTransient<TestUnitsViewModel>();
+        services.AddTransient<TestCommentsViewModel>();
+        services.AddTransient<PatientTitlesViewModel>();
+        services.AddTransient<PriceListPrintViewModel>();
         var provider = services.BuildServiceProvider();
         return (new TestMainViewModel(provider), provider);
     }

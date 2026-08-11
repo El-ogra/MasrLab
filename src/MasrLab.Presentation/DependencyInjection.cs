@@ -61,8 +61,17 @@ public static class DependencyInjection
         services.AddTransient<SampleCollectionViewModel>();
         services.AddTransient<StatisticsViewModel>();
         services.AddTransient<SystemSettingsViewModel>();
-        services.AddTransient<TestGroupsViewModel>();
-        services.AddTransient<TestsMasterDataViewModel>();
+        services.AddTransient<ViewModels.TestGroups.TestGroupsViewModel>();
+        services.AddTransient<ViewModels.TestsMasterData.TestsMasterDataViewModel>();
+        services.AddTransient<BarcodeTypesViewModel>();
+        services.AddTransient<CultureAntibioticsViewModel>();
+        services.AddTransient<ExternalLabsViewModel>();
+        services.AddTransient<MasrLab.Presentation.ViewModels.SystemSettings.TestGroupsViewModel>();
+        services.AddTransient<TestUnitsViewModel>();
+        services.AddTransient<TestCommentsViewModel>();
+        services.AddTransient<PatientTitlesViewModel>();
+        services.AddTransient<PriceListPrintViewModel>();
+        services.AddTransient<MasrLab.Presentation.ViewModels.SystemSettings.TestsMasterDataViewModel>();
         services.AddTransient<UsersPermissionsViewModel>();
         services.AddTransient<WorkSheetsViewModel>();
 

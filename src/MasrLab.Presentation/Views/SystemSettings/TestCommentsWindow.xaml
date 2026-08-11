@@ -1,0 +1,13 @@
+<Window x:Class="MasrLab.Presentation.Views.SystemSettings.TestCommentsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="MasrLab - Test Comments" Width="800" Height="600"
+        WindowStartupLocation="CenterScreen"
+        FlowDirection="RightToLeft"
+        Language="ar-EG">
+    <Grid>
+        <TextBlock Text="لم يتم تنفيذ هذه النافذة حتى الآن"
+                   FontSize="20" FontWeight="Bold"
+                   HorizontalAlignment="Center" VerticalAlignment="Center"/>
+    </Grid>
+</Window>

@@ -17,7 +17,8 @@
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
 
-        <StackPanel Grid.Row="0" Orientation="Horizontal" Background="LightGray">
+        <StackPanel Grid.Row="0" Orientation="Horizontal" Background="LightGray"
+                    Visibility="{Binding IsTopBarVisible, Converter={StaticResource BoolToVisibilityConverter}}">
             <Button Content="المرضى" Command="{Binding SelectPatientsCommand}" Margin="10">
                 <Button.Style>
                     <Style TargetType="Button">
@@ -25,6 +26,20 @@
                         <Setter Property="FontWeight" Value="Bold"/>
                         <Style.Triggers>
                             <DataTrigger Binding="{Binding IsPatientsSelected}" Value="True">
+                                <Setter Property="Background" Value="Gray"/>
+                                <Setter Property="FontWeight" Value="ExtraBold"/>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Button.Style>
+            </Button>
+            <Button Content="إعدادات النظام" Command="{Binding SelectSystemCommand}" Margin="10">
+                <Button.Style>
+                    <Style TargetType="Button">
+                        <Setter Property="Padding" Value="15,8"/>
+                        <Setter Property="FontWeight" Value="Bold"/>
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsSystemSelected}" Value="True">
                                 <Setter Property="Background" Value="Gray"/>
                                 <Setter Property="FontWeight" Value="ExtraBold"/>
                             </DataTrigger>
@@ -50,5 +65,37 @@
                     Command="{Binding ShowDeliverResultsCommand}"
                     Width="250" Height="50" Margin="10" FontSize="14"/>
         </StackPanel>
+
+        <WrapPanel Grid.Row="1"
+                   Visibility="{Binding IsSystemSelected, Converter={StaticResource BoolToVisibilityConverter}}"
+                   HorizontalAlignment="Center" VerticalAlignment="Center">
+            <Button Content="بيانات التحاليل"
+                    Command="{Binding ShowTestsMasterDataCommand}"
+                    Width="250" Height="50" Margin="10" FontSize="14"/>
+            <Button Content="Barcode Types"
+                    Command="{Binding ShowBarcodeTypesCommand}"
+                    Width="250" Height="50" Margin="10" FontSize="14"/>
+            <Button Content="Culture Antibiotics"
+                    Command="{Binding ShowCultureAntibioticsCommand}"
+                    Width="250" Height="50" Margin="10" FontSize="14"/>
+            <Button Content="الجهات الخارجية والمعامل"
+                    Command="{Binding ShowExternalLabsCommand}"
+                    Width="250" Height="50" Margin="10" FontSize="14"/>
+            <Button Content="مجموعات التحاليل"
+                    Command="{Binding ShowTestGroupsCommand}"
+                    Width="250" Height="50" Margin="10" FontSize="14"/>
+            <Button Content="وحدات القياس"
+                    Command="{Binding ShowTestUnitsCommand}"
+                    Width="250" Height="50" Margin="10" FontSize="14"/>
+            <Button Content="Test Comments"
+                    Command="{Binding ShowTestCommentsCommand}"
+                    Width="250" Height="50" Margin="10" FontSize="14"/>
+            <Button Content="القاب وتعريفات المرضى"
+                    Command="{Binding ShowPatientTitlesCommand}"
+                    Width="250" Height="50" Margin="10" FontSize="14"/>
+            <Button Content="طباعة قائمة اسعار التحاليل"
+                    Command="{Binding ShowPriceListPrintCommand}"
+                    Width="250" Height="50" Margin="10" FontSize="14"/>
+        </WrapPanel>
     </Grid>
 </Window>
