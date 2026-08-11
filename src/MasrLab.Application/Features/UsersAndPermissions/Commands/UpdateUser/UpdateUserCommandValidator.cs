@@ -8,6 +8,8 @@ public class UpdateUserCommandValidator : AbstractValidator<UpdateUserCommand>
     {
         RuleFor(x => x.Id).GreaterThan(0);
         RuleFor(x => x.Username).NotEmpty().MinimumLength(3);
-        RuleFor(x => x.Password).NotEmpty().MinimumLength(6);
+        RuleFor(x => x.Password)
+            .NotEmpty().MinimumLength(6)
+            .When(x => !string.IsNullOrWhiteSpace(x.Password));
     }
 }
