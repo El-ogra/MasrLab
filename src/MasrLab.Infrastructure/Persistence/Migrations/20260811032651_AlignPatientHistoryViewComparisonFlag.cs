@@ -1,22 +1,21 @@
-using MasrLab.Infrastructure.Persistence;
-using Microsoft.EntityFrameworkCore.Infrastructure;
-using Microsoft.EntityFrameworkCore.Migrations;
+﻿using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace MasrLab.Infrastructure.Persistence.Migrations;
-
-[DbContext(typeof(MasrLabDbContext))]
-[Migration("20260810120000_AlignPatientHistoryViewComparisonFlag")]
-public partial class AlignPatientHistoryViewComparisonFlag : Migration
+namespace MasrLab.Infrastructure.Persistence.Migrations
 {
-    protected override void Up(MigrationBuilder migrationBuilder)
-        => migrationBuilder.Sql(CreateViewSql(compareAllClinicalFields: true));
+    /// <inheritdoc />
+    public partial class AlignPatientHistoryViewComparisonFlag : Migration
+    {
+        /// <inheritdoc />
+        protected override void Up(MigrationBuilder migrationBuilder)
+            => migrationBuilder.Sql(CreateViewSql(compareAllClinicalFields: true));
 
-    protected override void Down(MigrationBuilder migrationBuilder)
-        => migrationBuilder.Sql(CreateViewSql(compareAllClinicalFields: false));
+        /// <inheritdoc />
+        protected override void Down(MigrationBuilder migrationBuilder)
+            => migrationBuilder.Sql(CreateViewSql(compareAllClinicalFields: false));
 
-    private static string CreateViewSql(bool compareAllClinicalFields) => $@"
+        private static string CreateViewSql(bool compareAllClinicalFields) => $@"
 CREATE OR ALTER VIEW [dbo].[PatientHistoryView]
 AS
 WITH NumberedResults AS (
@@ -78,7 +77,8 @@ LEFT JOIN NumberedResults prev
    AND prev.TestId = curr.TestId
    AND prev.RowNum = curr.RowNum + 1;";
 
-    private static string ComparisonCondition(bool compareAllClinicalFields) => compareAllClinicalFields
-        ? "(curr.Value <> prev.Value OR curr.Unit <> prev.Unit OR curr.ReferenceRange <> prev.ReferenceRange OR (curr.Value IS NULL AND prev.Value IS NOT NULL) OR (curr.Value IS NOT NULL AND prev.Value IS NULL) OR (curr.Unit IS NULL AND prev.Unit IS NOT NULL) OR (curr.Unit IS NOT NULL AND prev.Unit IS NULL) OR (curr.ReferenceRange IS NULL AND prev.ReferenceRange IS NOT NULL) OR (curr.ReferenceRange IS NOT NULL AND prev.ReferenceRange IS NULL))"
-        : "(curr.Value <> prev.Value OR (curr.Value IS NULL AND prev.Value IS NOT NULL) OR (curr.Value IS NOT NULL AND prev.Value IS NULL))";
+        private static string ComparisonCondition(bool compareAllClinicalFields) => compareAllClinicalFields
+            ? "(curr.Value <> prev.Value OR curr.Unit <> prev.Unit OR curr.ReferenceRange <> prev.ReferenceRange OR (curr.Value IS NULL AND prev.Value IS NOT NULL) OR (curr.Value IS NOT NULL AND prev.Value IS NULL) OR (curr.Unit IS NULL AND prev.Unit IS NOT NULL) OR (curr.Unit IS NOT NULL AND prev.Unit IS NULL) OR (curr.ReferenceRange IS NULL AND prev.ReferenceRange IS NOT NULL) OR (curr.ReferenceRange IS NOT NULL AND prev.ReferenceRange IS NULL))"
+            : "(curr.Value <> prev.Value OR (curr.Value IS NULL AND prev.Value IS NOT NULL) OR (curr.Value IS NOT NULL AND prev.Value IS NULL))";
+    }
 }
