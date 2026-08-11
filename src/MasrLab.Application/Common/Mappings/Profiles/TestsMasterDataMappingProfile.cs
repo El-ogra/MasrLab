@@ -9,6 +9,7 @@ public class TestsMasterDataMappingProfile : Profile
 {
     public TestsMasterDataMappingProfile()
     {
+        CreateMap<Test, TestDto>();
         CreateMap<ReferenceValue, ReferenceValueDto>();
         CreateMap<PriceListItem, PriceListItemDto>();
     }

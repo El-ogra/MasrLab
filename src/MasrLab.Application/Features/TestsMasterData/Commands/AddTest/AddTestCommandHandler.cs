@@ -28,7 +28,29 @@ public class AddTestCommandHandler : IRequestHandler<AddTestCommand, Unit>
             Price = request.Price,
             TurnaroundTime = request.TurnaroundTime,
             LabToLabFlag = request.LabToLabFlag,
-            Unit = request.Unit
+            Unit = request.Unit,
+            TestCode = request.TestCode,
+            HistoryName = request.HistoryName,
+            ArabicName = request.ArabicName,
+            Branch = request.Branch,
+            LogGroup = request.LogGroup,
+            SampleType = request.SampleType,
+            SeeReport = request.SeeReport,
+            PrintWithOther = request.PrintWithOther,
+            AddWithGroup = request.AddWithGroup,
+            IsMainTest = request.IsMainTest,
+            TestTimeDays = request.TestTimeDays,
+            ArrangeNo = request.ArrangeNo,
+            ReferenceType = request.ReferenceType,
+            LabToLabPrice = request.LabToLabPrice,
+            BarcodeName = request.BarcodeName,
+            Tube1 = request.Tube1,
+            Tube2 = request.Tube2,
+            Tube3 = request.Tube3,
+            SentOutsideLab = request.SentOutsideLab,
+            OutsourcedLabName = request.OutsourcedLabName,
+            OutsourcedCostPrice = request.OutsourcedCostPrice,
+            PatientQuestion = request.PatientQuestion
         };
 
         await _testRepository.AddAsync(test, cancellationToken);

@@ -22,8 +22,10 @@ namespace MasrLab.Application.Tests;
 
 public class DoctorsReferralsAndTestsMasterDataHandlersTests
 {
-    private static AddTestCommand NewTest() => new("CBC", "CBC report", "CBC receipt", "Hematology", "B1", 120m, "24h", false, "mg");
-    private static UpdateTestCommand ChangedTest(int id = 1) => new(id, "CRP", "CRP report", "CRP receipt", "Chemistry", null, 220m, "48h", true, "mg/L");
+    private static AddTestCommand NewTest() => new("CBC", "CBC report", "CBC receipt", "Hematology", "B1", 120m, "24h", false, "mg",
+        null, null, null, null, null, null, false, false, false, false, 1, 0, ReferenceType.General, null, null, null, null, null, false, null, null, null);
+    private static UpdateTestCommand ChangedTest(int id = 1) => new(id, "CRP", "CRP report", "CRP receipt", "Chemistry", null, 220m, "48h", true, "mg/L",
+        null, null, null, null, null, null, false, false, false, false, 2, 1, ReferenceType.General, null, null, null, null, null, false, null, null, null);
 
     [Fact]
     public async Task AddDoctor_persists_requested_doctor()

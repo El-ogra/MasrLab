@@ -32,6 +32,28 @@ public class UpdateTestCommandHandler : IRequestHandler<UpdateTestCommand, Unit>
         test.TurnaroundTime = request.TurnaroundTime;
         test.LabToLabFlag = request.LabToLabFlag;
         test.Unit = request.Unit;
+        test.TestCode = request.TestCode;
+        test.HistoryName = request.HistoryName;
+        test.ArabicName = request.ArabicName;
+        test.Branch = request.Branch;
+        test.LogGroup = request.LogGroup;
+        test.SampleType = request.SampleType;
+        test.SeeReport = request.SeeReport;
+        test.PrintWithOther = request.PrintWithOther;
+        test.AddWithGroup = request.AddWithGroup;
+        test.IsMainTest = request.IsMainTest;
+        test.TestTimeDays = request.TestTimeDays;
+        test.ArrangeNo = request.ArrangeNo;
+        test.ReferenceType = request.ReferenceType;
+        test.LabToLabPrice = request.LabToLabPrice;
+        test.BarcodeName = request.BarcodeName;
+        test.Tube1 = request.Tube1;
+        test.Tube2 = request.Tube2;
+        test.Tube3 = request.Tube3;
+        test.SentOutsideLab = request.SentOutsideLab;
+        test.OutsourcedLabName = request.OutsourcedLabName;
+        test.OutsourcedCostPrice = request.OutsourcedCostPrice;
+        test.PatientQuestion = request.PatientQuestion;
 
         _testRepository.Update(test);
         await _unitOfWork.SaveChangesAsync(cancellationToken);

@@ -31,8 +31,6 @@ public class GetTestWithReferencesQueryHandler : IRequestHandler<GetTestWithRefe
 
         var referenceValues = await _referenceValueRepository.GetByTestIdAsync(request.TestId, cancellationToken);
 
-        // TestWithReferencesDto aggregates a Test with its reference values, so the outer
-        // object is assembled manually; the inner ReferenceValueDto is a simple map.
         return new TestWithReferencesDto
         {
             Id = test.Id,
@@ -45,6 +43,28 @@ public class GetTestWithReferencesQueryHandler : IRequestHandler<GetTestWithRefe
             TurnaroundTime = test.TurnaroundTime,
             LabToLabFlag = test.LabToLabFlag,
             Unit = test.Unit,
+            TestCode = test.TestCode,
+            HistoryName = test.HistoryName,
+            ArabicName = test.ArabicName,
+            Branch = test.Branch,
+            LogGroup = test.LogGroup,
+            SampleType = test.SampleType,
+            SeeReport = test.SeeReport,
+            PrintWithOther = test.PrintWithOther,
+            AddWithGroup = test.AddWithGroup,
+            IsMainTest = test.IsMainTest,
+            TestTimeDays = test.TestTimeDays,
+            ArrangeNo = test.ArrangeNo,
+            ReferenceType = test.ReferenceType,
+            LabToLabPrice = test.LabToLabPrice,
+            BarcodeName = test.BarcodeName,
+            Tube1 = test.Tube1,
+            Tube2 = test.Tube2,
+            Tube3 = test.Tube3,
+            SentOutsideLab = test.SentOutsideLab,
+            OutsourcedLabName = test.OutsourcedLabName,
+            OutsourcedCostPrice = test.OutsourcedCostPrice,
+            PatientQuestion = test.PatientQuestion,
             ReferenceValues = referenceValues.Select(rv => _mapper.Map<ReferenceValueDto>(rv)).ToList()
         };
     }
