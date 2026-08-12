@@ -10,6 +10,7 @@ using MasrLab.Domain.Common.Enums;
 using MasrLab.Domain.Entities.Financial;
 using MasrLab.Domain.Interfaces;
 using MediatR;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace MasrLab.Presentation.ViewModels.SystemSettings;
 
@@ -17,11 +18,13 @@ public partial class TestsMasterDataViewModel : ObservableObject
 {
     private readonly IMediator _mediator;
     private readonly IRepository<ExternalLab> _externalLabRepository;
+    private readonly IServiceProvider _serviceProvider;
 
-    public TestsMasterDataViewModel(IMediator mediator, IRepository<ExternalLab> externalLabRepository)
+    public TestsMasterDataViewModel(IMediator mediator, IRepository<ExternalLab> externalLabRepository, IServiceProvider serviceProvider)
     {
         _mediator = mediator;
         _externalLabRepository = externalLabRepository;
+        _serviceProvider = serviceProvider;
     }
 
     [ObservableProperty]
@@ -383,6 +386,18 @@ public partial class TestsMasterDataViewModel : ObservableObject
     [RelayCommand]
     private void OpenReferenceValues()
     {
+        if (SelectedTest is null) return;
+
+        var viewModel = _serviceProvider.GetRequiredService<ReferenceValuesViewModel>();
+        viewModel.Initialize(SelectedTest.Id, SelectedTest.Name);
+
+        var window = new Views.SystemSettings.ReferenceValuesWindow
+        {
+            DataContext = viewModel
+        };
+
+        window.Loaded += async (_, _) => await viewModel.LoadReferenceValuesCommand.ExecuteAsync(null);
+        window.ShowDialog();
     }
 
     [RelayCommand]
@@ -422,11 +437,11 @@ public partial class TestsMasterDataViewModel : ObservableObject
         PatientQuestion = string.Empty;
     }
 
-    private async Task LoadExternalLabNamesAsync()
+    private async Task LoadExternalLabNamesAsync(CancellationToken cancellationToken = default)
     {
         try
         {
-            var labs = await _externalLabRepository.GetAllAsync();
+            var labs = await _externalLabRepository.GetAllAsync(cancellationToken);
             ExternalLabNames.Clear();
             foreach (var lab in labs.Select(l => l.Name).OrderBy(n => n))
                 ExternalLabNames.Add(lab);

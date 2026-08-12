@@ -1,0 +1,16 @@
+using FluentValidation;
+
+namespace MasrLab.Application.Features.TestsMasterData.Commands.AddReferenceValue;
+
+public class AddReferenceValueCommandValidator : AbstractValidator<AddReferenceValueCommand>
+{
+    public AddReferenceValueCommandValidator()
+    {
+        RuleFor(x => x.TestId).GreaterThan(0);
+        RuleFor(x => x.NormalRange).NotEmpty();
+        RuleFor(x => x.AgeMin).GreaterThanOrEqualTo(0);
+        RuleFor(x => x)
+            .Must(x => (x.AgeMin == 0 && x.AgeMax == 0) || x.AgeMax > x.AgeMin)
+            .WithMessage("يجب أن يكون أعلى عمر أكبر من أدنى عمر، أو كلاهما صفر للنطاق بدون قيد عمري");
+    }
+}

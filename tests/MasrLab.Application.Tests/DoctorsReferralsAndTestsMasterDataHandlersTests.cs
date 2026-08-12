@@ -6,7 +6,10 @@ using MasrLab.Application.Features.PriceLists.Commands.UpdatePriceListItems;
 using MasrLab.Application.Features.PriceLists.Queries.GetPriceListForPrint;
 using MasrLab.Application.Features.TestGroups.Commands.ManageTestGroups;
 using MasrLab.Application.Features.TestsMasterData.Commands.AddTest;
-using MasrLab.Application.Features.TestsMasterData.Commands.UpdateReferenceValues;
+using MasrLab.Application.Features.TestsMasterData.Commands.AddReferenceValue;
+using MasrLab.Application.Features.TestsMasterData.Commands.UpdateReferenceValue;
+using MasrLab.Application.Features.TestsMasterData.Commands.DeleteReferenceValue;
+using MasrLab.Application.Features.TestsMasterData.Queries.GetReferenceValuesByTestId;
 using MasrLab.Application.Features.TestsMasterData.Commands.UpdateTest;
 using MasrLab.Application.Features.TestsMasterData.Queries.GetTestWithReferences;
 using MasrLab.Domain.Common.Enums;
@@ -92,18 +95,44 @@ public class DoctorsReferralsAndTestsMasterDataHandlersTests
     }
 
     [Fact]
-    public async Task UpdateReferenceValues_persists_gender_specific_range()
+    public async Task AddReferenceValue_persists_gender_specific_range()
     {
-        var refs = new Mock<IRepository<ReferenceValue>>(); ReferenceValue? saved = null; refs.Setup(x => x.AddAsync(It.IsAny<ReferenceValue>(), It.IsAny<CancellationToken>())).Callback<ReferenceValue, CancellationToken>((r, _) => saved = r);
-        await new UpdateReferenceValuesCommandHandler(refs.Object, new Mock<IRepository<CoreTest>>().Object, new Mock<IUnitOfWork>().Object).Handle(new(2, Gender.Male, 1, 9, AgeUnit.Years, "1-9", "high", "low"), default);
+        var refs = new Mock<IReferenceValueRepository>(); ReferenceValue? saved = null;
+        refs.Setup(x => x.AddAsync(It.IsAny<ReferenceValue>(), It.IsAny<CancellationToken>())).Callback<ReferenceValue, CancellationToken>((r, _) => saved = r);
+        refs.Setup(x => x.GetByTestIdAsync(It.IsAny<int>(), It.IsAny<CancellationToken>())).ReturnsAsync(new List<ReferenceValue>());
+        await new AddReferenceValueCommandHandler(refs.Object, new Mock<IUnitOfWork>().Object).Handle(
+            new(2, ReferenceValueGender.Male, 1, 9, AgeUnit.Years, "1-9", null, null, null, null, null, false, "high", "low"), default);
         Assert.NotNull(saved); Assert.Equal(ReferenceValueGender.Male, saved!.Gender); Assert.Equal("1-9", saved.NormalRange);
     }
 
     [Fact]
-    public async Task UpdateReferenceValues_propagates_save_failure()
+    public async Task AddReferenceValue_throws_when_overlap_exists()
     {
+        var refs = new Mock<IReferenceValueRepository>();
+        var existing = new ReferenceValue { Id = 1, TestId = 2, Gender = ReferenceValueGender.Male, AgeMin = 1, AgeMax = 9, AgeUnit = AgeUnit.Years };
+        refs.Setup(x => x.GetByTestIdAsync(2, It.IsAny<CancellationToken>())).ReturnsAsync(new List<ReferenceValue> { existing });
+        await Assert.ThrowsAsync<BusinessRuleViolationException>(() => new AddReferenceValueCommandHandler(refs.Object, new Mock<IUnitOfWork>().Object).Handle(
+            new(2, ReferenceValueGender.Male, 5, 15, AgeUnit.Years, "5-15", null, null, null, null, null, false, null, null), default));
+    }
+
+    [Fact]
+    public async Task AddReferenceValue_throws_when_no_constraint_overlaps_with_range()
+    {
+        var refs = new Mock<IReferenceValueRepository>();
+        var existing = new ReferenceValue { Id = 1, TestId = 2, Gender = ReferenceValueGender.Both, AgeMin = 0, AgeMax = 0, AgeUnit = AgeUnit.Years };
+        refs.Setup(x => x.GetByTestIdAsync(2, It.IsAny<CancellationToken>())).ReturnsAsync(new List<ReferenceValue> { existing });
+        await Assert.ThrowsAsync<BusinessRuleViolationException>(() => new AddReferenceValueCommandHandler(refs.Object, new Mock<IUnitOfWork>().Object).Handle(
+            new(2, ReferenceValueGender.Male, 1, 29, AgeUnit.Days, "1-29", null, null, null, null, null, false, null, null), default));
+    }
+
+    [Fact]
+    public async Task AddReferenceValue_propagates_save_failure()
+    {
+        var refs = new Mock<IReferenceValueRepository>();
+        refs.Setup(x => x.GetByTestIdAsync(It.IsAny<int>(), It.IsAny<CancellationToken>())).ReturnsAsync(new List<ReferenceValue>());
         var uow = new Mock<IUnitOfWork>(); uow.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>())).ThrowsAsync(new InvalidOperationException("write failed"));
-        await Assert.ThrowsAsync<InvalidOperationException>(() => new UpdateReferenceValuesCommandHandler(new Mock<IRepository<ReferenceValue>>().Object, new Mock<IRepository<CoreTest>>().Object, uow.Object).Handle(new(2, Gender.Female, 1, 9, AgeUnit.Years, "1-9", null, null), default));
+        await Assert.ThrowsAsync<InvalidOperationException>(() => new AddReferenceValueCommandHandler(refs.Object, uow.Object).Handle(
+            new(2, ReferenceValueGender.Female, 1, 9, AgeUnit.Years, "1-9", null, null, null, null, null, false, null, null), default));
     }
 
     [Fact]

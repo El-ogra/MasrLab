@@ -18,6 +18,12 @@ public class ReferenceValueConfiguration : IEntityTypeConfiguration<ReferenceVal
         builder.Property(e => e.AgeMax).IsRequired();
         builder.Property(e => e.AgeUnit).IsRequired();
         builder.Property(e => e.NormalRange).HasMaxLength(200).IsRequired();
+        builder.Property(e => e.LowLimit).HasColumnType("decimal(18,2)");
+        builder.Property(e => e.HighLimit).HasColumnType("decimal(18,2)");
+        builder.Property(e => e.TestUnit).HasMaxLength(50);
+        builder.Property(e => e.LowFlag).HasMaxLength(50);
+        builder.Property(e => e.HighFlag).HasMaxLength(50);
+        builder.Property(e => e.ForPregnantOnly).IsRequired();
         builder.Property(e => e.HighComment).HasMaxLength(500);
         builder.Property(e => e.LowComment).HasMaxLength(500);
 

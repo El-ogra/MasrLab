@@ -11,6 +11,12 @@ public class ReferenceValue : BaseEntity
     public int AgeMax { get; set; }
     public AgeUnit AgeUnit { get; set; }
     public string NormalRange { get; set; } = string.Empty;
+    public decimal? LowLimit { get; set; }
+    public decimal? HighLimit { get; set; }
+    public string? TestUnit { get; set; }
+    public string? LowFlag { get; set; }
+    public string? HighFlag { get; set; }
+    public bool ForPregnantOnly { get; set; }
     public string? HighComment { get; set; }
     public string? LowComment { get; set; }
 }

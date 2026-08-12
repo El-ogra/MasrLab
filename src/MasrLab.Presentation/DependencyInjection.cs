@@ -72,6 +72,7 @@ public static class DependencyInjection
         services.AddTransient<PatientTitlesViewModel>();
         services.AddTransient<PriceListPrintViewModel>();
         services.AddTransient<MasrLab.Presentation.ViewModels.SystemSettings.TestsMasterDataViewModel>();
+        services.AddTransient<MasrLab.Presentation.ViewModels.SystemSettings.ReferenceValuesViewModel>();
         services.AddTransient<UsersPermissionsViewModel>();
         services.AddTransient<WorkSheetsViewModel>();
 
