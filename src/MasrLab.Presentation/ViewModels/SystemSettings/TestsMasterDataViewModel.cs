@@ -127,6 +127,12 @@ public partial class TestsMasterDataViewModel : ObservableObject
     private string _patientQuestion = string.Empty;
 
     [ObservableProperty]
+    private string _turnaroundTime = string.Empty;
+
+    [ObservableProperty]
+    private string _unit = string.Empty;
+
+    [ObservableProperty]
     private bool _isLoading;
 
     [ObservableProperty]
@@ -172,6 +178,8 @@ public partial class TestsMasterDataViewModel : ObservableObject
             OutsourcedLabName = value.OutsourcedLabName ?? string.Empty;
             OutsourcedCostPrice = value.OutsourcedCostPrice ?? 0;
             PatientQuestion = value.PatientQuestion ?? string.Empty;
+            TurnaroundTime = value.TurnaroundTime;
+            Unit = value.Unit;
         }
         OnPropertyChanged(nameof(IsEditing));
     }
@@ -228,7 +236,7 @@ public partial class TestsMasterDataViewModel : ObservableObject
             var command = new AddTestCommand(
                 TestName, ReportName, EillName, GroupName,
                 string.IsNullOrWhiteSpace(TestCode) ? null : TestCode,
-                PatientPrice, string.Empty, false, string.Empty,
+                PatientPrice, TurnaroundTime, false, Unit,
                 string.IsNullOrWhiteSpace(TestCode) ? null : TestCode,
                 string.IsNullOrWhiteSpace(HistoryName) ? null : HistoryName,
                 string.IsNullOrWhiteSpace(ArabicName) ? null : ArabicName,
@@ -276,7 +284,7 @@ public partial class TestsMasterDataViewModel : ObservableObject
                 SelectedTest.Id,
                 TestName, ReportName, EillName, GroupName,
                 string.IsNullOrWhiteSpace(TestCode) ? null : TestCode,
-                PatientPrice, string.Empty, false, string.Empty,
+                PatientPrice, TurnaroundTime, false, Unit,
                 string.IsNullOrWhiteSpace(TestCode) ? null : TestCode,
                 string.IsNullOrWhiteSpace(HistoryName) ? null : HistoryName,
                 string.IsNullOrWhiteSpace(ArabicName) ? null : ArabicName,
@@ -435,6 +443,8 @@ public partial class TestsMasterDataViewModel : ObservableObject
         OutsourcedLabName = string.Empty;
         OutsourcedCostPrice = 0;
         PatientQuestion = string.Empty;
+        TurnaroundTime = string.Empty;
+        Unit = string.Empty;
     }
 
     private async Task LoadExternalLabNamesAsync(CancellationToken cancellationToken = default)

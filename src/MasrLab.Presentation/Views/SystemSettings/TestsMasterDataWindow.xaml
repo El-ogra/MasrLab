@@ -127,6 +127,9 @@
                                 <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="5"/>
                                 <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="5"/>
+                                <RowDefinition Height="Auto"/>
+                                <RowDefinition Height="5"/>
                             </Grid.RowDefinitions>
 
                             <!-- Test Name -->
@@ -189,6 +192,13 @@
                                       ItemsSource="{Binding ReferenceTypes}"/>
                             <TextBlock Grid.Row="20" Grid.Column="2" Text="Patient price" VerticalAlignment="Center"/>
                             <TextBox Grid.Row="20" Grid.Column="3" Text="{Binding PatientPrice, UpdateSourceTrigger=PropertyChanged}"/>
+
+                            <!-- Turnaround time و Unit -->
+                            <TextBlock Grid.Row="22" Grid.Column="0" Text="Turnaround time" VerticalAlignment="Center"/>
+                            <TextBox Grid.Row="22" Grid.Column="1" Text="{Binding TurnaroundTime, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,10,0"/>
+                            <TextBlock Grid.Row="22" Grid.Column="2" Text="Unit" VerticalAlignment="Center"/>
+                            <ComboBox Grid.Row="22" Grid.Column="3" Text="{Binding Unit, UpdateSourceTrigger=PropertyChanged}"
+                                      IsEditable="True"/>
                         </Grid>
                     </StackPanel>
                 </ScrollViewer>
