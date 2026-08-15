@@ -82,7 +82,7 @@ public class NewEventTests
 
         var evt = Assert.Single(result.DomainEvents.OfType<TestResultEntered>());
         Assert.Equal(result.Id, evt.ResultId);
-        Assert.Equal(5, evt.VisitTestId);
+        Assert.Equal(5, evt.VisitTestResultItemId);
         Assert.Equal("12.5", evt.Value);
         Assert.Equal(7, evt.EnteredBy);
         Assert.Equal("12.5", result.Value);

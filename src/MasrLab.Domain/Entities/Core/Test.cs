@@ -40,4 +40,5 @@ public class Test : BaseEntity
 
     public ICollection<ReferenceValue> ReferenceValues { get; set; } = new List<ReferenceValue>();
     public ICollection<Comment> Comments { get; set; } = new List<Comment>();
+    public ICollection<TestComponent> TestComponents { get; set; } = new List<TestComponent>();
 }

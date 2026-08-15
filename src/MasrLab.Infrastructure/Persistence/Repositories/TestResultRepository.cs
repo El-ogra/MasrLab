@@ -10,10 +10,10 @@ public class TestResultRepository : GenericRepository<TestResult>, ITestResultRe
     {
     }
 
-    public async Task<IReadOnlyList<TestResult>> GetByVisitTestIdAsync(int visitTestId, CancellationToken cancellationToken = default)
+    public async Task<IReadOnlyList<TestResult>> GetByVisitTestResultItemIdAsync(int visitTestResultItemId, CancellationToken cancellationToken = default)
     {
         return await _context.TestResults
-            .Where(tr => tr.VisitTestId == visitTestId)
+            .Where(tr => tr.VisitTestResultItemId == visitTestResultItemId)
             .ToListAsync(cancellationToken);
     }
 
@@ -24,13 +24,13 @@ public class TestResultRepository : GenericRepository<TestResult>, ITestResultRe
             .Select(v => v.Id)
             .ToListAsync(cancellationToken);
 
-        var visitTestIds = await _context.VisitTests
-            .Where(vt => visitIds.Contains(vt.PatientVisitId))
-            .Select(vt => vt.Id)
+        var resultItemIds = await _context.VisitTestResultItems
+            .Where(vri => visitIds.Contains(vri.VisitTestId))
+            .Select(vri => vri.Id)
             .ToListAsync(cancellationToken);
 
         return await _context.TestResults
-            .Where(tr => visitTestIds.Contains(tr.VisitTestId))
+            .Where(tr => resultItemIds.Contains(tr.VisitTestResultItemId))
             .ToListAsync(cancellationToken);
     }
 }

@@ -37,4 +37,7 @@ public record TestDto
     public string? OutsourcedLabName { get; init; }
     public decimal? OutsourcedCostPrice { get; init; }
     public string? PatientQuestion { get; init; }
+
+    public bool IsCompound { get; init; }
+    public IReadOnlyList<TestComponentDto> Components { get; init; } = Array.Empty<TestComponentDto>();
 }

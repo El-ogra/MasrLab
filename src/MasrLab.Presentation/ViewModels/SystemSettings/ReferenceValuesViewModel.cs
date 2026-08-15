@@ -6,6 +6,7 @@ using MasrLab.Application.Features.TestsMasterData.Commands.AddReferenceValue;
 using MasrLab.Application.Features.TestsMasterData.Commands.DeleteReferenceValue;
 using MasrLab.Application.Features.TestsMasterData.Commands.UpdateReferenceValue;
 using MasrLab.Application.Features.TestsMasterData.Queries.GetReferenceValuesByTestId;
+using MasrLab.Application.Features.TestsMasterData.Queries.GetTestComponentsByTestId;
 using MasrLab.Domain.Common.Enums;
 using MasrLab.Domain.Exceptions;
 using MediatR;
@@ -37,6 +38,12 @@ public partial class ReferenceValuesViewModel : ObservableObject
 
     [ObservableProperty]
     private ReferenceValueDto? _selectedReferenceValue;
+
+    [ObservableProperty]
+    private ObservableCollection<TestComponentDto> _components = [];
+
+    [ObservableProperty]
+    private TestComponentDto? _selectedComponent;
 
     [ObservableProperty]
     private RangeForMode _selectedRangeForMode = RangeForMode.ForAll;
@@ -100,6 +107,7 @@ public partial class ReferenceValuesViewModel : ObservableObject
 
     public bool IsGenderEnabled => SelectedRangeForMode is RangeForMode.BySexOnly or RangeForMode.BySexAndAge;
     public bool IsAgeEnabled => SelectedRangeForMode is RangeForMode.ByAgeOnly or RangeForMode.BySexAndAge;
+    public bool IsNumericLimitsEnabled => SelectedComponent?.ResultEntryKind != ResultEntryKind.CultureDetail;
 
     partial void OnSelectedRangeForModeChanged(RangeForMode value)
     {
@@ -136,6 +144,8 @@ public partial class ReferenceValuesViewModel : ObservableObject
             LowComment = value.LowComment;
             HighComment = value.HighComment;
 
+            SelectedComponent = Components.FirstOrDefault(c => c.Id == value.TestComponentId);
+
             if (value.Gender == ReferenceValueGender.Both && value.AgeMin == 0 && value.AgeMax == 0)
                 SelectedRangeForMode = RangeForMode.ForAll;
             else if (value.Gender != ReferenceValueGender.Both && value.AgeMin == 0 && value.AgeMax == 0)
@@ -151,6 +161,11 @@ public partial class ReferenceValuesViewModel : ObservableObject
         }
     }
 
+    partial void OnSelectedComponentChanged(TestComponentDto? value)
+    {
+        OnPropertyChanged(nameof(IsNumericLimitsEnabled));
+    }
+
     [RelayCommand]
     private async Task LoadReferenceValuesAsync()
     {
@@ -161,6 +176,9 @@ public partial class ReferenceValuesViewModel : ObservableObject
 
             var result = await _mediator.Send(new GetReferenceValuesByTestIdQuery(_testId));
             ReferenceValues = new ObservableCollection<ReferenceValueDto>(result);
+
+            var compResult = await _mediator.Send(new GetTestComponentsByTestIdQuery(_testId));
+            Components = new ObservableCollection<TestComponentDto>(compResult);
         }
         catch (Exception ex)
         {
@@ -193,7 +211,7 @@ public partial class ReferenceValuesViewModel : ObservableObject
             var ageUnit = IsAgeEnabled ? SelectedAgeUnit : AgeUnit.Years;
 
             var command = new AddReferenceValueCommand(
-                _testId, gender, ageMin, ageMax, ageUnit,
+                _testId, SelectedComponent?.Id, gender, ageMin, ageMax, ageUnit,
                 ReferenceRange, LowLimit, HighLimit, TestUnit,
                 LowFlag, HighFlag, ForPregnantOnly, HighComment, LowComment);
 
@@ -231,7 +249,7 @@ public partial class ReferenceValuesViewModel : ObservableObject
             var ageUnit = IsAgeEnabled ? SelectedAgeUnit : AgeUnit.Years;
 
             var command = new UpdateReferenceValueCommand(
-                SelectedReferenceValue.Id, _testId,
+                SelectedReferenceValue.Id, _testId, SelectedComponent?.Id,
                 gender, ageMin, ageMax, ageUnit,
                 ReferenceRange, LowLimit, HighLimit, TestUnit,
                 LowFlag, HighFlag, ForPregnantOnly, HighComment, LowComment);
@@ -337,6 +355,7 @@ public partial class ReferenceValuesViewModel : ObservableObject
         ForPregnantOnly = false;
         LowComment = null;
         HighComment = null;
+        SelectedComponent = null;
         ErrorMessage = string.Empty;
     }
 }

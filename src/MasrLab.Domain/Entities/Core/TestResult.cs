@@ -7,7 +7,7 @@ namespace MasrLab.Domain.Entities.Core;
 
 public class TestResult : BaseEntity
 {
-    public int VisitTestId { get; set; }
+    public int VisitTestResultItemId { get; set; }
     public string Value { get; set; } = string.Empty;
     public string Unit { get; set; } = string.Empty;
     public string ReferenceRange { get; set; } = string.Empty;
@@ -15,10 +15,6 @@ public class TestResult : BaseEntity
     public int EnteredByUserId { get; set; }
     public DateTime EnteredAt { get; set; }
 
-    /// <summary>
-    /// مبرر التجاوز الموثق عند إدخال نتيجة لاختبار عينته غير مجمّعة (مسار استثنائي).
-    /// audit trail: يُحفظ مع النتيجة نفسها ليبقى قابلاً للتتبع لاحقاً؛ يبقى null في الإدخال العادي.
-    /// </summary>
     public string? OverrideReason { get; set; }
     public int? PrintedByUserId { get; set; }
     public DateTime? PrintedAt { get; set; }
@@ -26,20 +22,20 @@ public class TestResult : BaseEntity
     public int EditedByUserId { get; set; }
     public DateTime? EditedAt { get; set; }
 
-    public static TestResult Enter(int visitTestId, string value, int enteredByUserId)
+    public static TestResult Enter(int visitTestResultItemId, string value, int enteredByUserId)
     {
-        if (visitTestId <= 0)
-            throw new BusinessRuleViolationException("TestResult requires a valid VisitTestId.");
+        if (visitTestResultItemId <= 0)
+            throw new BusinessRuleViolationException("TestResult requires a valid VisitTestResultItemId.");
         if (string.IsNullOrWhiteSpace(value))
             throw new BusinessRuleViolationException("Test result value cannot be empty.");
         var result = new TestResult
         {
-            VisitTestId = visitTestId,
+            VisitTestResultItemId = visitTestResultItemId,
             Value = value,
             EnteredByUserId = enteredByUserId,
             EnteredAt = DateTime.UtcNow
         };
-        result.AddDomainEvent(new TestResultEntered(result.Id, visitTestId, value, enteredByUserId));
+        result.AddDomainEvent(new TestResultEntered(result.Id, visitTestResultItemId, value, enteredByUserId));
         return result;
     }
 
@@ -51,6 +47,6 @@ public class TestResult : BaseEntity
         Value = newValue;
         EditedByUserId = editedByUserId;
         EditedAt = DateTime.UtcNow;
-        AddDomainEvent(new TestResultEdited(Id, VisitTestId, oldValue, newValue, editedByUserId));
+        AddDomainEvent(new TestResultEdited(Id, VisitTestResultItemId, oldValue, newValue, editedByUserId));
     }
 }

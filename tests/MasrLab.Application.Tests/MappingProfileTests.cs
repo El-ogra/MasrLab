@@ -191,7 +191,7 @@ public class ResultMappingProfileTests
     [Fact]
     public void Map_TestResult_ToTestResultDto_MapsFields()
     {
-        var result = TestResult.Enter(visitTestId: 10, value: "5.2", enteredByUserId: 4);
+        var result = TestResult.Enter(visitTestResultItemId: 10, value: "5.2", enteredByUserId: 4);
         result.Unit = "cells/uL";
         result.Status = ResultStatus.High;
         result.PrintCount = 2;
@@ -202,7 +202,7 @@ public class ResultMappingProfileTests
         Assert.Equal(ResultStatus.High, dto.Status);
         Assert.Equal(4, dto.EnteredByUserId);
         Assert.Equal(2, dto.PrintCount);
-        Assert.Equal(10, dto.VisitTestId);
+        Assert.Equal(10, dto.VisitTestResultItemId);
     }
 }
 

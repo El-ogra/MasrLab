@@ -55,11 +55,35 @@ public class VisitRepositoryDateRangeIntegrationTests
             context.PatientVisits.AddRange(inRange, outOfRange);
             await context.SaveChangesAsync(CancellationToken.None);
 
-            var visitTest = new VisitTest(inRange.Id, 1, 100m, isOutsourced: false);
+            var test = new Test
+            {
+                Name = "Test1", ReportName = "Test1", ReceiptName = "Test1",
+                Group = "G", Price = 10m, TurnaroundTime = "1d", Unit = "mg/dL"
+            };
+            context.Tests.Add(test);
+            await context.SaveChangesAsync(CancellationToken.None);
+
+            var component = TestComponent.Create(test.Id, "Component", "Unit", 1);
+            context.TestComponents.Add(component);
+            await context.SaveChangesAsync(CancellationToken.None);
+
+            var visitTest = new VisitTest(inRange.Id, test.Id, 100m, isOutsourced: false);
             context.VisitTests.Add(visitTest);
             await context.SaveChangesAsync(CancellationToken.None);
 
-            var testResult = TestResult.Enter(visitTest.Id, "5.5", enteredByUserId: 1);
+            var resultItem = new VisitTestResultItem
+            {
+                VisitTestId = visitTest.Id,
+                SourceTestComponentId = component.Id,
+                ComponentName = "Test Component",
+                ComponentUnit = "Unit",
+                DisplayOrder = 1,
+                ResultEntryKind = Domain.Common.Enums.ResultEntryKind.Ordinary
+            };
+            context.VisitTestResultItems.Add(resultItem);
+            await context.SaveChangesAsync(CancellationToken.None);
+
+            var testResult = TestResult.Enter(resultItem.Id, "5.5", enteredByUserId: 1);
             testResult.ReferenceRange = "3.5 - 6.5";
             context.TestResults.Add(testResult);
 
@@ -67,7 +91,7 @@ public class VisitRepositoryDateRangeIntegrationTests
             sample.SampleType = "Blood";
             context.Samples.Add(sample);
 
-            context.VisitTests.Add(new VisitTest(outOfRange.Id, 1, 50m, isOutsourced: false));
+            context.VisitTests.Add(new VisitTest(outOfRange.Id, test.Id, 50m, isOutsourced: false));
             await context.SaveChangesAsync(CancellationToken.None);
 
             var repository = new VisitRepository(context);
@@ -76,7 +100,7 @@ public class VisitRepositoryDateRangeIntegrationTests
             var visit = Assert.Single(result);
             Assert.Equal("V-IN", visit.LabId);
             Assert.Single(visit.VisitTests);
-            Assert.NotNull(visit.VisitTests.Single().TestResult);
+            Assert.Single(visit.VisitTests.Single().ResultItems);
             Assert.Single(visit.Samples);
         }
         finally

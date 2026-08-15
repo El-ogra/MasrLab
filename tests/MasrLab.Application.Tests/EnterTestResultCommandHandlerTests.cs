@@ -14,6 +14,7 @@ public class EnterTestResultCommandHandlerTests
     private readonly Mock<IResultValidationService> _resultValidationService;
     private readonly Mock<IMedicalHistoryService> _medicalHistoryService;
     private readonly Mock<IVisitRepository> _visitRepository;
+    private readonly Mock<IVisitTestResultItemRepository> _visitTestResultItemRepository;
     private readonly Mock<ISampleTrackingService> _sampleTrackingService;
     private readonly Mock<IUnitOfWork> _unitOfWork;
     private readonly Mock<IPatientRepository> _patientRepository;
@@ -24,6 +25,7 @@ public class EnterTestResultCommandHandlerTests
         _resultValidationService = new Mock<IResultValidationService>();
         _medicalHistoryService = new Mock<IMedicalHistoryService>();
         _visitRepository = new Mock<IVisitRepository>();
+        _visitTestResultItemRepository = new Mock<IVisitTestResultItemRepository>();
         _sampleTrackingService = new Mock<ISampleTrackingService>();
         _unitOfWork = new Mock<IUnitOfWork>();
         _patientRepository = new Mock<IPatientRepository>();
@@ -35,13 +37,14 @@ public class EnterTestResultCommandHandlerTests
             _resultValidationService.Object,
             _medicalHistoryService.Object,
             _visitRepository.Object,
+            _visitTestResultItemRepository.Object,
             _sampleTrackingService.Object,
             _unitOfWork.Object,
             _patientRepository.Object);
 
     private static EnterTestResultCommand CreateCommand(string? overrideReason = null)
         => new(
-            VisitTestId: 100,
+            VisitTestResultItemId: 100,
             Value: "5.0",
             Unit: "cells/uL",
             ReferenceRange: "1-10",
@@ -58,10 +61,17 @@ public class EnterTestResultCommandHandlerTests
             .ReturnsAsync(new Patient { Id = 1, Name = "Ahmed", Gender = gender });
     }
 
+    private void SetupVisitTestResultItem()
+    {
+        _visitTestResultItemRepository
+            .Setup(r => r.GetByIdAsync(100, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new VisitTestResultItem { Id = 100, VisitTestId = 10, SourceTestComponentId = 1, ComponentName = "Test", ComponentUnit = "Unit", DisplayOrder = 1, ResultEntryKind = ResultEntryKind.Ordinary });
+    }
+
     private void SetupVisitTest()
     {
         _visitRepository
-            .Setup(r => r.GetVisitTestAsync(100, It.IsAny<CancellationToken>()))
+            .Setup(r => r.GetVisitTestAsync(10, It.IsAny<CancellationToken>()))
             .ReturnsAsync(new VisitTest(patientVisitId: 10, testId: 20, price: 100m, isOutsourced: false));
     }
 
@@ -76,6 +86,7 @@ public class EnterTestResultCommandHandlerTests
     public async Task Handle_WhenSampleCollected_EntersResultNormally()
     {
         SetupPatient();
+        SetupVisitTestResultItem();
         SetupVisitTest();
         SetupValidationNormal();
         _sampleTrackingService
@@ -98,6 +109,7 @@ public class EnterTestResultCommandHandlerTests
     public async Task Handle_WhenSampleNotCollectedAndNoOverride_ThrowsAndDoesNotAdd()
     {
         SetupPatient();
+        SetupVisitTestResultItem();
         SetupVisitTest();
         _sampleTrackingService
             .Setup(s => s.IsSampleCollectedAsync(10, 20, It.IsAny<CancellationToken>()))
@@ -113,6 +125,7 @@ public class EnterTestResultCommandHandlerTests
     public async Task Handle_WhenSampleNotCollectedWithOverrideReason_EntersAndRecordsReason()
     {
         SetupPatient();
+        SetupVisitTestResultItem();
         SetupVisitTest();
         SetupValidationNormal();
         _sampleTrackingService
@@ -135,6 +148,7 @@ public class EnterTestResultCommandHandlerTests
     public async Task Handle_WhenSampleNotCollectedWithBlankOverrideReason_Throws()
     {
         SetupPatient();
+        SetupVisitTestResultItem();
         SetupVisitTest();
         _sampleTrackingService
             .Setup(s => s.IsSampleCollectedAsync(10, 20, It.IsAny<CancellationToken>()))
@@ -150,6 +164,7 @@ public class EnterTestResultCommandHandlerTests
     public async Task Handle_WhenPatientHasFemaleGender_UsesPatientGenderInValidation()
     {
         SetupPatient(Gender.Female);
+        SetupVisitTestResultItem();
         SetupVisitTest();
         SetupValidationNormal();
         _sampleTrackingService
@@ -166,6 +181,7 @@ public class EnterTestResultCommandHandlerTests
     [Fact]
     public async Task Handle_WhenPatientNotFound_ThrowsBeforeAnyValidation()
     {
+        SetupVisitTestResultItem();
         SetupVisitTest();
         _patientRepository
             .Setup(r => r.GetByIdAsync(1, It.IsAny<CancellationToken>()))

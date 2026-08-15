@@ -6,6 +6,7 @@ public record ReferenceValueDto
 {
     public int Id { get; init; }
     public int TestId { get; init; }
+    public int? TestComponentId { get; init; }
     public ReferenceValueGender Gender { get; init; }
     public int AgeMin { get; init; }
     public int AgeMax { get; init; }

@@ -17,7 +17,7 @@ public class AddNewCultureCommandHandler : IRequestHandler<AddNewCultureCommand,
 
     public async Task<Unit> Handle(AddNewCultureCommand request, CancellationToken cancellationToken)
     {
-        var culture = Culture.Create(request.VisitTestId);
+        var culture = Culture.Create(request.VisitTestResultItemId);
         culture.Record(
             request.ColonyCount,
             request.OrganismA,

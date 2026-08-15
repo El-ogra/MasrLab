@@ -20,6 +20,7 @@ using MasrLab.Domain.Exceptions;
 using MasrLab.Domain.Interfaces;
 using Moq;
 using CoreTest = MasrLab.Domain.Entities.Core.Test;
+using CoreTestComponent = MasrLab.Domain.Entities.Core.TestComponent;
 
 namespace MasrLab.Application.Tests;
 
@@ -100,8 +101,8 @@ public class DoctorsReferralsAndTestsMasterDataHandlersTests
         var refs = new Mock<IReferenceValueRepository>(); ReferenceValue? saved = null;
         refs.Setup(x => x.AddAsync(It.IsAny<ReferenceValue>(), It.IsAny<CancellationToken>())).Callback<ReferenceValue, CancellationToken>((r, _) => saved = r);
         refs.Setup(x => x.GetByTestIdAsync(It.IsAny<int>(), It.IsAny<CancellationToken>())).ReturnsAsync(new List<ReferenceValue>());
-        await new AddReferenceValueCommandHandler(refs.Object, new Mock<IUnitOfWork>().Object).Handle(
-            new(2, ReferenceValueGender.Male, 1, 9, AgeUnit.Years, "1-9", null, null, null, null, null, false, "high", "low"), default);
+        await new AddReferenceValueCommandHandler(refs.Object, new Mock<IRepository<CoreTestComponent>>().Object, new Mock<IUnitOfWork>().Object).Handle(
+            new(2, null, ReferenceValueGender.Male, 1, 9, AgeUnit.Years, "1-9", null, null, null, null, null, false, "high", "low"), default);
         Assert.NotNull(saved); Assert.Equal(ReferenceValueGender.Male, saved!.Gender); Assert.Equal("1-9", saved.NormalRange);
     }
 
@@ -111,8 +112,8 @@ public class DoctorsReferralsAndTestsMasterDataHandlersTests
         var refs = new Mock<IReferenceValueRepository>();
         var existing = new ReferenceValue { Id = 1, TestId = 2, Gender = ReferenceValueGender.Male, AgeMin = 1, AgeMax = 9, AgeUnit = AgeUnit.Years };
         refs.Setup(x => x.GetByTestIdAsync(2, It.IsAny<CancellationToken>())).ReturnsAsync(new List<ReferenceValue> { existing });
-        await Assert.ThrowsAsync<BusinessRuleViolationException>(() => new AddReferenceValueCommandHandler(refs.Object, new Mock<IUnitOfWork>().Object).Handle(
-            new(2, ReferenceValueGender.Male, 5, 15, AgeUnit.Years, "5-15", null, null, null, null, null, false, null, null), default));
+        await Assert.ThrowsAsync<BusinessRuleViolationException>(() => new AddReferenceValueCommandHandler(refs.Object, new Mock<IRepository<CoreTestComponent>>().Object, new Mock<IUnitOfWork>().Object).Handle(
+            new(2, null, ReferenceValueGender.Male, 5, 15, AgeUnit.Years, "5-15", null, null, null, null, null, false, null, null), default));
     }
 
     [Fact]
@@ -121,8 +122,8 @@ public class DoctorsReferralsAndTestsMasterDataHandlersTests
         var refs = new Mock<IReferenceValueRepository>();
         var existing = new ReferenceValue { Id = 1, TestId = 2, Gender = ReferenceValueGender.Both, AgeMin = 0, AgeMax = 0, AgeUnit = AgeUnit.Years };
         refs.Setup(x => x.GetByTestIdAsync(2, It.IsAny<CancellationToken>())).ReturnsAsync(new List<ReferenceValue> { existing });
-        await Assert.ThrowsAsync<BusinessRuleViolationException>(() => new AddReferenceValueCommandHandler(refs.Object, new Mock<IUnitOfWork>().Object).Handle(
-            new(2, ReferenceValueGender.Male, 1, 29, AgeUnit.Days, "1-29", null, null, null, null, null, false, null, null), default));
+        await Assert.ThrowsAsync<BusinessRuleViolationException>(() => new AddReferenceValueCommandHandler(refs.Object, new Mock<IRepository<CoreTestComponent>>().Object, new Mock<IUnitOfWork>().Object).Handle(
+            new(2, null, ReferenceValueGender.Male, 1, 29, AgeUnit.Days, "1-29", null, null, null, null, null, false, null, null), default));
     }
 
     [Fact]
@@ -131,8 +132,8 @@ public class DoctorsReferralsAndTestsMasterDataHandlersTests
         var refs = new Mock<IReferenceValueRepository>();
         refs.Setup(x => x.GetByTestIdAsync(It.IsAny<int>(), It.IsAny<CancellationToken>())).ReturnsAsync(new List<ReferenceValue>());
         var uow = new Mock<IUnitOfWork>(); uow.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>())).ThrowsAsync(new InvalidOperationException("write failed"));
-        await Assert.ThrowsAsync<InvalidOperationException>(() => new AddReferenceValueCommandHandler(refs.Object, uow.Object).Handle(
-            new(2, ReferenceValueGender.Female, 1, 9, AgeUnit.Years, "1-9", null, null, null, null, null, false, null, null), default));
+        await Assert.ThrowsAsync<InvalidOperationException>(() => new AddReferenceValueCommandHandler(refs.Object, new Mock<IRepository<CoreTestComponent>>().Object, uow.Object).Handle(
+            new(2, null, ReferenceValueGender.Female, 1, 9, AgeUnit.Years, "1-9", null, null, null, null, null, false, null, null), default));
     }
 
     [Fact]
@@ -170,7 +171,7 @@ public class DoctorsReferralsAndTestsMasterDataHandlersTests
     [Fact]
     public async Task AddTest_persists_requested_test()
     {
-        var repo = new Mock<IRepository<CoreTest>>(); CoreTest? saved = null; repo.Setup(x => x.AddAsync(It.IsAny<CoreTest>(), It.IsAny<CancellationToken>())).Callback<CoreTest, CancellationToken>((t, _) => saved = t);
+        var repo = new Mock<IRepository<CoreTest>>(); CoreTest? saved = null; repo.Setup(x => x.AddAsync(It.IsAny<CoreTest>(), It.IsAny<CancellationToken>())).Callback<CoreTest, CancellationToken>((t, _) => { t.Id = 1; saved = t; });
         await new AddTestCommandHandler(repo.Object, new Mock<IUnitOfWork>().Object).Handle(NewTest(), default);
         Assert.NotNull(saved); Assert.Equal("CBC", saved!.Name); Assert.Equal(120m, saved.Price);
     }
@@ -183,10 +184,29 @@ public class DoctorsReferralsAndTestsMasterDataHandlersTests
     }
 
     [Fact]
+    public async Task AddTest_creates_first_component_automatically()
+    {
+        var repo = new Mock<IRepository<CoreTest>>();
+        CoreTest? savedTest = null;
+        repo.Setup(x => x.AddAsync(It.IsAny<CoreTest>(), It.IsAny<CancellationToken>()))
+            .Callback<CoreTest, CancellationToken>((t, _) => { t.Id = 5; savedTest = t; });
+
+        await new AddTestCommandHandler(repo.Object, new Mock<IUnitOfWork>().Object).Handle(NewTest(), default);
+
+        Assert.NotNull(savedTest);
+        Assert.Single(savedTest!.TestComponents);
+        var component = savedTest.TestComponents.First();
+        Assert.Equal("CBC", component.Name);
+        Assert.Equal("mg", component.Unit);
+        Assert.Equal(1, component.DisplayOrder);
+        Assert.Equal(ResultEntryKind.Ordinary, component.ResultEntryKind);
+    }
+
+    [Fact]
     public async Task ManageTestGroups_creates_group_and_its_items()
     {
         var groups = new Mock<IRepository<TestGroup>>(); var items = new Mock<ITestGroupItemRepository>(); TestGroup? saved = null; var addedIds = new List<int>(); groups.Setup(x => x.AddAsync(It.IsAny<TestGroup>(), It.IsAny<CancellationToken>())).Callback<TestGroup, CancellationToken>((g, _) => { g.Id = 10; saved = g; }); items.Setup(x => x.AddAsync(It.IsAny<TestGroupItem>(), It.IsAny<CancellationToken>())).Callback<TestGroupItem, CancellationToken>((i, _) => addedIds.Add(i.TestId));
-        await new ManageTestGroupsCommandHandler(groups.Object, items.Object, new Mock<IUnitOfWork>().Object).Handle(new(null, "Panel", 300m, "1, 2"), default);
+        await new ManageTestGroupsCommandHandler(groups.Object, items.Object, new Mock<IUnitOfWork>().Object).Handle(new(null, "Panel", "1, 2"), default);
         Assert.NotNull(saved); Assert.Equal("Panel", saved!.GroupName); Assert.Equal(new[] { 1, 2 }, addedIds); items.Verify(x => x.AddAsync(It.Is<TestGroupItem>(i => i.TestGroupId == 10), It.IsAny<CancellationToken>()), Times.Exactly(2));
     }
 
@@ -194,6 +214,6 @@ public class DoctorsReferralsAndTestsMasterDataHandlersTests
     public async Task ManageTestGroups_throws_when_requested_group_is_missing()
     {
         var groups = new Mock<IRepository<TestGroup>>(); groups.Setup(x => x.GetByIdAsync(10, It.IsAny<CancellationToken>())).ReturnsAsync((TestGroup?)null);
-        await Assert.ThrowsAsync<EntityNotFoundException>(() => new ManageTestGroupsCommandHandler(groups.Object, new Mock<ITestGroupItemRepository>().Object, new Mock<IUnitOfWork>().Object).Handle(new(10, "Panel", 300m, "1"), default));
+        await Assert.ThrowsAsync<EntityNotFoundException>(() => new ManageTestGroupsCommandHandler(groups.Object, new Mock<ITestGroupItemRepository>().Object, new Mock<IUnitOfWork>().Object).Handle(new(10, "Panel", "1"), default));
     }
 }

@@ -106,7 +106,7 @@ public class NewStateMachineTests
     [Fact]
     public void Culture_RecordSensitivity_WhenNotRecorded_ShouldThrowBusinessRuleViolation()
     {
-        var culture = new Culture { VisitTestId = 42, OrganismA = "E.coli" };
+        var culture = new Culture { VisitTestResultItemId = 42, OrganismA = "E.coli" };
 
         var ex = Assert.Throws<BusinessRuleViolationException>(
             () => culture.RecordSensitivity(1, SensitivityLevel.Low));
@@ -117,7 +117,7 @@ public class NewStateMachineTests
     [Fact]
     public void Culture_RecordSensitivity_ShouldTransitionToWithSensitivity()
     {
-        var culture = new Culture { Id = 1, VisitTestId = 42 };
+        var culture = new Culture { Id = 1, VisitTestResultItemId = 42 };
         culture.Record(100, "E.coli", null, null);
 
         culture.RecordSensitivity(3, SensitivityLevel.HighlySensitive);
@@ -128,7 +128,7 @@ public class NewStateMachineTests
     [Fact]
     public void Culture_RecordSensitivity_WhenAlreadyWithSensitivity_ShouldThrowBusinessRuleViolation()
     {
-        var culture = new Culture { Id = 1, VisitTestId = 42 };
+        var culture = new Culture { Id = 1, VisitTestResultItemId = 42 };
         culture.Record(100, "E.coli", null, null);
         culture.RecordSensitivity(3, SensitivityLevel.HighlySensitive);
 

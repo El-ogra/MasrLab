@@ -1,4 +1,5 @@
 using MasrLab.Application.Features.TestsMasterData.Commands.AddTest;
+using MasrLab.Domain.Common.Enums;
 using MasrLab.Domain.Entities.Core;
 using MasrLab.Domain.Interfaces;
 using MediatR;
@@ -52,6 +53,16 @@ public class AddTestCommandHandler : IRequestHandler<AddTestCommand, Unit>
             OutsourcedCostPrice = request.OutsourcedCostPrice,
             PatientQuestion = request.PatientQuestion
         };
+
+        var firstComponent = new TestComponent
+        {
+            Name = request.Name,
+            Unit = request.Unit,
+            DisplayOrder = 1,
+            ResultEntryKind = ResultEntryKind.Ordinary
+        };
+
+        test.TestComponents.Add(firstComponent);
 
         await _testRepository.AddAsync(test, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);

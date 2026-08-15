@@ -49,5 +49,10 @@ public class TestConfiguration : IEntityTypeConfiguration<Test>
         builder.HasIndex(e => e.Barcode);
         builder.HasIndex(e => e.IsDeleted);
         builder.HasIndex(e => e.ArrangeNo);
+
+        builder.HasMany(e => e.TestComponents)
+            .WithOne()
+            .HasForeignKey(e => e.TestId)
+            .OnDelete(DeleteBehavior.Cascade);
     }
 }

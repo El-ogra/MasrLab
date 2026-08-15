@@ -17,4 +17,12 @@ public class ReferenceValueRepository : GenericRepository<ReferenceValue>, IRefe
             .Where(rv => rv.TestId == testId)
             .ToListAsync(cancellationToken);
     }
+
+    public async Task<IReadOnlyList<ReferenceValue>> GetByTestComponentIdAsync(int testComponentId, CancellationToken cancellationToken = default)
+    {
+        return await _context.ReferenceValues
+            .AsNoTracking()
+            .Where(rv => rv.TestComponentId == testComponentId)
+            .ToListAsync(cancellationToken);
+    }
 }

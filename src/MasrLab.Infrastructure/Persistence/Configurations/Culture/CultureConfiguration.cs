@@ -1,3 +1,4 @@
+using MasrLab.Domain.Entities.Core;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using MasrLab.Domain.Entities.Culture;
@@ -12,6 +13,7 @@ public class CultureConfiguration : IEntityTypeConfiguration<Domain.Entities.Cul
         builder.HasKey(e => e.Id);
         builder.Property(e => e.Id).ValueGeneratedOnAdd();
 
+        builder.Property(e => e.VisitTestResultItemId).IsRequired();
         builder.Property(e => e.SampleType).HasMaxLength(200).IsRequired();
         builder.Property(e => e.OrganismA).HasMaxLength(200);
         builder.Property(e => e.OrganismB).HasMaxLength(200);
@@ -19,6 +21,16 @@ public class CultureConfiguration : IEntityTypeConfiguration<Domain.Entities.Cul
         builder.Property(e => e.CultureCondition).HasMaxLength(200).IsRequired();
         builder.Property(e => e.ColonyCount).IsRequired();
 
+        builder.HasOne<VisitTestResultItem>()
+            .WithMany()
+            .HasForeignKey(e => e.VisitTestResultItemId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasIndex(e => e.VisitTestResultItemId);
         builder.HasIndex(e => e.IsDeleted);
+
+        builder.HasIndex(e => new { e.VisitTestResultItemId })
+            .IsUnique()
+            .HasFilter("[IsDeleted] = 0");
     }
 }

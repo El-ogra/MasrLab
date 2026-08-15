@@ -15,4 +15,10 @@ public class CultureRepository : GenericRepository<Domain.Entities.Culture.Cultu
         return await _context.Cultures
             .FirstOrDefaultAsync(c => c.Id == cultureId, cancellationToken);
     }
+
+    public async Task<Domain.Entities.Culture.Culture?> GetByVisitTestResultItemIdAsync(int visitTestResultItemId, CancellationToken cancellationToken = default)
+    {
+        return await _context.Cultures
+            .FirstOrDefaultAsync(c => c.VisitTestResultItemId == visitTestResultItemId && !c.IsDeleted, cancellationToken);
+    }
 }

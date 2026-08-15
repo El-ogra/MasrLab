@@ -55,7 +55,7 @@ public class GetCaseUserTrackingQueryHandler : IRequestHandler<GetCaseUserTracki
         {
             var totalTests = v.VisitTests.Count;
             var completedTests = v.VisitTests
-                .Count(vt => vt.TestResult != null);
+                .Count(vt => vt.ResultItems.Any(ri => ri.ResultEntryKind == Domain.Common.Enums.ResultEntryKind.Ordinary));
 
             patients.TryGetValue(v.PatientId, out var patient);
             var doctorName = v.DoctorId.HasValue && doctors.TryGetValue(v.DoctorId.Value, out var doctor)

@@ -147,21 +147,21 @@ public class EventRaisedByEntityTests
     }
 
     [Fact]
-    public void Culture_Record_ShouldRaiseCultureRecordedWithVisitTestId()
+    public void Culture_Record_ShouldRaiseCultureRecordedWithVisitTestResultItemId()
     {
-        var culture = new Culture { Id = 1, VisitTestId = 42 };
+        var culture = new Culture { Id = 1, VisitTestResultItemId = 42 };
 
         culture.Record(100000, "E.coli", null, null);
 
         var evt = Assert.Single(culture.DomainEvents.OfType<CultureRecorded>());
         Assert.Equal(1, evt.CultureId);
-        Assert.Equal(42, evt.VisitTestId);
+        Assert.Equal(42, evt.VisitTestResultItemId);
     }
 
     [Fact]
     public void Culture_RecordSensitivity_ShouldRaiseSensitivityRecordedWithSensitivityId()
     {
-        var culture = new Culture { Id = 1, VisitTestId = 42 };
+        var culture = new Culture { Id = 1, VisitTestResultItemId = 42 };
         culture.Record(100000, "E.coli", null, null);
 
         culture.RecordSensitivity(3, SensitivityLevel.HighlySensitive);

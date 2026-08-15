@@ -13,4 +13,5 @@ public interface IVisitRepository : IRepository<PatientVisit>
     Task<int?> GetMaxVisitLabIdSuffixAsync(string datePrefix, CancellationToken cancellationToken = default);
     Task<PatientVisit?> GetByIdWithTestsAsync(int id, CancellationToken cancellationToken = default);
     Task<Receipt?> GetOpenReceiptAsync(int patientVisitId, CancellationToken cancellationToken = default);
+    Task<VisitTest?> GetVisitTestWithResultItemsAsync(int visitTestId, CancellationToken cancellationToken = default);
 }

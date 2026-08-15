@@ -6,4 +6,5 @@ public class TestGroupItem : BaseEntity
 {
     public int TestGroupId { get; set; }
     public int TestId { get; set; }
+    public int DisplayOrder { get; set; }
 }

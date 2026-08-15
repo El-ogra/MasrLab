@@ -459,6 +459,144 @@ namespace MasrLab.Infrastructure.Persistence.Migrations
                     b.ToTable("Comments", (string)null);
                 });
 
+            modelBuilder.Entity("MasrLab.Domain.Entities.Core.CommercialPackage", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("CreatedByUserId")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("bit");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("UpdatedByUserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("IsDeleted");
+
+                    b.HasIndex("Name");
+
+                    b.ToTable("CommercialPackages", (string)null);
+                });
+
+            modelBuilder.Entity("MasrLab.Domain.Entities.Core.CommercialPackageItem", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CommercialPackageId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("CreatedByUserId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("DisplayOrder")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("TestId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("UpdatedByUserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CommercialPackageId");
+
+                    b.HasIndex("IsDeleted");
+
+                    b.HasIndex("TestId");
+
+                    b.HasIndex("CommercialPackageId", "DisplayOrder")
+                        .IsUnique()
+                        .HasFilter("[IsDeleted] = 0");
+
+                    b.HasIndex("CommercialPackageId", "TestId")
+                        .IsUnique()
+                        .HasFilter("[IsDeleted] = 0");
+
+                    b.ToTable("CommercialPackageItems", (string)null);
+                });
+
+            modelBuilder.Entity("MasrLab.Domain.Entities.Core.CommercialPackagePrice", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CommercialPackageId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("CreatedByUserId")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<decimal>("Price")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("PriceListId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("UpdatedByUserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CommercialPackageId");
+
+                    b.HasIndex("IsDeleted");
+
+                    b.HasIndex("PriceListId");
+
+                    b.HasIndex("CommercialPackageId", "PriceListId")
+                        .IsUnique()
+                        .HasFilter("[IsDeleted] = 0");
+
+                    b.ToTable("CommercialPackagePrices", (string)null);
+                });
+
             modelBuilder.Entity("MasrLab.Domain.Entities.Core.Patient", b =>
                 {
                     b.Property<int>("Id")
@@ -698,6 +836,9 @@ namespace MasrLab.Infrastructure.Persistence.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
+                    b.Property<int?>("TestComponentId")
+                        .HasColumnType("int");
+
                     b.Property<int>("TestId")
                         .HasColumnType("int");
 
@@ -714,6 +855,8 @@ namespace MasrLab.Infrastructure.Persistence.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("IsDeleted");
+
+                    b.HasIndex("TestComponentId");
 
                     b.HasIndex("TestId");
 
@@ -980,6 +1123,65 @@ namespace MasrLab.Infrastructure.Persistence.Migrations
                     b.ToTable("Tests", (string)null);
                 });
 
+            modelBuilder.Entity("MasrLab.Domain.Entities.Core.TestComponent", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("CreatedByUserId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("DisplayOrder")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<int>("ResultEntryKind")
+                        .HasColumnType("int");
+
+                    b.Property<int>("TestId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Unit")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("UpdatedByUserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("IsDeleted");
+
+                    b.HasIndex("TestId");
+
+                    b.HasIndex("TestId", "DisplayOrder")
+                        .IsUnique()
+                        .HasFilter("[IsDeleted] = 0");
+
+                    b.HasIndex("TestId", "Name")
+                        .IsUnique()
+                        .HasFilter("[IsDeleted] = 0");
+
+                    b.ToTable("TestComponents", (string)null);
+                });
+
             modelBuilder.Entity("MasrLab.Domain.Entities.Core.TestGroup", b =>
                 {
                     b.Property<int>("Id")
@@ -1032,6 +1234,9 @@ namespace MasrLab.Infrastructure.Persistence.Migrations
                         .HasColumnType("datetime2");
 
                     b.Property<int>("CreatedByUserId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("DisplayOrder")
                         .HasColumnType("int");
 
                     b.Property<bool>("IsDeleted")
@@ -1126,7 +1331,7 @@ namespace MasrLab.Infrastructure.Persistence.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
 
-                    b.Property<int>("VisitTestId")
+                    b.Property<int>("VisitTestResultItemId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
@@ -1137,10 +1342,59 @@ namespace MasrLab.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("Status");
 
-                    b.HasIndex("VisitTestId")
-                        .IsUnique();
+                    b.HasIndex("VisitTestResultItemId")
+                        .IsUnique()
+                        .HasFilter("[IsDeleted] = 0");
 
                     b.ToTable("TestResults", (string)null);
+                });
+
+            modelBuilder.Entity("MasrLab.Domain.Entities.Core.VisitCommercialPackage", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CommercialPackageId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("CreatedByUserId")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("PackageNameSnapshot")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<int>("PatientVisitId")
+                        .HasColumnType("int");
+
+                    b.Property<decimal>("Price")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("UpdatedByUserId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CommercialPackageId");
+
+                    b.HasIndex("IsDeleted");
+
+                    b.HasIndex("PatientVisitId");
+
+                    b.ToTable("VisitCommercialPackages", (string)null);
                 });
 
             modelBuilder.Entity("MasrLab.Domain.Entities.Core.VisitTest", b =>
@@ -1157,6 +1411,9 @@ namespace MasrLab.Infrastructure.Persistence.Migrations
                     b.Property<int>("CreatedByUserId")
                         .HasColumnType("int");
 
+                    b.Property<bool>("IsCompoundSnapshot")
+                        .HasColumnType("bit");
+
                     b.Property<bool>("IsDeleted")
                         .HasColumnType("bit");
 
@@ -1172,13 +1429,31 @@ namespace MasrLab.Infrastructure.Persistence.Migrations
                     b.Property<int?>("ReceiptId")
                         .HasColumnType("int");
 
+                    b.Property<string>("ReceiptNameSnapshot")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("ReportNameSnapshot")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
                     b.Property<int>("TestId")
                         .HasColumnType("int");
+
+                    b.Property<string>("TestNameSnapshot")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
 
                     b.Property<DateTime?>("UpdatedAt")
                         .HasColumnType("datetime2");
 
                     b.Property<int?>("UpdatedByUserId")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("VisitCommercialPackageId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
@@ -1191,7 +1466,73 @@ namespace MasrLab.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("TestId");
 
+                    b.HasIndex("VisitCommercialPackageId");
+
+                    b.HasIndex("PatientVisitId", "TestId")
+                        .IsUnique()
+                        .HasFilter("[IsDeleted] = 0");
+
                     b.ToTable("VisitTests", (string)null);
+                });
+
+            modelBuilder.Entity("MasrLab.Domain.Entities.Core.VisitTestResultItem", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ComponentName")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("ComponentUnit")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("CreatedByUserId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("DisplayOrder")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("ResultEntryKind")
+                        .HasColumnType("int");
+
+                    b.Property<int>("SourceTestComponentId")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int?>("UpdatedByUserId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("VisitTestId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("IsDeleted");
+
+                    b.HasIndex("SourceTestComponentId");
+
+                    b.HasIndex("VisitTestId");
+
+                    b.HasIndex("VisitTestId", "SourceTestComponentId")
+                        .IsUnique()
+                        .HasFilter("[IsDeleted] = 0");
+
+                    b.ToTable("VisitTestResultItems", (string)null);
                 });
 
             modelBuilder.Entity("MasrLab.Domain.Entities.Culture.Antibiotic", b =>
@@ -1287,12 +1628,16 @@ namespace MasrLab.Infrastructure.Persistence.Migrations
                     b.Property<int?>("UpdatedByUserId")
                         .HasColumnType("int");
 
-                    b.Property<int>("VisitTestId")
+                    b.Property<int>("VisitTestResultItemId")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
 
                     b.HasIndex("IsDeleted");
+
+                    b.HasIndex("VisitTestResultItemId")
+                        .IsUnique()
+                        .HasFilter("[IsDeleted] = 0");
 
                     b.ToTable("Cultures", (string)null);
                 });
@@ -2270,6 +2615,24 @@ namespace MasrLab.Infrastructure.Persistence.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("MasrLab.Domain.Entities.Core.CommercialPackageItem", b =>
+                {
+                    b.HasOne("MasrLab.Domain.Entities.Core.CommercialPackage", null)
+                        .WithMany("Items")
+                        .HasForeignKey("CommercialPackageId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("MasrLab.Domain.Entities.Core.CommercialPackagePrice", b =>
+                {
+                    b.HasOne("MasrLab.Domain.Entities.Core.CommercialPackage", null)
+                        .WithMany("Prices")
+                        .HasForeignKey("CommercialPackageId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("MasrLab.Domain.Entities.Core.Patient", b =>
                 {
                     b.OwnsOne("MasrLab.Domain.ValueObjects.EgyptianPhone", "Phone", b1 =>
@@ -2324,6 +2687,11 @@ namespace MasrLab.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("MasrLab.Domain.Entities.Core.ReferenceValue", b =>
                 {
+                    b.HasOne("MasrLab.Domain.Entities.Core.TestComponent", null)
+                        .WithMany()
+                        .HasForeignKey("TestComponentId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("MasrLab.Domain.Entities.Core.Test", null)
                         .WithMany("ReferenceValues")
                         .HasForeignKey("TestId")
@@ -2340,6 +2708,15 @@ namespace MasrLab.Infrastructure.Persistence.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("MasrLab.Domain.Entities.Core.TestComponent", b =>
+                {
+                    b.HasOne("MasrLab.Domain.Entities.Core.Test", null)
+                        .WithMany("TestComponents")
+                        .HasForeignKey("TestId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("MasrLab.Domain.Entities.Core.TestGroupItem", b =>
                 {
                     b.HasOne("MasrLab.Domain.Entities.Core.TestGroup", null)
@@ -2351,9 +2728,18 @@ namespace MasrLab.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("MasrLab.Domain.Entities.Core.TestResult", b =>
                 {
-                    b.HasOne("MasrLab.Domain.Entities.Core.VisitTest", null)
-                        .WithOne("TestResult")
-                        .HasForeignKey("MasrLab.Domain.Entities.Core.TestResult", "VisitTestId")
+                    b.HasOne("MasrLab.Domain.Entities.Core.VisitTestResultItem", null)
+                        .WithMany()
+                        .HasForeignKey("VisitTestResultItemId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("MasrLab.Domain.Entities.Core.VisitCommercialPackage", b =>
+                {
+                    b.HasOne("MasrLab.Domain.Entities.Core.PatientVisit", null)
+                        .WithMany("CommercialPackages")
+                        .HasForeignKey("PatientVisitId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });
@@ -2369,6 +2755,35 @@ namespace MasrLab.Infrastructure.Persistence.Migrations
                     b.HasOne("MasrLab.Domain.Entities.Financial.Receipt", null)
                         .WithMany("VisitTests")
                         .HasForeignKey("ReceiptId");
+
+                    b.HasOne("MasrLab.Domain.Entities.Core.VisitCommercialPackage", null)
+                        .WithMany()
+                        .HasForeignKey("VisitCommercialPackageId")
+                        .OnDelete(DeleteBehavior.Restrict);
+                });
+
+            modelBuilder.Entity("MasrLab.Domain.Entities.Core.VisitTestResultItem", b =>
+                {
+                    b.HasOne("MasrLab.Domain.Entities.Core.TestComponent", null)
+                        .WithMany()
+                        .HasForeignKey("SourceTestComponentId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("MasrLab.Domain.Entities.Core.VisitTest", null)
+                        .WithMany("ResultItems")
+                        .HasForeignKey("VisitTestId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("MasrLab.Domain.Entities.Culture.Culture", b =>
+                {
+                    b.HasOne("MasrLab.Domain.Entities.Core.VisitTestResultItem", null)
+                        .WithMany()
+                        .HasForeignKey("VisitTestResultItemId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("MasrLab.Domain.Entities.Culture.Sensitivity", b =>
@@ -2462,8 +2877,17 @@ namespace MasrLab.Infrastructure.Persistence.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("MasrLab.Domain.Entities.Core.CommercialPackage", b =>
+                {
+                    b.Navigation("Items");
+
+                    b.Navigation("Prices");
+                });
+
             modelBuilder.Entity("MasrLab.Domain.Entities.Core.PatientVisit", b =>
                 {
+                    b.Navigation("CommercialPackages");
+
                     b.Navigation("OutsourcedSamples");
 
                     b.Navigation("Samples");
@@ -2476,6 +2900,8 @@ namespace MasrLab.Infrastructure.Persistence.Migrations
                     b.Navigation("Comments");
 
                     b.Navigation("ReferenceValues");
+
+                    b.Navigation("TestComponents");
                 });
 
             modelBuilder.Entity("MasrLab.Domain.Entities.Core.TestGroup", b =>
@@ -2485,7 +2911,7 @@ namespace MasrLab.Infrastructure.Persistence.Migrations
 
             modelBuilder.Entity("MasrLab.Domain.Entities.Core.VisitTest", b =>
                 {
-                    b.Navigation("TestResult");
+                    b.Navigation("ResultItems");
                 });
 
             modelBuilder.Entity("MasrLab.Domain.Entities.Culture.Culture", b =>

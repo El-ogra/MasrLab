@@ -6,7 +6,7 @@ public class EnterTestResultCommandValidator : AbstractValidator<EnterTestResult
 {
     public EnterTestResultCommandValidator()
     {
-        RuleFor(x => x.VisitTestId)
+        RuleFor(x => x.VisitTestResultItemId)
             .GreaterThan(0);
 
         RuleFor(x => x.Value)

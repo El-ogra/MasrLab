@@ -10,13 +10,16 @@ namespace MasrLab.Application.Features.TestsMasterData.Commands.UpdateReferenceV
 public class UpdateReferenceValueCommandHandler : IRequestHandler<UpdateReferenceValueCommand, Unit>
 {
     private readonly IReferenceValueRepository _referenceValueRepository;
+    private readonly IRepository<TestComponent> _componentRepository;
     private readonly IUnitOfWork _unitOfWork;
 
     public UpdateReferenceValueCommandHandler(
         IReferenceValueRepository referenceValueRepository,
+        IRepository<TestComponent> componentRepository,
         IUnitOfWork unitOfWork)
     {
         _referenceValueRepository = referenceValueRepository;
+        _componentRepository = componentRepository;
         _unitOfWork = unitOfWork;
     }
 
@@ -26,11 +29,28 @@ public class UpdateReferenceValueCommandHandler : IRequestHandler<UpdateReferenc
         if (existing is null)
             throw new EntityNotFoundException(nameof(ReferenceValue), request.Id);
 
+        if (request.TestComponentId.HasValue)
+        {
+            var component = await _componentRepository.GetByIdAsync(request.TestComponentId.Value, cancellationToken)
+                ?? throw new EntityNotFoundException(nameof(TestComponent), request.TestComponentId.Value);
+
+            if (component.TestId != request.TestId)
+                throw new BusinessRuleViolationException(
+                    "The specified component does not belong to the given test.");
+
+            if (component.ResultEntryKind == ResultEntryKind.CultureDetail)
+                throw new BusinessRuleViolationException(
+                    "Reference values cannot be added for CultureDetail components.");
+        }
+
         var allRefs = await _referenceValueRepository.GetByTestIdAsync(request.TestId, cancellationToken);
 
         foreach (var other in allRefs)
         {
             if (other.IsDeleted || other.Id == request.Id)
+                continue;
+
+            if (other.TestComponentId != request.TestComponentId)
                 continue;
 
             bool sameGender = other.Gender == request.Gender
@@ -46,7 +66,7 @@ public class UpdateReferenceValueCommandHandler : IRequestHandler<UpdateReferenc
             if (otherUnconstrained || newUnconstrained)
             {
                 throw new BusinessRuleViolationException(
-                    "هذا النطاق يتداخل مع نطاق موجود آخر لنفس التحليل والجنس");
+                    "هذا النطاق يتداخل مع نطاق موجود آخر لنفس التحليل والمكون والجنس");
             }
 
             if (other.AgeUnit != request.AgeUnit)
@@ -55,10 +75,11 @@ public class UpdateReferenceValueCommandHandler : IRequestHandler<UpdateReferenc
             if (other.AgeMin <= request.AgeMax && request.AgeMin <= other.AgeMax)
             {
                 throw new BusinessRuleViolationException(
-                    "هذا النطاق العمر يتداخل مع نطاق موجود آخر لنفس التحليل والجنس");
+                    "هذا النطاق العمر يتداخل مع نطاق موجود آخر لنفس التحليل والمكون والجنس");
             }
         }
 
+        existing.TestComponentId = request.TestComponentId;
         existing.Gender = request.Gender;
         existing.AgeMin = request.AgeMin;
         existing.AgeMax = request.AgeMax;

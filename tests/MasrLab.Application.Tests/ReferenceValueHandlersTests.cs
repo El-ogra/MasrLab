@@ -9,12 +9,14 @@ using MasrLab.Domain.Entities.Core;
 using MasrLab.Domain.Exceptions;
 using MasrLab.Domain.Interfaces;
 using Moq;
+using CoreTestComponent = MasrLab.Domain.Entities.Core.TestComponent;
 
 namespace MasrLab.Application.Tests;
 
 public class ReferenceValueHandlersTests
 {
     private readonly Mock<IReferenceValueRepository> _refsRepoMock = new();
+    private readonly Mock<IRepository<CoreTestComponent>> _compRepoMock = new();
     private readonly Mock<IUnitOfWork> _uowMock = new();
 
     #region AddReferenceValueCommand Tests
@@ -29,9 +31,9 @@ public class ReferenceValueHandlersTests
         _refsRepoMock.Setup(x => x.GetByTestIdAsync(It.IsAny<int>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<ReferenceValue>());
 
-        var handler = new AddReferenceValueCommandHandler(_refsRepoMock.Object, _uowMock.Object);
+        var handler = new AddReferenceValueCommandHandler(_refsRepoMock.Object, _compRepoMock.Object, _uowMock.Object);
         var command = new AddReferenceValueCommand(
-            2, ReferenceValueGender.Male, 1, 9, AgeUnit.Years, "1-9",
+            2, null, ReferenceValueGender.Male, 1, 9, AgeUnit.Years, "1-9",
             10m, 50m, "mg/dL", "L", "H", false, "high comment", "low comment");
 
         // Act
@@ -67,9 +69,9 @@ public class ReferenceValueHandlersTests
         _refsRepoMock.Setup(x => x.GetByTestIdAsync(2, It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<ReferenceValue> { existing });
 
-        var handler = new AddReferenceValueCommandHandler(_refsRepoMock.Object, _uowMock.Object);
+        var handler = new AddReferenceValueCommandHandler(_refsRepoMock.Object, _compRepoMock.Object, _uowMock.Object);
         var command = new AddReferenceValueCommand(
-            2, ReferenceValueGender.Male, 5, 15, AgeUnit.Years, "5-15",
+            2, null, ReferenceValueGender.Male, 5, 15, AgeUnit.Years, "5-15",
             null, null, null, null, null, false, null, null);
 
         // Act & Assert
@@ -89,9 +91,9 @@ public class ReferenceValueHandlersTests
         _refsRepoMock.Setup(x => x.GetByTestIdAsync(2, It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<ReferenceValue> { existing });
 
-        var handler = new AddReferenceValueCommandHandler(_refsRepoMock.Object, _uowMock.Object);
+        var handler = new AddReferenceValueCommandHandler(_refsRepoMock.Object, _compRepoMock.Object, _uowMock.Object);
         var command = new AddReferenceValueCommand(
-            2, ReferenceValueGender.Male, 1, 29, AgeUnit.Days, "1-29",
+            2, null, ReferenceValueGender.Male, 1, 29, AgeUnit.Days, "1-29",
             null, null, null, null, null, false, null, null);
 
         // Act & Assert
@@ -115,9 +117,9 @@ public class ReferenceValueHandlersTests
         _refsRepoMock.Setup(x => x.AddAsync(It.IsAny<ReferenceValue>(), It.IsAny<CancellationToken>()))
             .Callback<ReferenceValue, CancellationToken>((r, _) => saved = r);
 
-        var handler = new AddReferenceValueCommandHandler(_refsRepoMock.Object, _uowMock.Object);
+        var handler = new AddReferenceValueCommandHandler(_refsRepoMock.Object, _compRepoMock.Object, _uowMock.Object);
         var command = new AddReferenceValueCommand(
-            2, ReferenceValueGender.Male, 0, 120, AgeUnit.Years, "0-120",
+            2, null, ReferenceValueGender.Male, 0, 120, AgeUnit.Years, "0-120",
             null, null, null, null, null, false, null, null);
 
         // Act
@@ -144,9 +146,9 @@ public class ReferenceValueHandlersTests
         _refsRepoMock.Setup(x => x.AddAsync(It.IsAny<ReferenceValue>(), It.IsAny<CancellationToken>()))
             .Callback<ReferenceValue, CancellationToken>((r, _) => saved = r);
 
-        var handler = new AddReferenceValueCommandHandler(_refsRepoMock.Object, _uowMock.Object);
+        var handler = new AddReferenceValueCommandHandler(_refsRepoMock.Object, _compRepoMock.Object, _uowMock.Object);
         var command = new AddReferenceValueCommand(
-            2, ReferenceValueGender.Male, 6, 10, AgeUnit.Days, "6-10",
+            2, null, ReferenceValueGender.Male, 6, 10, AgeUnit.Days, "6-10",
             null, null, null, null, null, false, null, null);
 
         // Act
@@ -167,9 +169,9 @@ public class ReferenceValueHandlersTests
         _uowMock.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()))
             .ThrowsAsync(new InvalidOperationException("write failed"));
 
-        var handler = new AddReferenceValueCommandHandler(_refsRepoMock.Object, _uowMock.Object);
+        var handler = new AddReferenceValueCommandHandler(_refsRepoMock.Object, _compRepoMock.Object, _uowMock.Object);
         var command = new AddReferenceValueCommand(
-            2, ReferenceValueGender.Female, 1, 9, AgeUnit.Years, "1-9",
+            2, null, ReferenceValueGender.Female, 1, 9, AgeUnit.Years, "1-9",
             null, null, null, null, null, false, null, null);
 
         // Act & Assert
@@ -198,21 +200,21 @@ public class ReferenceValueHandlersTests
                 existingRefs.Add(r);
             });
 
-        var handler = new AddReferenceValueCommandHandler(_refsRepoMock.Object, _uowMock.Object);
+        var handler = new AddReferenceValueCommandHandler(_refsRepoMock.Object, _compRepoMock.Object, _uowMock.Object);
 
         // Act - حفظ النطاق الأول: 1-29 Days
         await handler.Handle(new AddReferenceValueCommand(
-            1, ReferenceValueGender.Both, 1, 29, AgeUnit.Days, "1-29",
+            1, null, ReferenceValueGender.Both, 1, 29, AgeUnit.Days, "1-29",
             null, null, null, null, null, false, null, null), default);
 
         // Act - حفظ النطاق الثاني: 1-12 Months
         await handler.Handle(new AddReferenceValueCommand(
-            1, ReferenceValueGender.Both, 1, 12, AgeUnit.Months, "1-12",
+            1, null, ReferenceValueGender.Both, 1, 12, AgeUnit.Months, "1-12",
             null, null, null, null, null, false, null, null), default);
 
         // Act - حفظ النطاق الثالث: 0-120 Years
         await handler.Handle(new AddReferenceValueCommand(
-            1, ReferenceValueGender.Both, 0, 120, AgeUnit.Years, "0-120",
+            1, null, ReferenceValueGender.Both, 0, 120, AgeUnit.Years, "0-120",
             null, null, null, null, null, false, null, null), default);
 
         // Assert - يجب أن تُحفظ النطاقات الثلاثة بنجاح
@@ -241,9 +243,9 @@ public class ReferenceValueHandlersTests
         _refsRepoMock.Setup(x => x.GetByTestIdAsync(2, It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<ReferenceValue> { existing });
 
-        var handler = new UpdateReferenceValueCommandHandler(_refsRepoMock.Object, _uowMock.Object);
+        var handler = new UpdateReferenceValueCommandHandler(_refsRepoMock.Object, _compRepoMock.Object, _uowMock.Object);
         var command = new UpdateReferenceValueCommand(
-            1, 2, ReferenceValueGender.Female, 5, 15, AgeUnit.Years, "5-15",
+            1, 2, null, ReferenceValueGender.Female, 5, 15, AgeUnit.Years, "5-15",
             20m, 80m, "g/L", "L", "H", true, "high", "low");
 
         // Act
@@ -272,9 +274,9 @@ public class ReferenceValueHandlersTests
         _refsRepoMock.Setup(x => x.GetByIdAsync(999, It.IsAny<CancellationToken>()))
             .ReturnsAsync((ReferenceValue?)null);
 
-        var handler = new UpdateReferenceValueCommandHandler(_refsRepoMock.Object, _uowMock.Object);
+        var handler = new UpdateReferenceValueCommandHandler(_refsRepoMock.Object, _compRepoMock.Object, _uowMock.Object);
         var command = new UpdateReferenceValueCommand(
-            999, 2, ReferenceValueGender.Male, 1, 9, AgeUnit.Years, "1-9",
+            999, 2, null, ReferenceValueGender.Male, 1, 9, AgeUnit.Years, "1-9",
             null, null, null, null, null, false, null, null);
 
         // Act & Assert
@@ -301,9 +303,9 @@ public class ReferenceValueHandlersTests
         _refsRepoMock.Setup(x => x.GetByTestIdAsync(2, It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<ReferenceValue> { existing, another });
 
-        var handler = new UpdateReferenceValueCommandHandler(_refsRepoMock.Object, _uowMock.Object);
+        var handler = new UpdateReferenceValueCommandHandler(_refsRepoMock.Object, _compRepoMock.Object, _uowMock.Object);
         var command = new UpdateReferenceValueCommand(
-            1, 2, ReferenceValueGender.Male, 1, 9, AgeUnit.Years, "1-9",
+            1, 2, null, ReferenceValueGender.Male, 1, 9, AgeUnit.Years, "1-9",
             null, null, null, null, null, false, null, null);
 
         // Act & Assert
@@ -325,9 +327,9 @@ public class ReferenceValueHandlersTests
         _refsRepoMock.Setup(x => x.GetByTestIdAsync(2, It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<ReferenceValue> { existing });
 
-        var handler = new UpdateReferenceValueCommandHandler(_refsRepoMock.Object, _uowMock.Object);
+        var handler = new UpdateReferenceValueCommandHandler(_refsRepoMock.Object, _compRepoMock.Object, _uowMock.Object);
         var command = new UpdateReferenceValueCommand(
-            1, 2, ReferenceValueGender.Male, 1, 9, AgeUnit.Years, "1-9 updated",
+            1, 2, null, ReferenceValueGender.Male, 1, 9, AgeUnit.Years, "1-9 updated",
             null, null, null, null, null, false, null, null);
 
         // Act
@@ -352,9 +354,9 @@ public class ReferenceValueHandlersTests
         _refsRepoMock.Setup(x => x.GetByTestIdAsync(2, It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<ReferenceValue> { existing });
 
-        var handler = new UpdateReferenceValueCommandHandler(_refsRepoMock.Object, _uowMock.Object);
+        var handler = new UpdateReferenceValueCommandHandler(_refsRepoMock.Object, _compRepoMock.Object, _uowMock.Object);
         var command = new UpdateReferenceValueCommand(
-            1, 2, ReferenceValueGender.Both, 0, 0, AgeUnit.Years, "All ages",
+            1, 2, null, ReferenceValueGender.Both, 0, 0, AgeUnit.Years, "All ages",
             null, null, null, null, null, false, null, null);
 
         // Act
@@ -382,9 +384,9 @@ public class ReferenceValueHandlersTests
         _uowMock.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()))
             .ThrowsAsync(new InvalidOperationException("write failed"));
 
-        var handler = new UpdateReferenceValueCommandHandler(_refsRepoMock.Object, _uowMock.Object);
+        var handler = new UpdateReferenceValueCommandHandler(_refsRepoMock.Object, _compRepoMock.Object, _uowMock.Object);
         var command = new UpdateReferenceValueCommand(
-            1, 2, ReferenceValueGender.Male, 1, 9, AgeUnit.Years, "1-9",
+            1, 2, null, ReferenceValueGender.Male, 1, 9, AgeUnit.Years, "1-9",
             null, null, null, null, null, false, null, null);
 
         // Act & Assert

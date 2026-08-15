@@ -3,8 +3,12 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using MasrLab.Application.Common.DTOs;
 using MasrLab.Application.Features.TestsMasterData.Commands.AddTest;
+using MasrLab.Application.Features.TestsMasterData.Commands.AddTestComponent;
 using MasrLab.Application.Features.TestsMasterData.Commands.DeleteTest;
+using MasrLab.Application.Features.TestsMasterData.Commands.DeleteTestComponent;
 using MasrLab.Application.Features.TestsMasterData.Commands.UpdateTest;
+using MasrLab.Application.Features.TestsMasterData.Commands.UpdateTestComponent;
+using MasrLab.Application.Features.TestsMasterData.Queries.GetTestComponentsByTestId;
 using MasrLab.Application.Features.TestsMasterData.Queries.GetTestsList;
 using MasrLab.Domain.Common.Enums;
 using MasrLab.Domain.Entities.Financial;
@@ -138,12 +142,36 @@ public partial class TestsMasterDataViewModel : ObservableObject
     [ObservableProperty]
     private string _errorMessage = string.Empty;
 
+    [ObservableProperty]
+    private ObservableCollection<TestComponentDto> _components = [];
+
+    [ObservableProperty]
+    private TestComponentDto? _selectedComponent;
+
+    [ObservableProperty]
+    private string _componentName = string.Empty;
+
+    [ObservableProperty]
+    private string _componentUnit = string.Empty;
+
+    [ObservableProperty]
+    private int _componentDisplayOrder = 1;
+
+    [ObservableProperty]
+    private ResultEntryKind _componentResultEntryKind = ResultEntryKind.Ordinary;
+
+    [ObservableProperty]
+    private bool _isEditingComponent;
+
     public ObservableCollection<string> GroupNames { get; } = [];
 
     public ObservableCollection<string> ExternalLabNames { get; } = [];
 
     public IReadOnlyList<ReferenceType> ReferenceTypes { get; } =
         Enum.GetValues<ReferenceType>();
+
+    public IReadOnlyList<ResultEntryKind> ResultEntryKinds { get; } =
+        Enum.GetValues<ResultEntryKind>();
 
     public bool IsEditing => SelectedTest is not null;
 
@@ -180,8 +208,29 @@ public partial class TestsMasterDataViewModel : ObservableObject
             PatientQuestion = value.PatientQuestion ?? string.Empty;
             TurnaroundTime = value.TurnaroundTime;
             Unit = value.Unit;
+            Components = new ObservableCollection<TestComponentDto>(value.Components);
+        }
+        else
+        {
+            Components = [];
         }
         OnPropertyChanged(nameof(IsEditing));
+    }
+
+    partial void OnSelectedComponentChanged(TestComponentDto? value)
+    {
+        if (value is not null)
+        {
+            IsEditingComponent = true;
+            ComponentName = value.Name;
+            ComponentUnit = value.Unit;
+            ComponentDisplayOrder = value.DisplayOrder;
+            ComponentResultEntryKind = value.ResultEntryKind;
+        }
+        else
+        {
+            IsEditingComponent = false;
+        }
     }
 
     [RelayCommand]
@@ -409,6 +458,103 @@ public partial class TestsMasterDataViewModel : ObservableObject
     }
 
     [RelayCommand]
+    private async Task AddComponentAsync()
+    {
+        if (SelectedTest is null) return;
+
+        try
+        {
+            IsLoading = true;
+            ErrorMessage = string.Empty;
+
+            await _mediator.Send(new AddTestComponentCommand(
+                SelectedTest.Id, ComponentName, ComponentUnit,
+                ComponentDisplayOrder, ComponentResultEntryKind));
+
+            await LoadComponentsAsync(SelectedTest.Id);
+            ClearComponentForm();
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"خطأ في إضافة المكون: {ex.Message}";
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
+    [RelayCommand(CanExecute = nameof(IsEditingComponent))]
+    private async Task UpdateComponentAsync()
+    {
+        if (SelectedTest is null || SelectedComponent is null) return;
+
+        try
+        {
+            IsLoading = true;
+            ErrorMessage = string.Empty;
+
+            await _mediator.Send(new UpdateTestComponentCommand(
+                SelectedComponent.Id, SelectedTest.Id, ComponentName, ComponentUnit,
+                ComponentDisplayOrder, ComponentResultEntryKind));
+
+            await LoadComponentsAsync(SelectedTest.Id);
+            ClearComponentForm();
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"خطأ في تعديل المكون: {ex.Message}";
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
+    [RelayCommand(CanExecute = nameof(IsEditingComponent))]
+    private async Task DeleteComponentAsync()
+    {
+        if (SelectedTest is null || SelectedComponent is null) return;
+
+        try
+        {
+            IsLoading = true;
+            ErrorMessage = string.Empty;
+
+            await _mediator.Send(new DeleteTestComponentCommand(SelectedComponent.Id, SelectedTest.Id));
+
+            await LoadComponentsAsync(SelectedTest.Id);
+            ClearComponentForm();
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = $"خطأ في حذف المكون: {ex.Message}";
+        }
+        finally
+        {
+            IsLoading = false;
+        }
+    }
+
+    [RelayCommand]
+    private void ClearComponentForm()
+    {
+        SelectedComponent = null;
+        ComponentName = string.Empty;
+        ComponentUnit = string.Empty;
+        ComponentDisplayOrder = Components.Count + 1;
+        ComponentResultEntryKind = ResultEntryKind.Ordinary;
+        IsEditingComponent = false;
+    }
+
+    private async Task LoadComponentsAsync(int testId)
+    {
+        var result = await _mediator.Send(new GetTestComponentsByTestIdQuery(testId));
+        Components = new ObservableCollection<TestComponentDto>(result);
+        ComponentDisplayOrder = Components.Count + 1;
+    }
+
+    [RelayCommand]
     private void Close(System.Windows.Window? window)
     {
         window?.Close();
@@ -445,6 +591,8 @@ public partial class TestsMasterDataViewModel : ObservableObject
         PatientQuestion = string.Empty;
         TurnaroundTime = string.Empty;
         Unit = string.Empty;
+        Components = [];
+        ClearComponentForm();
     }
 
     private async Task LoadExternalLabNamesAsync(CancellationToken cancellationToken = default)

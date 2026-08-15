@@ -20,6 +20,7 @@ public class PatientVisit : BaseEntity
     public ICollection<VisitTest> VisitTests { get; set; } = new List<VisitTest>();
     public ICollection<Sample> Samples { get; set; } = new List<Sample>();
     public ICollection<OutsourcedSample> OutsourcedSamples { get; set; } = new List<OutsourcedSample>();
+    public ICollection<VisitCommercialPackage> CommercialPackages { get; set; } = new List<VisitCommercialPackage>();
 
     // INV-03: If PatientVisit.DoctorId is null, defaults to Patient.DoctorId.
     public static PatientVisit Create(int patientId, int registeredByUserId, string labId, int? doctorId, int? referralEntityId)

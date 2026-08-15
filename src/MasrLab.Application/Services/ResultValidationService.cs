@@ -7,27 +7,40 @@ namespace MasrLab.Application.Services;
 
 /// <summary>
 /// التحقق من صحة النتائج ومقارنتها مع القيم المرجعية.
-/// INV: يعتمد على ReferenceValue للتحقق من المدى حسب الجنس والعمر.
+/// INV: يعتمد على TestComponentId للتحقق من المدى حسب الجنس والعمر.
 /// </summary>
 public class ResultValidationService : IResultValidationService
 {
     private readonly IReferenceValueRepository _referenceValues;
+    private readonly IVisitTestResultItemRepository _visitTestResultItems;
 
-    public ResultValidationService(IReferenceValueRepository referenceValues)
+    public ResultValidationService(
+        IReferenceValueRepository referenceValues,
+        IVisitTestResultItemRepository visitTestResultItems)
     {
         _referenceValues = referenceValues ?? throw new ArgumentNullException(nameof(referenceValues));
+        _visitTestResultItems = visitTestResultItems ?? throw new ArgumentNullException(nameof(visitTestResultItems));
     }
 
     /// <summary>
     /// يتحقق من حالة النتيجة (عالية/منخفضة/طبيعية) بناءً على القيم المرجعية.
     /// INV: إذا لم يُوجد نطاق مرجعي مطابق، تُرجع Normal (بقرار DD-12 الخيار أ).
+    /// INV: CultureDetail يتجاوز التحقق من النطاق المرجعي.
     /// </summary>
-    public async Task<ResultStatus> ValidateResultAsync(int testId, string value, string? gender, int ageYears, CancellationToken ct = default)
+    public async Task<ResultStatus> ValidateResultAsync(int visitTestResultItemId, string value, string? gender, int ageYears, CancellationToken ct = default)
     {
         if (!decimal.TryParse(value, out var numericValue))
             return ResultStatus.Normal;
 
-        var testValues = await _referenceValues.GetByTestIdAsync(testId, ct);
+        var resultItem = await _visitTestResultItems.GetByIdAsync(visitTestResultItemId, ct);
+        if (resultItem is null)
+            return ResultStatus.Normal;
+
+        if (resultItem.ResultEntryKind == ResultEntryKind.CultureDetail)
+            return ResultStatus.Normal;
+
+        var testValues = await _referenceValues.GetByTestComponentIdAsync(resultItem.SourceTestComponentId, ct);
+
         var matchingRef = FindMatchingReference(testValues, gender, ageYears);
 
         if (matchingRef is null)
@@ -45,13 +58,22 @@ public class ResultValidationService : IResultValidationService
     /// <summary>
     /// يتحقق مما إذا كانت النتيجة ضمن النطاق المرجعي.
     /// INV: يُرجع التعليق المناسب (HighComment أو LowComment) حسب الموقع.
+    /// INV: CultureDetail يتجاوز التحقق من النطاق المرجعي.
     /// </summary>
-    public async Task<(bool IsInRange, string? Comment)> IsResultInRangeAsync(int testId, string value, string? gender, int ageYears, CancellationToken ct = default)
+    public async Task<(bool IsInRange, string? Comment)> IsResultInRangeAsync(int visitTestResultItemId, string value, string? gender, int ageYears, CancellationToken ct = default)
     {
         if (!decimal.TryParse(value, out var numericValue))
             return (true, null);
 
-        var testValues = await _referenceValues.GetByTestIdAsync(testId, ct);
+        var resultItem = await _visitTestResultItems.GetByIdAsync(visitTestResultItemId, ct);
+        if (resultItem is null)
+            return (true, null);
+
+        if (resultItem.ResultEntryKind == ResultEntryKind.CultureDetail)
+            return (true, null);
+
+        var testValues = await _referenceValues.GetByTestComponentIdAsync(resultItem.SourceTestComponentId, ct);
+
         var matchingRef = FindMatchingReference(testValues, gender, ageYears);
 
         if (matchingRef is null)
@@ -78,10 +100,72 @@ public class ResultValidationService : IResultValidationService
             _ => ReferenceValueGender.Both
         };
 
-        return values.FirstOrDefault(rv =>
-            (rv.Gender == genderFilter || rv.Gender == ReferenceValueGender.Both) &&
-            ageYears >= rv.AgeMin &&
-            ageYears <= rv.AgeMax);
+        var ageInDays = ageYears * 365;
+
+        return values
+            .Where(rv =>
+                (rv.Gender == genderFilter || rv.Gender == ReferenceValueGender.Both) &&
+                IsAgeInRange(ageInDays, rv))
+            .OrderBy(rv => rv, new ReferenceValueSpecificityComparer(genderFilter))
+            .FirstOrDefault();
+    }
+
+    private static bool IsAgeInRange(int ageInDays, ReferenceValue rv)
+    {
+        var rangeMinDays = ConvertToDays(rv.AgeMin, rv.AgeUnit);
+        var rangeMaxDays = ConvertToDays(rv.AgeMax, rv.AgeUnit);
+
+        if (rangeMinDays == 0 && rangeMaxDays == 0)
+            return true;
+
+        return ageInDays >= rangeMinDays && ageInDays <= rangeMaxDays;
+    }
+
+    private static int ConvertToDays(int value, AgeUnit unit)
+    {
+        return unit switch
+        {
+            AgeUnit.Days => value,
+            AgeUnit.Months => value * 30,
+            AgeUnit.Years => value * 365,
+            _ => value * 365
+        };
+    }
+
+    private class ReferenceValueSpecificityComparer : IComparer<ReferenceValue>
+    {
+        private readonly ReferenceValueGender _genderFilter;
+
+        public ReferenceValueSpecificityComparer(ReferenceValueGender genderFilter)
+        {
+            _genderFilter = genderFilter;
+        }
+
+        public int Compare(ReferenceValue? x, ReferenceValue? y)
+        {
+            if (x is null || y is null) return 0;
+
+            int scoreX = GetSpecificityScore(x);
+            int scoreY = GetSpecificityScore(y);
+
+            return scoreY.CompareTo(scoreX);
+        }
+
+        private int GetSpecificityScore(ReferenceValue rv)
+        {
+            int score = 0;
+
+            if (rv.Gender == _genderFilter && _genderFilter != ReferenceValueGender.Both)
+                score += 10;
+
+            if (rv.AgeMin != 0 || rv.AgeMax != 0)
+                score += 5;
+
+            if (rv.ForPregnantOnly)
+                score -= 3;
+
+            return score;
+        }
     }
 
     private static bool TryParseRange(string normalRange, out decimal min, out decimal max)

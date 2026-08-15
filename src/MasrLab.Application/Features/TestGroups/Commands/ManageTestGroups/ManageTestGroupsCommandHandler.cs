@@ -29,7 +29,6 @@ public class ManageTestGroupsCommandHandler : IRequestHandler<ManageTestGroupsCo
                 ?? throw new EntityNotFoundException(nameof(TestGroup), request.Id.Value);
 
             existingGroup.GroupName = request.GroupName;
-            existingGroup.GroupPrice = request.GroupPrice;
             _testGroupRepository.Update(existingGroup);
 
             var existingItems = await _testGroupItemRepository.GetByTestGroupIdAsync(request.Id.Value, cancellationToken);
@@ -39,12 +38,13 @@ public class ManageTestGroupsCommandHandler : IRequestHandler<ManageTestGroupsCo
             }
 
             var testIds = ParseTestIds(request.TestIds);
-            foreach (var testId in testIds)
+            for (int i = 0; i < testIds.Count; i++)
             {
                 await _testGroupItemRepository.AddAsync(new TestGroupItem
                 {
                     TestGroupId = request.Id.Value,
-                    TestId = testId
+                    TestId = testIds[i],
+                    DisplayOrder = i + 1
                 }, cancellationToken);
             }
         }
@@ -52,19 +52,19 @@ public class ManageTestGroupsCommandHandler : IRequestHandler<ManageTestGroupsCo
         {
             var newGroup = new TestGroup
             {
-                GroupName = request.GroupName,
-                GroupPrice = request.GroupPrice
+                GroupName = request.GroupName
             };
             await _testGroupRepository.AddAsync(newGroup, cancellationToken);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
 
             var testIds = ParseTestIds(request.TestIds);
-            foreach (var testId in testIds)
+            for (int i = 0; i < testIds.Count; i++)
             {
                 await _testGroupItemRepository.AddAsync(new TestGroupItem
                 {
                     TestGroupId = newGroup.Id,
-                    TestId = testId
+                    TestId = testIds[i],
+                    DisplayOrder = i + 1
                 }, cancellationToken);
             }
         }

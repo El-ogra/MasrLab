@@ -37,12 +37,11 @@ public sealed class ReceiptPrintDataReader : IReceiptPrintDataReader
         if (patient is null)
             return null;
 
-        var testLines = await (from visitTest in _context.VisitTests.AsNoTracking()
-                               join test in _context.Tests.AsNoTracking() on visitTest.TestId equals test.Id
-                               where visitTest.ReceiptId == receipt.Id
-                               select new ReceiptPrintLineDto(
-                                   string.IsNullOrWhiteSpace(test.ReceiptName) ? test.Name : test.ReceiptName,
-                                   visitTest.Price))
+        var testLines = await _context.VisitTests.AsNoTracking()
+            .Where(visitTest => visitTest.ReceiptId == receipt.Id)
+            .Select(visitTest => new ReceiptPrintLineDto(
+                visitTest.ReceiptNameSnapshot ?? visitTest.TestNameSnapshot,
+                visitTest.Price))
             .ToListAsync(ct);
 
         var extraLines = await _context.ExtraServiceItems.AsNoTracking()

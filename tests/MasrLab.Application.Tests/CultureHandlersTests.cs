@@ -32,7 +32,7 @@ public class CultureHandlersTests
     {
         var repo = new Mock<IRepository<Culture>>(); Culture? saved = null; repo.Setup(x => x.AddAsync(It.IsAny<Culture>(), It.IsAny<CancellationToken>())).Callback<Culture, CancellationToken>((c, _) => saved = c);
         await new AddNewCultureCommandHandler(repo.Object, new Mock<IUnitOfWork>().Object).Handle(new(3, "Blood", "E. coli", null, null, "aerobic", 12), default);
-        Assert.NotNull(saved); Assert.Equal(3, saved!.VisitTestId); Assert.Equal(CultureStatus.Recorded, saved.Status); Assert.Equal("Blood", saved.SampleType);
+        Assert.NotNull(saved); Assert.Equal(3, saved!.VisitTestResultItemId); Assert.Equal(CultureStatus.Recorded, saved.Status); Assert.Equal("Blood", saved.SampleType);
     }
 
     [Fact]

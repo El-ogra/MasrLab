@@ -17,8 +17,22 @@ public class VisitTestConfiguration : IEntityTypeConfiguration<VisitTest>
         builder.Property(e => e.Price).HasColumnType("decimal(18,2)").IsRequired();
         builder.Property(e => e.IsOutsourced).IsRequired();
 
+        builder.Property(e => e.TestNameSnapshot).HasMaxLength(200).IsRequired();
+        builder.Property(e => e.ReportNameSnapshot).HasMaxLength(200).IsRequired();
+        builder.Property(e => e.ReceiptNameSnapshot).HasMaxLength(200).IsRequired();
+        builder.Property(e => e.IsCompoundSnapshot).IsRequired();
+
         builder.HasIndex(e => e.PatientVisitId);
         builder.HasIndex(e => e.TestId);
         builder.HasIndex(e => e.IsDeleted);
+
+        builder.HasIndex(e => new { e.PatientVisitId, e.TestId })
+            .IsUnique()
+            .HasFilter("[IsDeleted] = 0");
+
+        builder.HasOne<VisitCommercialPackage>()
+            .WithMany()
+            .HasForeignKey(e => e.VisitCommercialPackageId)
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }

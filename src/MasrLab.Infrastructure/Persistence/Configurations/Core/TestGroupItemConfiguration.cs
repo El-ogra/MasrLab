@@ -14,6 +14,7 @@ public class TestGroupItemConfiguration : IEntityTypeConfiguration<TestGroupItem
 
         builder.Property(e => e.TestGroupId).IsRequired();
         builder.Property(e => e.TestId).IsRequired();
+        builder.Property(e => e.DisplayOrder).IsRequired();
 
         builder.HasIndex(e => e.TestGroupId);
         builder.HasIndex(e => e.TestId);

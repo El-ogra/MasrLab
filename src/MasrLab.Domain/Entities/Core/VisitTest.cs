@@ -5,7 +5,6 @@ namespace MasrLab.Domain.Entities.Core;
 
 public class VisitTest : BaseEntity
 {
-    // Price is a snapshot captured at visit time — does not auto-update when the test price list changes.
     public int PatientVisitId { get; set; }
     public int TestId { get; set; }
 
@@ -22,8 +21,15 @@ public class VisitTest : BaseEntity
     }
 
     public bool IsOutsourced { get; private set; }
-
     public int? ReceiptId { get; set; }
+
+    public string TestNameSnapshot { get; set; } = string.Empty;
+    public string ReportNameSnapshot { get; set; } = string.Empty;
+    public string ReceiptNameSnapshot { get; set; } = string.Empty;
+    public bool IsCompoundSnapshot { get; set; }
+    public int? VisitCommercialPackageId { get; set; }
+
+    public ICollection<VisitTestResultItem> ResultItems { get; set; } = new List<VisitTestResultItem>();
 
     public VisitTest(int patientVisitId, int testId, decimal price, bool isOutsourced)
     {
@@ -32,6 +38,4 @@ public class VisitTest : BaseEntity
         Price = price;
         IsOutsourced = isOutsourced;
     }
-
-    public TestResult? TestResult { get; set; }
 }

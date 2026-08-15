@@ -33,6 +33,7 @@ public static class DependencyInjection
         services.AddScoped<IReferralCommissionService, ReferralCommissionService>();
         services.AddScoped<IResultValidationService, ResultValidationService>();
         services.AddScoped<ISampleTrackingService, SampleTrackingService>();
+        services.AddScoped<ITestComponentCardinalityService, TestComponentCardinalityService>();
 
         return services;
     }

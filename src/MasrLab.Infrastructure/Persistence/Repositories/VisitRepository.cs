@@ -39,7 +39,7 @@ public class VisitRepository : GenericRepository<PatientVisit>, IVisitRepository
             .AsNoTracking()
             .Where(v => v.VisitDate >= start && v.VisitDate <= end)
             .Include(v => v.VisitTests)
-                .ThenInclude(vt => vt.TestResult)
+                .ThenInclude(vt => vt.ResultItems)
             .Include(v => v.Samples)
             .ToListAsync(cancellationToken);
     }
@@ -80,6 +80,7 @@ public class VisitRepository : GenericRepository<PatientVisit>, IVisitRepository
     {
         return await _context.PatientVisits
             .Include(v => v.VisitTests)
+                .ThenInclude(vt => vt.ResultItems)
             .FirstOrDefaultAsync(v => v.Id == id, cancellationToken);
     }
 
@@ -89,5 +90,13 @@ public class VisitRepository : GenericRepository<PatientVisit>, IVisitRepository
             .FirstOrDefaultAsync(
                 r => r.PatientVisitId == patientVisitId && r.Status != ReceiptStatus.Paid,
                 cancellationToken);
+    }
+
+    public async Task<VisitTest?> GetVisitTestWithResultItemsAsync(int visitTestId, CancellationToken cancellationToken = default)
+    {
+        return await _context.VisitTests
+            .AsNoTracking()
+            .Include(vt => vt.ResultItems)
+            .FirstOrDefaultAsync(vt => vt.Id == visitTestId, cancellationToken);
     }
 }

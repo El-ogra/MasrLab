@@ -21,7 +21,9 @@ public class MasrLabDbContext : DbContext
     public DbSet<Patient> Patients => Set<Patient>();
     public DbSet<PatientVisit> PatientVisits => Set<PatientVisit>();
     public DbSet<VisitTest> VisitTests => Set<VisitTest>();
+    public DbSet<VisitTestResultItem> VisitTestResultItems => Set<VisitTestResultItem>();
     public DbSet<Test> Tests => Set<Test>();
+    public DbSet<TestComponent> TestComponents => Set<TestComponent>();
     public DbSet<TestResult> TestResults => Set<TestResult>();
     public DbSet<ReferenceValue> ReferenceValues => Set<ReferenceValue>();
     public DbSet<TestGroup> TestGroups => Set<TestGroup>();
@@ -29,6 +31,12 @@ public class MasrLabDbContext : DbContext
     public DbSet<Comment> Comments => Set<Comment>();
     public DbSet<Sample> Samples => Set<Sample>();
     public DbSet<SampleCollection> SampleCollections => Set<SampleCollection>();
+
+    // Commercial
+    public DbSet<CommercialPackage> CommercialPackages => Set<CommercialPackage>();
+    public DbSet<CommercialPackageItem> CommercialPackageItems => Set<CommercialPackageItem>();
+    public DbSet<CommercialPackagePrice> CommercialPackagePrices => Set<CommercialPackagePrice>();
+    public DbSet<VisitCommercialPackage> VisitCommercialPackages => Set<VisitCommercialPackage>();
 
     // Culture
     public DbSet<Domain.Entities.Culture.Culture> Cultures => Set<Domain.Entities.Culture.Culture>();

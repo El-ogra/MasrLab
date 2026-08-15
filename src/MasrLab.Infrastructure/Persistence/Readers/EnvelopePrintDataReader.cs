@@ -43,15 +43,19 @@ public sealed class EnvelopePrintDataReader(MasrLabDbContext context) : IEnvelop
                            select new { p.Name, v.LabId, v.VisitDate }).SingleOrDefaultAsync(ct);
         if (visit is null) return null;
         var results = await (from vt in context.VisitTests.AsNoTracking()
-                             join test in context.Tests.AsNoTracking() on vt.TestId equals test.Id
-                             join result in context.TestResults.AsNoTracking() on vt.Id equals result.VisitTestId into resultJoin
-                             from result in resultJoin.DefaultIfEmpty()
-                             where vt.PatientVisitId == patientVisitId
-                             select new ClinicalResultLineDto(test.ReportName == "" ? test.Name : test.ReportName,
-                                 result == null ? "" : result.Value, result == null ? test.Unit : result.Unit,
-                                 result == null ? "" : result.ReferenceRange)).ToListAsync(ct);
+                              join resultItem in context.VisitTestResultItems.AsNoTracking() on vt.Id equals resultItem.VisitTestId into resultItemJoin
+                              from resultItem in resultItemJoin.DefaultIfEmpty()
+                              join result in context.TestResults.AsNoTracking() on resultItem.Id equals result.VisitTestResultItemId into resultJoin
+                              from result in resultJoin.DefaultIfEmpty()
+                              where vt.PatientVisitId == patientVisitId
+                              select new ClinicalResultLineDto(
+                                  vt.ReportNameSnapshot ?? vt.TestNameSnapshot,
+                                  result == null ? "" : result.Value,
+                                  result == null ? resultItem.ComponentUnit : result.Unit,
+                                  result == null ? "" : result.ReferenceRange)).ToListAsync(ct);
         var organisms = await (from culture in context.Cultures.AsNoTracking()
-                               join vt in context.VisitTests.AsNoTracking() on culture.VisitTestId equals vt.Id
+                               join resultItem in context.VisitTestResultItems.AsNoTracking() on culture.VisitTestResultItemId equals resultItem.Id
+                               join vt in context.VisitTests.AsNoTracking() on resultItem.VisitTestId equals vt.Id
                                where vt.PatientVisitId == patientVisitId
                                select new[] { culture.OrganismA, culture.OrganismB, culture.OrganismC }).ToListAsync(ct);
         return new ClinicalReportPrintDto { PatientName = visit.Name, LaboratoryNumber = visit.LabId, VisitDate = visit.VisitDate,

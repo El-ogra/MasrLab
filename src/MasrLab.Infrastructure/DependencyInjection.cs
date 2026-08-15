@@ -70,6 +70,7 @@ public static class DependencyInjection
         services.AddScoped<IVisitRepository, VisitRepository>();
         services.AddScoped<ITestResultRepository, TestResultRepository>();
         services.AddScoped<ICultureRepository, CultureRepository>();
+        services.AddScoped<IVisitTestResultItemRepository, VisitTestResultItemRepository>();
         services.AddScoped<IAccountingRepository, AccountingRepository>();
         services.AddScoped<IStatisticsRepository, StatisticsRepository>();
         services.AddScoped<IStatisticsSettingsRepository, StatisticsSettingsRepository>();
@@ -86,6 +87,8 @@ public static class DependencyInjection
         services.AddScoped<ITestGroupItemRepository, TestGroupItemRepository>();
         services.AddScoped<IAntibioticRepository, AntibioticRepository>();
         services.AddScoped<IPriceListRepository, PriceListRepository>();
+        services.AddScoped<ITestRepository, TestRepository>();
+        services.AddScoped<ICommercialPackageRepository, CommercialPackageRepository>();
         services.AddScoped<IReceiptPrintDataReader, ReceiptPrintDataReader>();
         services.AddScoped<IEnvelopePrintDataReader, EnvelopePrintDataReader>();
         services.AddScoped<IOperationalReportDataReader, OperationalReportPrintDataReader>();

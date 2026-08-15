@@ -4,6 +4,8 @@ using MasrLab.Domain.Entities.Core;
 
 namespace MasrLab.Infrastructure.Persistence.Configurations.Core;
 
+#pragma warning disable CS8602
+
 public class TestResultConfiguration : IEntityTypeConfiguration<TestResult>
 {
     public void Configure(EntityTypeBuilder<TestResult> builder)
@@ -12,7 +14,7 @@ public class TestResultConfiguration : IEntityTypeConfiguration<TestResult>
         builder.HasKey(e => e.Id);
         builder.Property(e => e.Id).ValueGeneratedOnAdd();
 
-        builder.Property(e => e.VisitTestId).IsRequired();
+        builder.Property(e => e.VisitTestResultItemId).IsRequired();
         builder.Property(e => e.Value).HasMaxLength(500).IsRequired();
         builder.Property(e => e.Unit).HasMaxLength(100).IsRequired();
         builder.Property(e => e.ReferenceRange).HasMaxLength(200).IsRequired();
@@ -24,9 +26,18 @@ public class TestResultConfiguration : IEntityTypeConfiguration<TestResult>
         builder.Property(e => e.PrintedAt);
         builder.Property(e => e.PrintCount).IsRequired();
 
-        builder.HasIndex(e => e.VisitTestId);
+        builder.HasOne<VisitTestResultItem>()
+            .WithMany()
+            .HasForeignKey(e => e.VisitTestResultItemId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder.HasIndex(e => e.VisitTestResultItemId);
         builder.HasIndex(e => e.EnteredByUserId);
         builder.HasIndex(e => e.Status);
         builder.HasIndex(e => e.IsDeleted);
+
+        builder.HasIndex(e => new { e.VisitTestResultItemId })
+            .IsUnique()
+            .HasFilter("[IsDeleted] = 0");
     }
 }

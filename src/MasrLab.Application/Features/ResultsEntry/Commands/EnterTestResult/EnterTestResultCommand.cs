@@ -4,7 +4,7 @@ using MasrLab.Domain.Common.Enums;
 namespace MasrLab.Application.Features.ResultsEntry.Commands.EnterTestResult;
 
 public record EnterTestResultCommand(
-    int VisitTestId,
+    int VisitTestResultItemId,
     string Value,
     string Unit,
     string ReferenceRange,

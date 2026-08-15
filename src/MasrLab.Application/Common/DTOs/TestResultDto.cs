@@ -5,7 +5,7 @@ namespace MasrLab.Application.Common.DTOs;
 public record TestResultDto
 {
     public int Id { get; init; }
-    public int VisitTestId { get; init; }
+    public int VisitTestResultItemId { get; init; }
     public string Value { get; init; } = string.Empty;
     public string Unit { get; init; } = string.Empty;
     public string ReferenceRange { get; init; } = string.Empty;

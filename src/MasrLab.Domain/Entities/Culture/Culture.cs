@@ -7,7 +7,7 @@ namespace MasrLab.Domain.Entities.Culture;
 
 public class Culture : BaseEntity
 {
-    public int VisitTestId { get; set; }
+    public int VisitTestResultItemId { get; set; }
     public CultureStatus Status { get; private set; } = CultureStatus.Pending;
     public string SampleType { get; set; } = string.Empty;
     public string? OrganismA { get; set; }
@@ -18,11 +18,11 @@ public class Culture : BaseEntity
 
     public ICollection<Sensitivity> Sensitivities { get; set; } = new List<Sensitivity>();
 
-    public static Culture Create(int visitTestId)
+    public static Culture Create(int visitTestResultItemId)
     {
         var culture = new Culture
         {
-            VisitTestId = visitTestId,
+            VisitTestResultItemId = visitTestResultItemId,
             Status = CultureStatus.Pending
         };
         return culture;
@@ -37,7 +37,7 @@ public class Culture : BaseEntity
         OrganismB = organismB;
         OrganismC = organismC;
         Status = CultureStatus.Recorded;
-        AddDomainEvent(new CultureRecorded(Id, VisitTestId));
+        AddDomainEvent(new CultureRecorded(Id, VisitTestResultItemId));
     }
 
     public void RecordSensitivity(int antibioticId, SensitivityLevel level)

@@ -19,9 +19,9 @@ public record SampleCollected(int SampleId, int VisitId, int TestId, int Collect
 
 public record SampleUncollectedReverted(int SampleId, int VisitId) : DomainEvent;
 
-public record TestResultEntered(int ResultId, int VisitTestId, string Value, int EnteredBy) : DomainEvent;
+public record TestResultEntered(int ResultId, int VisitTestResultItemId, string Value, int EnteredBy) : DomainEvent;
 
-public record TestResultEdited(int ResultId, int VisitTestId, string OldValue, string NewValue, int EditedBy) : DomainEvent;
+public record TestResultEdited(int ResultId, int VisitTestResultItemId, string OldValue, string NewValue, int EditedBy) : DomainEvent;
 
 public record ReceiptIssued(int ReceiptId, int VisitId, decimal Total, decimal Paid) : DomainEvent;
 
@@ -33,7 +33,7 @@ public record OutsourcedSampleSent(int OutsourcedSampleId, int VisitTestId, int 
 
 public record OutsourcedResultReceived(int OutsourcedSampleId, DateTime ReceivedAt) : DomainEvent;
 
-public record CultureRecorded(int CultureId, int VisitTestId) : DomainEvent;
+public record CultureRecorded(int CultureId, int VisitTestResultItemId) : DomainEvent;
 
 public record SensitivityRecorded(int SensitivityId, int CultureId) : DomainEvent;
 

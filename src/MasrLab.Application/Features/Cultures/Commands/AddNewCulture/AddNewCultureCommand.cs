@@ -3,7 +3,7 @@ using MediatR;
 namespace MasrLab.Application.Features.Cultures.Commands.AddNewCulture;
 
 public record AddNewCultureCommand(
-    int VisitTestId,
+    int VisitTestResultItemId,
     string SampleType,
     string? OrganismA,
     string? OrganismB,

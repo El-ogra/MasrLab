@@ -9,7 +9,10 @@ public class TestsMasterDataMappingProfile : Profile
 {
     public TestsMasterDataMappingProfile()
     {
-        CreateMap<Test, TestDto>();
+        CreateMap<Test, TestDto>()
+            .ForMember(dest => dest.IsCompound, opt => opt.Ignore())
+            .ForMember(dest => dest.Components, opt => opt.Ignore());
+        CreateMap<TestComponent, TestComponentDto>();
         CreateMap<ReferenceValue, ReferenceValueDto>();
         CreateMap<PriceListItem, PriceListItemDto>();
     }

@@ -61,8 +61,8 @@ public class GenerateTestLogQueryHandler : IRequestHandler<GenerateTestLogQuery,
                     TestName = test?.Name ?? string.Empty,
                     SampleType = sample?.SampleType ?? string.Empty,
                     CollectionStatus = sample?.CollectionStatus ?? SampleStatus.NotCollected,
-                    ResultValue = vt.TestResult?.Value,
-                    ResultStatus = vt.TestResult?.Status
+                    ResultValue = vt.ResultItems.FirstOrDefault()?.ComponentName,
+                    ResultStatus = null
                 });
             }
         }

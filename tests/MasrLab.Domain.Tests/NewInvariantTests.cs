@@ -111,12 +111,12 @@ public class NewInvariantTests
     }
 
     [Fact]
-    public void Culture_Create_ShouldStartPendingWithVisitTestId()
+    public void Culture_Create_ShouldStartPendingWithVisitTestResultItemId()
     {
         var culture = Culture.Create(42);
 
         Assert.Equal(CultureStatus.Pending, culture.Status);
-        Assert.Equal(42, culture.VisitTestId);
+        Assert.Equal(42, culture.VisitTestResultItemId);
     }
 
     [Fact]

@@ -59,7 +59,7 @@ public class ResultsAndSamplesHandlersTests
     public async Task Result_and_pending_sample_queries_map_results_and_support_empty_lists()
     {
         var results = new Mock<ITestResultRepository>(); var mapper = new Mock<IMapper>(); var domainResult = TestResult.Enter(7, "12", 1); mapper.Setup(x => x.Map<TestResultDto>(domainResult)).Returns(new TestResultDto { Value = "12" });
-        results.Setup(x => x.GetByVisitTestIdAsync(7, It.IsAny<CancellationToken>())).ReturnsAsync(new[] { domainResult });
+        results.Setup(x => x.GetByVisitTestResultItemIdAsync(7, It.IsAny<CancellationToken>())).ReturnsAsync(new[] { domainResult });
         var mapped = await new GetTestResultForVisitQueryHandler(results.Object, mapper.Object).Handle(new(7), default);
         Assert.Single(mapped); Assert.Equal("12", mapped[0].Value);
         var samples = new Mock<ISampleRepository>(); samples.Setup(x => x.GetPendingAsync(null, It.IsAny<CancellationToken>())).ReturnsAsync(Array.Empty<Sample>());

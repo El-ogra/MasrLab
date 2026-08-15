@@ -48,7 +48,7 @@ public class AuditBehaviorTests
 
     private static EnterTestResultCommand CreateCommand()
         => new(
-            VisitTestId: 100,
+            VisitTestResultItemId: 100,
             Value: "5.0",
             Unit: "cells/uL",
             ReferenceRange: "1-10",

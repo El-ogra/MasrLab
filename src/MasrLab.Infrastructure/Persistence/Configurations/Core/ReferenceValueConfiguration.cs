@@ -1,6 +1,6 @@
+using MasrLab.Domain.Entities.Core;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using MasrLab.Domain.Entities.Core;
 
 namespace MasrLab.Infrastructure.Persistence.Configurations.Core;
 
@@ -13,6 +13,7 @@ public class ReferenceValueConfiguration : IEntityTypeConfiguration<ReferenceVal
         builder.Property(e => e.Id).ValueGeneratedOnAdd();
 
         builder.Property(e => e.TestId).IsRequired();
+        builder.Property(e => e.TestComponentId);
         builder.Property(e => e.Gender).IsRequired();
         builder.Property(e => e.AgeMin).IsRequired();
         builder.Property(e => e.AgeMax).IsRequired();
@@ -27,7 +28,13 @@ public class ReferenceValueConfiguration : IEntityTypeConfiguration<ReferenceVal
         builder.Property(e => e.HighComment).HasMaxLength(500);
         builder.Property(e => e.LowComment).HasMaxLength(500);
 
+        builder.HasOne<TestComponent>()
+            .WithMany()
+            .HasForeignKey(e => e.TestComponentId)
+            .OnDelete(DeleteBehavior.Restrict);
+
         builder.HasIndex(e => e.TestId);
+        builder.HasIndex(e => e.TestComponentId);
         builder.HasIndex(e => e.IsDeleted);
     }
 }

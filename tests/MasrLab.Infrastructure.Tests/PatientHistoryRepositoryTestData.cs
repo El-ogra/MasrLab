@@ -20,7 +20,7 @@ internal sealed class PatientHistoryRepositoryTestData(MasrLabDbContext context)
         return patient;
     }
 
-    public async Task<Test> AddTestAsync(string name)
+    public async Task<TestComponent> AddTestAsync(string name)
     {
         var test = new Test
         {
@@ -35,12 +35,17 @@ internal sealed class PatientHistoryRepositoryTestData(MasrLabDbContext context)
 
         context.Tests.Add(test);
         await context.SaveChangesAsync(CancellationToken.None);
-        return test;
+
+        var component = TestComponent.Create(test.Id, $"{name} Component", "mg/dL", 1);
+        context.TestComponents.Add(component);
+        await context.SaveChangesAsync(CancellationToken.None);
+
+        return component;
     }
 
     public async Task AddResultAsync(
         Patient patient,
-        Test test,
+        TestComponent component,
         DateTime visitDate,
         string value,
         string unit = "mg/dL",
@@ -57,11 +62,23 @@ internal sealed class PatientHistoryRepositoryTestData(MasrLabDbContext context)
         context.PatientVisits.Add(visit);
         await context.SaveChangesAsync(CancellationToken.None);
 
-        var visitTest = new VisitTest(visit.Id, test.Id, 100m, isOutsourced: false);
+        var visitTest = new VisitTest(visit.Id, component.TestId, 100m, isOutsourced: false);
         context.VisitTests.Add(visitTest);
         await context.SaveChangesAsync(CancellationToken.None);
 
-        var result = TestResult.Enter(visitTest.Id, value, enteredByUserId: 1);
+        var resultItem = new VisitTestResultItem
+        {
+            VisitTestId = visitTest.Id,
+            SourceTestComponentId = component.Id,
+            ComponentName = component.Name,
+            ComponentUnit = unit,
+            DisplayOrder = 1,
+            ResultEntryKind = ResultEntryKind.Ordinary
+        };
+        context.VisitTestResultItems.Add(resultItem);
+        await context.SaveChangesAsync(CancellationToken.None);
+
+        var result = TestResult.Enter(resultItem.Id, value, enteredByUserId: 1);
         result.Unit = unit;
         result.ReferenceRange = referenceRange;
         result.Status = status;

@@ -302,23 +302,78 @@
 
         <!-- شريط الأزرار السفلية -->
         <Border Grid.Row="3" Background="#E8E8E8" Padding="8" Margin="0,5,0,0" CornerRadius="3">
-            <WrapPanel HorizontalAlignment="Center">
-                <Button Content="القائمة الرئيسية" Command="{Binding CloseCommand}"
-                        CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=Window}}"
-                        Padding="20,8" Margin="5" Background="#607D8B" Foreground="White" FontWeight="Bold"/>
-                <Button Content="القيم المرجعية" Command="{Binding OpenReferenceValuesCommand}"
-                        Padding="20,8" Margin="5" Background="#9C27B0" Foreground="White" FontWeight="Bold"/>
-                <Button Content="حذف" Command="{Binding DeleteTestCommand}"
-                        Padding="20,8" Margin="5" Background="#f44336" Foreground="White" FontWeight="Bold"/>
-                <Button Content="تراجع" Command="{Binding TransferCommand}"
-                        Padding="20,8" Margin="5" Background="#FF9800" Foreground="White" FontWeight="Bold"/>
-                <Button Content="حفظ" Command="{Binding SaveTestCommand}"
-                        Padding="20,8" Margin="5" Background="#4CAF50" Foreground="White" FontWeight="Bold"/>
-                <Button Content="تعديل" Command="{Binding UpdateTestCommand}"
-                        Padding="20,8" Margin="5" Background="#2196F3" Foreground="White" FontWeight="Bold"/>
-                <Button Content="اضافة تحليل" Command="{Binding AddNewTestCommand}"
-                        Padding="20,8" Margin="5" Background="#00BCD4" Foreground="White" FontWeight="Bold"/>
-            </WrapPanel>
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <!-- قسم إدارة المكونات -->
+                <Border Grid.Column="0" Background="White" Padding="8" CornerRadius="3" BorderBrush="#CCC" BorderThickness="1" Margin="0,0,8,0">
+                    <StackPanel>
+                        <TextBlock Text="Test Components" FontWeight="Bold" FontSize="12" Margin="0,0,0,5" Foreground="#333"/>
+                        <DataGrid ItemsSource="{Binding Components}"
+                                  SelectedItem="{Binding SelectedComponent}"
+                                  AutoGenerateColumns="False" IsReadOnly="True"
+                                  CanUserAddRows="False" CanUserDeleteRows="False"
+                                  SelectionMode="Single" Height="120"
+                                  GridLinesVisibility="Horizontal" HeadersVisibility="Column">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Order" Binding="{Binding DisplayOrder}" Width="50"/>
+                                <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="150"/>
+                                <DataGridTextColumn Header="Unit" Binding="{Binding Unit}" Width="80"/>
+                                <DataGridTextColumn Header="Kind" Binding="{Binding ResultEntryKind}" Width="80"/>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                        <Grid Margin="0,5,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="60"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="60"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="60"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Grid.Column="0" Text="Name" VerticalAlignment="Center"/>
+                            <TextBox Grid.Column="1" Text="{Binding ComponentName, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,5,0"/>
+                            <TextBlock Grid.Column="2" Text="Unit" VerticalAlignment="Center"/>
+                            <TextBox Grid.Column="3" Text="{Binding ComponentUnit, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,5,0"/>
+                            <TextBlock Grid.Column="4" Text="Order" VerticalAlignment="Center"/>
+                            <TextBox Grid.Column="5" Text="{Binding ComponentDisplayOrder, UpdateSourceTrigger=PropertyChanged}" Margin="0,0,5,0"/>
+                            <TextBlock Grid.Column="6" Text="Kind" VerticalAlignment="Center"/>
+                            <ComboBox Grid.Column="7" SelectedItem="{Binding ComponentResultEntryKind}"
+                                      ItemsSource="{Binding ResultEntryKinds}" Margin="0,0,5,0"/>
+                        </Grid>
+                    </StackPanel>
+                </Border>
+
+                <!-- أزرار -->
+                <WrapPanel Grid.Column="1" VerticalAlignment="Center">
+                    <Button Content="إضافة مكون" Command="{Binding AddComponentCommand}"
+                            Padding="12,6" Margin="3" Background="#00BCD4" Foreground="White" FontWeight="Bold"/>
+                    <Button Content="تعديل مكون" Command="{Binding UpdateComponentCommand}"
+                            Padding="12,6" Margin="3" Background="#2196F3" Foreground="White" FontWeight="Bold"/>
+                    <Button Content="حذف مكون" Command="{Binding DeleteComponentCommand}"
+                            Padding="12,6" Margin="3" Background="#f44336" Foreground="White" FontWeight="Bold"/>
+                    <Button Content="القائمة الرئيسية" Command="{Binding CloseCommand}"
+                            CommandParameter="{Binding RelativeSource={RelativeSource AncestorType=Window}}"
+                            Padding="12,6" Margin="3" Background="#607D8B" Foreground="White" FontWeight="Bold"/>
+                    <Button Content="القيم المرجعية" Command="{Binding OpenReferenceValuesCommand}"
+                            Padding="12,6" Margin="3" Background="#9C27B0" Foreground="White" FontWeight="Bold"/>
+                    <Button Content="حذف" Command="{Binding DeleteTestCommand}"
+                            Padding="12,6" Margin="3" Background="#f44336" Foreground="White" FontWeight="Bold"/>
+                    <Button Content="تراجع" Command="{Binding TransferCommand}"
+                            Padding="12,6" Margin="3" Background="#FF9800" Foreground="White" FontWeight="Bold"/>
+                    <Button Content="حفظ" Command="{Binding SaveTestCommand}"
+                            Padding="12,6" Margin="3" Background="#4CAF50" Foreground="White" FontWeight="Bold"/>
+                    <Button Content="تعديل" Command="{Binding UpdateTestCommand}"
+                            Padding="12,6" Margin="3" Background="#2196F3" Foreground="White" FontWeight="Bold"/>
+                    <Button Content="اضافة تحليل" Command="{Binding AddNewTestCommand}"
+                            Padding="12,6" Margin="3" Background="#00BCD4" Foreground="White" FontWeight="Bold"/>
+                </WrapPanel>
+            </Grid>
         </Border>
     </Grid>
 </Window>
