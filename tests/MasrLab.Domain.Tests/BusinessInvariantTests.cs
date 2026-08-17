@@ -71,50 +71,6 @@ public class CashTransactionTests
     }
 }
 
-public class CommentTests
-{
-    [Fact]
-    public void CommentTextSetter_WhenNull_ShouldThrowBusinessRuleViolation()
-    {
-        var ex = Assert.Throws<BusinessRuleViolationException>(() => new Comment { CommentText = null! });
-
-        Assert.Equal("Comment text cannot be empty.", ex.Message);
-    }
-
-    [Fact]
-    public void CommentTextSetter_WhenWhitespace_ShouldThrowBusinessRuleViolation()
-    {
-        var ex = Assert.Throws<BusinessRuleViolationException>(() => new Comment { CommentText = "   " });
-
-        Assert.Equal("Comment text cannot be empty.", ex.Message);
-    }
-
-    [Fact]
-    public void CommentTextSetter_WhenExactly1000Chars_ShouldAccept()
-    {
-        var comment = new Comment { CommentText = new string('a', 1000) };
-
-        Assert.Equal(1000, comment.CommentText.Length);
-    }
-
-    [Fact]
-    public void CommentTextSetter_WhenExceeds1000Chars_ShouldThrowBusinessRuleViolation()
-    {
-        var ex = Assert.Throws<BusinessRuleViolationException>(
-            () => new Comment { CommentText = new string('a', 1001) });
-
-        Assert.Equal("Comment text cannot exceed 1000 characters.", ex.Message);
-    }
-
-    [Fact]
-    public void CommentTextSetter_WhenValid_ShouldStoreValue()
-    {
-        var comment = new Comment { CommentText = "Elevated" };
-
-        Assert.Equal("Elevated", comment.CommentText);
-    }
-}
-
 public class CommentTemplateTests
 {
     [Fact]

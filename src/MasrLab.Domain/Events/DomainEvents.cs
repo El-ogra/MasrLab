@@ -57,6 +57,5 @@ public record CashDeposited(int TransactionId, decimal Amount) : DomainEvent;
 
 public record CashWithdrawn(int TransactionId, decimal Amount) : DomainEvent;
 
-public record CommentAttachedToResult(int CommentId, int TestId) : DomainEvent;
 
 public record VisitClosed(int VisitId, DateTime ClosedAt, decimal FinalTotal) : DomainEvent;

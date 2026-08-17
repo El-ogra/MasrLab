@@ -18,17 +18,17 @@ public class CasesFollowUpAndWorkSheetsHandlersTests
     [Fact]
     public async Task AddCaseFollowUp_persists_note_for_test()
     {
-        var repository = new Mock<IRepository<CommentTemplate>>(); CommentTemplate? added = null;
-        repository.Setup(x => x.AddAsync(It.IsAny<CommentTemplate>(), It.IsAny<CancellationToken>())).Callback<CommentTemplate, CancellationToken>((c, _) => added = c);
+        var repository = new Mock<IRepository<CaseFollowUpNote>>(); CaseFollowUpNote? added = null;
+        repository.Setup(x => x.AddAsync(It.IsAny<CaseFollowUpNote>(), It.IsAny<CancellationToken>())).Callback<CaseFollowUpNote, CancellationToken>((c, _) => added = c);
         await new AddCaseFollowUpCommandHandler(repository.Object, new Mock<IUnitOfWork>().Object).Handle(new(6, "review"), default);
-        Assert.NotNull(added); Assert.Equal(6, added!.TestId); Assert.Equal("review", added.Text);
+        Assert.NotNull(added); Assert.Equal(6, added!.TestId); Assert.Equal("review", added.Notes);
     }
 
     [Fact]
     public async Task AddCaseFollowUp_propagates_save_failure()
     {
         var uow = new Mock<IUnitOfWork>(); uow.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>())).ThrowsAsync(new InvalidOperationException("write failed"));
-        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => new AddCaseFollowUpCommandHandler(new Mock<IRepository<CommentTemplate>>().Object, uow.Object).Handle(new(6, "review"), default));
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(() => new AddCaseFollowUpCommandHandler(new Mock<IRepository<CaseFollowUpNote>>().Object, uow.Object).Handle(new(6, "review"), default));
         Assert.Equal("write failed", exception.Message);
     }
 

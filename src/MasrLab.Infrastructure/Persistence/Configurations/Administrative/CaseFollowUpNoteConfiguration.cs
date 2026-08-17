@@ -1,26 +1,26 @@
-using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using MasrLab.Domain.Entities.Administrative;
 using MasrLab.Domain.Entities.Core;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace MasrLab.Infrastructure.Persistence.Configurations.Administrative;
 
-public class CommentTemplateConfiguration : IEntityTypeConfiguration<CommentTemplate>
+public class CaseFollowUpNoteConfiguration : IEntityTypeConfiguration<CaseFollowUpNote>
 {
-    public void Configure(EntityTypeBuilder<CommentTemplate> builder)
+    public void Configure(EntityTypeBuilder<CaseFollowUpNote> builder)
     {
-        builder.ToTable("CommentTemplates");
+        builder.ToTable("CaseFollowUpNotes");
         builder.HasKey(e => e.Id);
         builder.Property(e => e.Id).ValueGeneratedOnAdd();
 
         builder.Property(e => e.TestId).IsRequired();
-        builder.Property(e => e.Text).HasMaxLength(2000).IsRequired();
+        builder.Property(e => e.Notes).HasMaxLength(2000).IsRequired();
 
         builder.HasIndex(e => e.TestId);
         builder.HasIndex(e => e.IsDeleted);
         builder.HasOne<Test>()
-            .WithMany(e => e.CommentTemplates)
+            .WithMany()
             .HasForeignKey(e => e.TestId)
-            .OnDelete(DeleteBehavior.Cascade);
+            .OnDelete(DeleteBehavior.Restrict);
     }
 }

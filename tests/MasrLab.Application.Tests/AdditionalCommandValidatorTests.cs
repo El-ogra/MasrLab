@@ -20,7 +20,10 @@ public class AdditionalCommandValidatorTests
         yield return Case("EnterCultureResult", new object?[] { 1, null, null, null, "aerobic", 0 }, new object?[] { 0, null, null, null, "", -1 });
         yield return Case("AddDoctor", new object?[] { "Dr A", null, null, 0m }, new object?[] { "", null, null, 101m });
         yield return Case("AddReferralEntity", new object?[] { "Lab", 0, null, null, null, null, 1, 0m }, new object?[] { "", 0, null, null, null, null, 0, 0m });
-        yield return Case("ManageComments", new object?[] { null, 1, "note" }, new object?[] { null, 0, "" });
+        yield return Case("AddCommentTemplate", new object?[] { 1, "note" }, new object?[] { 0, "" });
+        yield return Case("UpdateCommentTemplate", new object?[] { 1, 1, "note" }, new object?[] { 0, 0, "" });
+        yield return Case("DeleteCommentTemplate", new object?[] { 1, 1 }, new object?[] { 0, 0 });
+        yield return Case("ApplyCommentTemplate", new object?[] { 1, 1, 1 }, new object?[] { 0, 0, 0 });
         yield return Case("MarkTestAsOutsourced", new object?[] { 1, 1, 1, 0m, 0m }, new object?[] { 0, 0, 0, -1m, -1m });
         yield return Case("SettleOutsourcedAccount", new object?[] { 1, 0 }, new object?[] { 0, 99 });
     }

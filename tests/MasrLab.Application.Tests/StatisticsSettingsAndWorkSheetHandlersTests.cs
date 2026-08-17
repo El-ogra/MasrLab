@@ -2,7 +2,6 @@ using AutoMapper;
 using MasrLab.Application.Common.DTOs;
 using MasrLab.Application.Common.Interfaces;
 using MasrLab.Application.Common.Models;
-using MasrLab.Application.Features.FixedComments.Commands.ManageComments;
 using MasrLab.Application.Features.OutsourcedSamples.Queries.GetOutsourcedSamples;
 using MasrLab.Application.Features.Statistics.Queries.GetGenderStatistics;
 using MasrLab.Application.Features.Statistics.Queries.GetMonthlyStatistics;
@@ -49,9 +48,6 @@ public class StatisticsSettingsAndWorkSheetHandlersTests
 
     [Fact] public async Task GenerateTestWorkSheet_saves_test_scope() { var r=new Mock<IRepository<WorkSheet>>();var m=new Mock<IMapper>();WorkSheet? saved=null;r.Setup(x=>x.AddAsync(It.IsAny<WorkSheet>(),It.IsAny<CancellationToken>())).Callback<WorkSheet,CancellationToken>((w,_)=>saved=w);m.Setup(x=>x.Map<WorkSheetDto>(It.IsAny<WorkSheet>())).Returns(new WorkSheetDto{TestIds="8"});var v=await new GenerateTestWorkSheetQueryHandler(r.Object,new Mock<IUnitOfWork>().Object,m.Object).Handle(new(8,DateTime.Today,DateTime.Today),default);Assert.NotNull(saved);Assert.Equal(WorkSheetType.Tests,saved!.Type);Assert.Equal("8",v.TestIds); }
     [Fact] public async Task GenerateTestWorkSheet_propagates_save_failure() { var u=new Mock<IUnitOfWork>();u.Setup(x=>x.SaveChangesAsync(It.IsAny<CancellationToken>())).ThrowsAsync(new InvalidOperationException());await Assert.ThrowsAsync<InvalidOperationException>(()=>new GenerateTestWorkSheetQueryHandler(new Mock<IRepository<WorkSheet>>().Object,u.Object,new Mock<IMapper>().Object).Handle(new(8,DateTime.Today,DateTime.Today),default)); }
-
-    [Fact] public async Task ManageComments_adds_new_result_comment() { var r=new Mock<IRepository<Comment>>();Comment? saved=null;r.Setup(x=>x.AddAsync(It.IsAny<Comment>(),It.IsAny<CancellationToken>())).Callback<Comment,CancellationToken>((c,_)=>saved=c);await new ManageCommentsCommandHandler(r.Object,new Mock<IUnitOfWork>().Object).Handle(new(null,4,"note"),default);Assert.NotNull(saved);Assert.Equal("note",saved!.CommentText); }
-    [Fact] public async Task ManageComments_updates_existing_comment() { var r=new Mock<IRepository<Comment>>();var c=Comment.AttachToResult(4,"old");c.Id=1;r.Setup(x=>x.GetByIdAsync(1,It.IsAny<CancellationToken>())).ReturnsAsync(c);await new ManageCommentsCommandHandler(r.Object,new Mock<IUnitOfWork>().Object).Handle(new(1,4,"new"),default);Assert.Equal("new",c.CommentText);r.Verify(x=>x.Update(c),Times.Once); }
 
     [Fact] public async Task GetSystemSettings_uses_values_and_defaults() { var r=new Mock<ISystemSettingRepository>();r.Setup(x=>x.GetByKeysAsync(It.IsAny<IReadOnlyCollection<string>>(),It.IsAny<CancellationToken>())).ReturnsAsync(new List<SystemSetting>{new(){SettingKey="Receipt_HeaderText",SettingValue="Header"},new(){SettingKey="Printer_Name",SettingValue="P"}});var v=await new GetSystemSettingsQueryHandler(r.Object).Handle(new(),default);Assert.Equal("Header",v.ReceiptSettings.HeaderText);Assert.Equal("P",v.Printer.PrinterName);Assert.Equal(PaperSize.A4,v.ReportSettings.PaperSize); }
     [Fact] public async Task GetSystemSettings_returns_empty_defaults_when_no_keys_exist() { var r=new Mock<ISystemSettingRepository>();r.Setup(x=>x.GetByKeysAsync(It.IsAny<IReadOnlyCollection<string>>(),It.IsAny<CancellationToken>())).ReturnsAsync(new List<SystemSetting>());var v=await new GetSystemSettingsQueryHandler(r.Object).Handle(new(),default);Assert.Equal(string.Empty,v.ReceiptSettings.FooterText); }

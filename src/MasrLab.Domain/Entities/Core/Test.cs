@@ -1,5 +1,6 @@
 using MasrLab.Domain.Common;
 using MasrLab.Domain.Common.Enums;
+using MasrLab.Domain.Entities.Administrative;
 
 namespace MasrLab.Domain.Entities.Core;
 
@@ -40,6 +41,6 @@ public class Test : BaseEntity
     public string? PatientQuestion { get; set; }
 
     public ICollection<ReferenceValue> ReferenceValues { get; set; } = new List<ReferenceValue>();
-    public ICollection<Comment> Comments { get; set; } = new List<Comment>();
+    public ICollection<CommentTemplate> CommentTemplates { get; set; } = new List<CommentTemplate>();
     public ICollection<TestComponent> TestComponents { get; set; } = new List<TestComponent>();
 }

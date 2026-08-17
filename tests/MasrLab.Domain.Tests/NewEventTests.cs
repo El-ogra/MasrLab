@@ -154,22 +154,4 @@ public class NewEventTests
         Assert.Equal("CashTransaction amount must be greater than zero.", ex.Message);
     }
 
-    [Fact]
-    public void Comment_AttachToResult_ShouldRaiseCommentAttachedToResult()
-    {
-        var comment = Comment.AttachToResult(5, "Repeated test");
-
-        var evt = Assert.Single(comment.DomainEvents.OfType<CommentAttachedToResult>());
-        Assert.Equal(comment.Id, evt.CommentId);
-        Assert.Equal(5, evt.TestId);
-        Assert.Equal("Repeated test", comment.CommentText);
-    }
-
-    [Fact]
-    public void Comment_AttachToResult_WhenTestIdZero_ShouldThrowBusinessRuleViolation()
-    {
-        var ex = Assert.Throws<BusinessRuleViolationException>(() => Comment.AttachToResult(0, "x"));
-
-        Assert.Equal("Comment requires a valid TestId.", ex.Message);
-    }
 }

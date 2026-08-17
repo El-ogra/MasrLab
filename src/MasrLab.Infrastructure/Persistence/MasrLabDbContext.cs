@@ -28,7 +28,6 @@ public class MasrLabDbContext : DbContext
     public DbSet<ReferenceValue> ReferenceValues => Set<ReferenceValue>();
     public DbSet<TestGroup> TestGroups => Set<TestGroup>();
     public DbSet<TestGroupItem> TestGroupItems => Set<TestGroupItem>();
-    public DbSet<Comment> Comments => Set<Comment>();
     public DbSet<TestResultEditHistory> TestResultEditHistories => Set<TestResultEditHistory>();
     public DbSet<TestComponentChoice> TestComponentChoices => Set<TestComponentChoice>();
     public DbSet<Sample> Samples => Set<Sample>();
@@ -64,6 +63,7 @@ public class MasrLabDbContext : DbContext
     public DbSet<Doctor> Doctors => Set<Doctor>();
     public DbSet<ReferralEntity> ReferralEntities => Set<ReferralEntity>();
     public DbSet<CommentTemplate> CommentTemplates => Set<CommentTemplate>();
+    public DbSet<CaseFollowUpNote> CaseFollowUpNotes => Set<CaseFollowUpNote>();
 
     // Settings
     public DbSet<PriceList> PriceLists => Set<PriceList>();
