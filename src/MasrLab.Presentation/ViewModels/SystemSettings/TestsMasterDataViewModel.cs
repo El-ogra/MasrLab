@@ -128,6 +128,9 @@ public partial class TestsMasterDataViewModel : ObservableObject
     private decimal _outsourcedCostPrice;
 
     [ObservableProperty]
+    private decimal? _costPrice;
+
+    [ObservableProperty]
     private string _patientQuestion = string.Empty;
 
     [ObservableProperty]
@@ -205,6 +208,7 @@ public partial class TestsMasterDataViewModel : ObservableObject
             SentOutsideLab = value.SentOutsideLab;
             OutsourcedLabName = value.OutsourcedLabName ?? string.Empty;
             OutsourcedCostPrice = value.OutsourcedCostPrice ?? 0;
+            CostPrice = value.CostPrice;
             PatientQuestion = value.PatientQuestion ?? string.Empty;
             TurnaroundTime = value.TurnaroundTime;
             Unit = value.Unit;
@@ -302,7 +306,8 @@ public partial class TestsMasterDataViewModel : ObservableObject
                 SentOutsideLab,
                 SentOutsideLab && !string.IsNullOrWhiteSpace(OutsourcedLabName) ? OutsourcedLabName : null,
                 SentOutsideLab && OutsourcedCostPrice > 0 ? OutsourcedCostPrice : null,
-                string.IsNullOrWhiteSpace(PatientQuestion) ? null : PatientQuestion
+                string.IsNullOrWhiteSpace(PatientQuestion) ? null : PatientQuestion,
+                CostPrice
             );
 
             await _mediator.Send(command);
@@ -350,7 +355,8 @@ public partial class TestsMasterDataViewModel : ObservableObject
                 SentOutsideLab,
                 SentOutsideLab && !string.IsNullOrWhiteSpace(OutsourcedLabName) ? OutsourcedLabName : null,
                 SentOutsideLab && OutsourcedCostPrice > 0 ? OutsourcedCostPrice : null,
-                string.IsNullOrWhiteSpace(PatientQuestion) ? null : PatientQuestion
+                string.IsNullOrWhiteSpace(PatientQuestion) ? null : PatientQuestion,
+                CostPrice
             );
 
             await _mediator.Send(command);
@@ -421,7 +427,7 @@ public partial class TestsMasterDataViewModel : ObservableObject
                             test.IsMainTest, test.TestTimeDays, counter, test.ReferenceType,
                             test.LabToLabPrice, test.BarcodeName, test.Tube1, test.Tube2, test.Tube3,
                             test.SentOutsideLab, test.OutsourcedLabName, test.OutsourcedCostPrice,
-                            test.PatientQuestion);
+                            test.PatientQuestion, test.CostPrice);
                         await _mediator.Send(command);
                     }
                     counter++;
@@ -588,6 +594,7 @@ public partial class TestsMasterDataViewModel : ObservableObject
         SentOutsideLab = false;
         OutsourcedLabName = string.Empty;
         OutsourcedCostPrice = 0;
+        CostPrice = null;
         PatientQuestion = string.Empty;
         TurnaroundTime = string.Empty;
         Unit = string.Empty;

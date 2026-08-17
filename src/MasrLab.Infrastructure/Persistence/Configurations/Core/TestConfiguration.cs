@@ -43,6 +43,7 @@ public class TestConfiguration : IEntityTypeConfiguration<Test>
         builder.Property(e => e.SentOutsideLab).IsRequired();
         builder.Property(e => e.OutsourcedLabName).HasMaxLength(200);
         builder.Property(e => e.OutsourcedCostPrice).HasColumnType("decimal(18,2)");
+        builder.Property(e => e.CostPrice).HasColumnType("decimal(18,2)");
         builder.Property(e => e.PatientQuestion).HasMaxLength(2000);
 
         builder.HasIndex(e => e.Group);

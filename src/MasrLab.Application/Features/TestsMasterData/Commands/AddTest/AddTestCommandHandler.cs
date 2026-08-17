@@ -51,7 +51,8 @@ public class AddTestCommandHandler : IRequestHandler<AddTestCommand, Unit>
             SentOutsideLab = request.SentOutsideLab,
             OutsourcedLabName = request.OutsourcedLabName,
             OutsourcedCostPrice = request.OutsourcedCostPrice,
-            PatientQuestion = request.PatientQuestion
+            PatientQuestion = request.PatientQuestion,
+            CostPrice = request.CostPrice
         };
 
         var firstComponent = new TestComponent

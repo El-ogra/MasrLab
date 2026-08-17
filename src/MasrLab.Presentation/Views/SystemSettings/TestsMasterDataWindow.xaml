@@ -80,6 +80,7 @@
                 <DataGridTextColumn Header="Lab P" Binding="{Binding LabToLabPrice, StringFormat=F2}" Width="70"/>
                 <DataGridTextColumn Header="Out Lab Name" Binding="{Binding OutsourcedLabName}" Width="120"/>
                 <DataGridTextColumn Header="Out P" Binding="{Binding OutsourcedCostPrice, StringFormat=F2}" Width="70"/>
+                <DataGridTextColumn Header="Cost P" Binding="{Binding CostPrice, StringFormat=F2}" Width="70"/>
                 <DataGridTextColumn Header="Barcode" Binding="{Binding Barcode}" Width="120"/>
             </DataGrid.Columns>
         </DataGrid>
@@ -130,6 +131,7 @@
                                 <RowDefinition Height="5"/>
                                 <RowDefinition Height="Auto"/>
                                 <RowDefinition Height="5"/>
+                                <RowDefinition Height="Auto"/>
                             </Grid.RowDefinitions>
 
                             <!-- Test Name -->
@@ -199,6 +201,10 @@
                             <TextBlock Grid.Row="22" Grid.Column="2" Text="Unit" VerticalAlignment="Center"/>
                             <ComboBox Grid.Row="22" Grid.Column="3" Text="{Binding Unit, UpdateSourceTrigger=PropertyChanged}"
                                       IsEditable="True"/>
+
+                            <!-- Cost Price -->
+                            <TextBlock Grid.Row="24" Grid.Column="0" Text="Cost price" VerticalAlignment="Center"/>
+                            <TextBox Grid.Row="24" Grid.Column="1" Text="{Binding CostPrice, UpdateSourceTrigger=PropertyChanged}"/>
                         </Grid>
                     </StackPanel>
                 </ScrollViewer>

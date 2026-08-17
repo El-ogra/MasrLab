@@ -36,6 +36,7 @@ public record TestDto
     public bool SentOutsideLab { get; init; }
     public string? OutsourcedLabName { get; init; }
     public decimal? OutsourcedCostPrice { get; init; }
+    public decimal? CostPrice { get; init; }
     public string? PatientQuestion { get; init; }
 
     public bool IsCompound { get; init; }

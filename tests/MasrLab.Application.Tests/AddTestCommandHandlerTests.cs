@@ -129,6 +129,34 @@ public class AddTestCommandHandlerTests
     }
 
     [Fact]
+    public async Task Handle_Persists_CostPrice_When_Supplied()
+    {
+        Test? captured = null;
+        _testRepo
+            .Setup(r => r.AddAsync(It.IsAny<Test>(), It.IsAny<CancellationToken>()))
+            .Callback<Test, CancellationToken>((t, _) => captured = t)
+            .Returns(Task.CompletedTask);
+
+        await CreateHandler().Handle(CreateCommand() with { CostPrice = 25.50m }, CancellationToken.None);
+
+        captured!.CostPrice.Should().Be(25.50m);
+    }
+
+    [Fact]
+    public async Task Handle_Preserves_Null_CostPrice_When_Not_Supplied()
+    {
+        Test? captured = null;
+        _testRepo
+            .Setup(r => r.AddAsync(It.IsAny<Test>(), It.IsAny<CancellationToken>()))
+            .Callback<Test, CancellationToken>((t, _) => captured = t)
+            .Returns(Task.CompletedTask);
+
+        await CreateHandler().Handle(CreateCommand(), CancellationToken.None);
+
+        captured!.CostPrice.Should().BeNull();
+    }
+
+    [Fact]
     public async Task Handle_CallsSaveChangesAsync()
     {
         _testRepo

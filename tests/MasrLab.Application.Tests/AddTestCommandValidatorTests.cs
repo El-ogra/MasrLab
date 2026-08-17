@@ -35,4 +35,28 @@ public class AddTestCommandValidatorTests
         var result = _validator.Validate(command);
         Assert.True(result.IsValid);
     }
+
+    [Fact]
+    public void Should_Be_Valid_When_CostPrice_Is_Null()
+    {
+        var command = CreateCommand();
+        var result = _validator.Validate(command);
+        Assert.True(result.IsValid);
+    }
+
+    [Fact]
+    public void Should_Be_Valid_When_CostPrice_Is_Zero()
+    {
+        var command = CreateCommand() with { CostPrice = 0m };
+        var result = _validator.Validate(command);
+        Assert.True(result.IsValid);
+    }
+
+    [Fact]
+    public void Should_Have_Error_When_CostPrice_Is_Negative()
+    {
+        var command = CreateCommand() with { CostPrice = -1m };
+        var result = _validator.Validate(command);
+        Assert.False(result.IsValid);
+    }
 }

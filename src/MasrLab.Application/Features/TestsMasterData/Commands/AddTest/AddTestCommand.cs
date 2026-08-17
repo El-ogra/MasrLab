@@ -34,5 +34,6 @@ public record AddTestCommand(
     bool SentOutsideLab,
     string? OutsourcedLabName,
     decimal? OutsourcedCostPrice,
-    string? PatientQuestion
+    string? PatientQuestion,
+    decimal? CostPrice = null
 ) : IRequest<Unit>;

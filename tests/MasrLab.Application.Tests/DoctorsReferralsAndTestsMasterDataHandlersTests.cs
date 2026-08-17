@@ -27,9 +27,9 @@ namespace MasrLab.Application.Tests;
 public class DoctorsReferralsAndTestsMasterDataHandlersTests
 {
     private static AddTestCommand NewTest() => new("CBC", "CBC report", "CBC receipt", "Hematology", "B1", 120m, "24h", false, "mg",
-        null, null, null, null, null, null, false, false, false, false, 1, 0, ReferenceType.General, null, null, null, null, null, false, null, null, null);
+        null, null, null, null, null, null, false, false, false, false, 1, 0, ReferenceType.General, null, null, null, null, null, false, null, null, null, 35.50m);
     private static UpdateTestCommand ChangedTest(int id = 1) => new(id, "CRP", "CRP report", "CRP receipt", "Chemistry", null, 220m, "48h", true, "mg/L",
-        null, null, null, null, null, null, false, false, false, false, 2, 1, ReferenceType.General, null, null, null, null, null, false, null, null, null);
+        null, null, null, null, null, null, false, false, false, false, 2, 1, ReferenceType.General, null, null, null, null, null, false, null, null, null, 40m);
 
     [Fact]
     public async Task AddDoctor_persists_requested_doctor()
@@ -151,10 +151,10 @@ public class DoctorsReferralsAndTestsMasterDataHandlersTests
     [Fact]
     public async Task GetTestWithReferences_returns_test_and_mapped_references()
     {
-        var tests = new Mock<IRepository<CoreTest>>(); var refs = new Mock<IReferenceValueRepository>(); var mapper = new Mock<IMapper>(); var test = new CoreTest { Id = 1, Name = "CBC", Price = 20m }; var reference = new ReferenceValue { Id = 2, TestId = 1, NormalRange = "normal" };
+        var tests = new Mock<IRepository<CoreTest>>(); var refs = new Mock<IReferenceValueRepository>(); var mapper = new Mock<IMapper>(); var test = new CoreTest { Id = 1, Name = "CBC", Price = 20m, CostPrice = 15m }; var reference = new ReferenceValue { Id = 2, TestId = 1, NormalRange = "normal" };
         tests.Setup(x => x.GetByIdAsync(1, It.IsAny<CancellationToken>())).ReturnsAsync(test); refs.Setup(x => x.GetByTestIdAsync(1, It.IsAny<CancellationToken>())).ReturnsAsync(new List<ReferenceValue> { reference }); mapper.Setup(x => x.Map<ReferenceValueDto>(reference)).Returns(new ReferenceValueDto { Id = 2, TestId = 1, NormalRange = "normal" });
         var result = await new GetTestWithReferencesQueryHandler(tests.Object, refs.Object, mapper.Object).Handle(new(1), default);
-        Assert.NotNull(result); Assert.Equal("CBC", result!.Name); Assert.Single(result.ReferenceValues);
+        Assert.NotNull(result); Assert.Equal("CBC", result!.Name); Assert.Equal(15m, result.CostPrice); Assert.Single(result.ReferenceValues);
     }
 
     [Fact]
@@ -166,11 +166,20 @@ public class DoctorsReferralsAndTestsMasterDataHandlersTests
     }
 
     [Fact]
+    public async Task GetTestWithReferences_preserves_null_CostPrice()
+    {
+        var tests = new Mock<IRepository<CoreTest>>(); var refs = new Mock<IReferenceValueRepository>(); var mapper = new Mock<IMapper>(); var test = new CoreTest { Id = 1, Name = "CBC", Price = 20m, CostPrice = null };
+        tests.Setup(x => x.GetByIdAsync(1, It.IsAny<CancellationToken>())).ReturnsAsync(test); refs.Setup(x => x.GetByTestIdAsync(1, It.IsAny<CancellationToken>())).ReturnsAsync(new List<ReferenceValue>());
+        var result = await new GetTestWithReferencesQueryHandler(tests.Object, refs.Object, mapper.Object).Handle(new(1), default);
+        Assert.NotNull(result); Assert.Null(result!.CostPrice);
+    }
+
+    [Fact]
     public async Task UpdateTest_changes_all_editable_fields()
     {
         var repo = new Mock<IRepository<CoreTest>>(); var test = new CoreTest { Id = 1, Name = "Old" }; repo.Setup(x => x.GetByIdAsync(1, It.IsAny<CancellationToken>())).ReturnsAsync(test);
         await new UpdateTestCommandHandler(repo.Object, new Mock<IUnitOfWork>().Object).Handle(ChangedTest(), default);
-        Assert.Equal("CRP", test.Name); Assert.Equal(220m, test.Price); Assert.True(test.LabToLabFlag); repo.Verify(x => x.Update(test), Times.Once);
+        Assert.Equal("CRP", test.Name); Assert.Equal(220m, test.Price); Assert.True(test.LabToLabFlag); Assert.Equal(40m, test.CostPrice); repo.Verify(x => x.Update(test), Times.Once);
     }
 
     [Fact]
@@ -185,7 +194,7 @@ public class DoctorsReferralsAndTestsMasterDataHandlersTests
     {
         var repo = new Mock<IRepository<CoreTest>>(); CoreTest? saved = null; repo.Setup(x => x.AddAsync(It.IsAny<CoreTest>(), It.IsAny<CancellationToken>())).Callback<CoreTest, CancellationToken>((t, _) => { t.Id = 1; saved = t; });
         await new AddTestCommandHandler(repo.Object, new Mock<IUnitOfWork>().Object).Handle(NewTest(), default);
-        Assert.NotNull(saved); Assert.Equal("CBC", saved!.Name); Assert.Equal(120m, saved.Price);
+        Assert.NotNull(saved); Assert.Equal("CBC", saved!.Name); Assert.Equal(120m, saved.Price); Assert.Equal(35.50m, saved.CostPrice);
     }
 
     [Fact]

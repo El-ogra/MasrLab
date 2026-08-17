@@ -64,6 +64,7 @@ public class GetTestWithReferencesQueryHandler : IRequestHandler<GetTestWithRefe
             SentOutsideLab = test.SentOutsideLab,
             OutsourcedLabName = test.OutsourcedLabName,
             OutsourcedCostPrice = test.OutsourcedCostPrice,
+            CostPrice = test.CostPrice,
             PatientQuestion = test.PatientQuestion,
             ReferenceValues = referenceValues.Select(rv => _mapper.Map<ReferenceValueDto>(rv)).ToList()
         };

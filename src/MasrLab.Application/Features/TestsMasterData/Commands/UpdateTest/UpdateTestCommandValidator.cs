@@ -18,6 +18,7 @@ public class UpdateTestCommandValidator : AbstractValidator<UpdateTestCommand>
         RuleFor(x => x.ArrangeNo).GreaterThanOrEqualTo(0);
         RuleFor(x => x.LabToLabPrice).GreaterThanOrEqualTo(0).When(x => x.LabToLabPrice.HasValue);
         RuleFor(x => x.OutsourcedCostPrice).GreaterThanOrEqualTo(0).When(x => x.OutsourcedCostPrice.HasValue);
+        RuleFor(x => x.CostPrice).GreaterThanOrEqualTo(0).When(x => x.CostPrice.HasValue);
         RuleFor(x => x.OutsourcedLabName).NotEmpty().When(x => x.SentOutsideLab);
     }
 }

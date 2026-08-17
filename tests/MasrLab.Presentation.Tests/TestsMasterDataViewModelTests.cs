@@ -94,6 +94,98 @@ public class TestsMasterDataViewModelTests
         Assert.Equal("mg/L", captured.Update.Unit);
     }
 
+    [Fact]
+    public async Task SaveTest_sends_supplied_CostPrice()
+    {
+        var captured = new CapturedCommands();
+        var mediator = CreateMediator(captured);
+        var vm = CreateViewModel(mediator);
+
+        vm.TestName = "CBC";
+        vm.ReportName = "CBC Report";
+        vm.EillName = "CBC Receipt";
+        vm.GroupName = "Hematology";
+        vm.PatientPrice = 120m;
+        vm.TurnaroundTime = "24h";
+        vm.Unit = "mg/dL";
+        vm.CostPrice = 30.50m;
+
+        await ExecuteAsync(vm.SaveTestCommand);
+
+        Assert.NotNull(captured.Add);
+        Assert.Equal(30.50m, captured.Add!.CostPrice);
+    }
+
+    [Fact]
+    public async Task SaveTest_sends_null_CostPrice_when_not_set()
+    {
+        var captured = new CapturedCommands();
+        var mediator = CreateMediator(captured);
+        var vm = CreateViewModel(mediator);
+
+        vm.TestName = "CBC";
+        vm.ReportName = "CBC Report";
+        vm.EillName = "CBC Receipt";
+        vm.GroupName = "Hematology";
+        vm.PatientPrice = 120m;
+        vm.TurnaroundTime = "24h";
+        vm.Unit = "mg/dL";
+
+        await ExecuteAsync(vm.SaveTestCommand);
+
+        Assert.NotNull(captured.Add);
+        Assert.Null(captured.Add!.CostPrice);
+    }
+
+    [Fact]
+    public async Task UpdateTest_sends_supplied_CostPrice()
+    {
+        var captured = new CapturedCommands();
+        var mediator = CreateMediator(captured);
+        var vm = CreateViewModel(mediator);
+
+        vm.SelectedTest = new TestDto
+        {
+            Id = 7,
+            Name = "CBC",
+            ReportName = "CBC Report",
+            ReceiptName = "CBC Receipt",
+            Group = "Hematology",
+            Price = 120m,
+            TurnaroundTime = "24h",
+            Unit = "mg/dL"
+        };
+        vm.CostPrice = 45m;
+
+        await ExecuteAsync(vm.UpdateTestCommand);
+
+        Assert.NotNull(captured.Update);
+        Assert.Equal(45m, captured.Update!.CostPrice);
+    }
+
+    [Fact]
+    public void Selection_preserves_null_CostPrice()
+    {
+        var captured = new CapturedCommands();
+        var mediator = CreateMediator(captured);
+        var vm = CreateViewModel(mediator);
+
+        vm.SelectedTest = new TestDto
+        {
+            Id = 11,
+            Name = "CBC",
+            ReportName = "CBC Report",
+            ReceiptName = "CBC Receipt",
+            Group = "Hematology",
+            Price = 100m,
+            TurnaroundTime = "24h",
+            Unit = "mg/dL",
+            CostPrice = null
+        };
+
+        Assert.Null(vm.CostPrice);
+    }
+
     private sealed class CapturedCommands
     {
         public AddTestCommand? Add { get; set; }

@@ -54,6 +54,7 @@ public class UpdateTestCommandHandler : IRequestHandler<UpdateTestCommand, Unit>
         test.OutsourcedLabName = request.OutsourcedLabName;
         test.OutsourcedCostPrice = request.OutsourcedCostPrice;
         test.PatientQuestion = request.PatientQuestion;
+        test.CostPrice = request.CostPrice;
 
         _testRepository.Update(test);
         await _unitOfWork.SaveChangesAsync(cancellationToken);

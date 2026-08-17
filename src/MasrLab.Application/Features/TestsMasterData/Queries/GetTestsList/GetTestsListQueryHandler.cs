@@ -76,6 +76,7 @@ public class GetTestsListQueryHandler : IRequestHandler<GetTestsListQuery, IRead
             SentOutsideLab = t.SentOutsideLab,
             OutsourcedLabName = t.OutsourcedLabName,
             OutsourcedCostPrice = t.OutsourcedCostPrice,
+            CostPrice = t.CostPrice,
             PatientQuestion = t.PatientQuestion,
             IsCompound = t.TestComponents.Count > 1,
             Components = t.TestComponents.Select(c => new TestComponentDto

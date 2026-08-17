@@ -36,6 +36,7 @@ public class Test : BaseEntity
     public bool SentOutsideLab { get; set; }
     public string? OutsourcedLabName { get; set; }
     public decimal? OutsourcedCostPrice { get; set; }
+    public decimal? CostPrice { get; set; }
     public string? PatientQuestion { get; set; }
 
     public ICollection<ReferenceValue> ReferenceValues { get; set; } = new List<ReferenceValue>();
