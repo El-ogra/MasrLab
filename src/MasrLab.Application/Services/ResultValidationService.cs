@@ -54,7 +54,25 @@ public class ResultValidationService : IResultValidationService
         var status = ResultStatus.Normal;
         string? warningComment = null;
 
-        if (TryParseRange(matchResult.MatchedRange, out var min, out var max))
+        var hasRange = false;
+        decimal min = 0;
+        decimal max = 0;
+
+        if (matchResult.MatchedValue?.LowLimit is decimal lowLimit
+            && matchResult.MatchedValue.HighLimit is decimal highLimit)
+        {
+            min = lowLimit;
+            max = highLimit;
+            hasRange = true;
+        }
+        else if (TryParseRange(matchResult.MatchedRange, out var parsedMin, out var parsedMax))
+        {
+            min = parsedMin;
+            max = parsedMax;
+            hasRange = true;
+        }
+
+        if (hasRange)
         {
             if (numericValue > max)
             {

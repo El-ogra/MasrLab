@@ -219,4 +219,152 @@ public class ResultValidationServiceTests
         Assert.Equal(ResultStatus.Normal, result.Status);
         Assert.Equal(ReferenceMatchKind.NoRangeConfigured, result.MatchKind);
     }
+
+    [Fact]
+    public async Task ValidateResultAsync_NormalRangeFallback_BoundariesAndOutOfRangeValues()
+    {
+        var service = SetupMatchedReference(new ReferenceValue
+        {
+            Id = 1,
+            TestId = 1,
+            TestComponentId = 1,
+            Gender = ReferenceValueGender.Both,
+            AgeMin = 0,
+            AgeMax = 0,
+            AgeUnit = AgeUnit.Years,
+            NormalRange = "10-20",
+            LowLimit = null,
+            HighLimit = null,
+            LowComment = "Low value",
+            HighComment = "High value"
+        });
+
+        var atLowerBoundary = await service.ValidateResultAsync(
+            1, "10", "male", new Age(30, 0, 0), false);
+        var atUpperBoundary = await service.ValidateResultAsync(
+            1, "20", "male", new Age(30, 0, 0), false);
+        var belowRange = await service.ValidateResultAsync(
+            1, "9.99", "male", new Age(30, 0, 0), false);
+        var aboveRange = await service.ValidateResultAsync(
+            1, "20.01", "male", new Age(30, 0, 0), false);
+
+        Assert.Equal(ResultStatus.Normal, atLowerBoundary.Status);
+        Assert.Equal(ResultStatus.Normal, atUpperBoundary.Status);
+        Assert.Equal(ResultStatus.Low, belowRange.Status);
+        Assert.Equal(ResultStatus.High, aboveRange.Status);
+    }
+
+    [Fact]
+    public async Task ValidateResultAsync_UsesTypedLimits_WhenNormalRangeIsNonNumeric()
+    {
+        var service = SetupMatchedReference(new ReferenceValue
+        {
+            Id = 1,
+            TestId = 1,
+            TestComponentId = 1,
+            Gender = ReferenceValueGender.Both,
+            AgeMin = 0,
+            AgeMax = 0,
+            AgeUnit = AgeUnit.Years,
+            NormalRange = "Negative",
+            LowLimit = 10,
+            HighLimit = 20,
+            LowComment = "Low value",
+            HighComment = "High value"
+        });
+
+        var atLowerBoundary = await service.ValidateResultAsync(
+            1, "10", "male", new Age(30, 0, 0), false);
+        var atUpperBoundary = await service.ValidateResultAsync(
+            1, "20", "male", new Age(30, 0, 0), false);
+        var belowRange = await service.ValidateResultAsync(
+            1, "9.99", "male", new Age(30, 0, 0), false);
+        var aboveRange = await service.ValidateResultAsync(
+            1, "20.01", "male", new Age(30, 0, 0), false);
+
+        Assert.Equal(ResultStatus.Normal, atLowerBoundary.Status);
+        Assert.Equal(ResultStatus.Normal, atUpperBoundary.Status);
+        Assert.Equal(ResultStatus.Low, belowRange.Status);
+        Assert.Equal(ResultStatus.High, aboveRange.Status);
+    }
+
+    [Fact]
+    public async Task ValidateResultAsync_NonNumericNormalRange_ReturnsNormalWithoutAutomaticComment()
+    {
+        var service = SetupMatchedReference(new ReferenceValue
+        {
+            Id = 1,
+            TestId = 1,
+            TestComponentId = 1,
+            Gender = ReferenceValueGender.Both,
+            AgeMin = 0,
+            AgeMax = 0,
+            AgeUnit = AgeUnit.Years,
+            NormalRange = "Negative",
+            LowLimit = null,
+            HighLimit = null,
+            LowComment = "Low value",
+            HighComment = "High value"
+        });
+
+        var result = await service.ValidateResultAsync(
+            1, "1", "male", new Age(30, 0, 0), false);
+
+        Assert.Equal(ResultStatus.Normal, result.Status);
+        Assert.Null(result.WarningComment);
+    }
+
+    [Fact]
+    public async Task ExistingEntryBatchAndEditPaths_PreserveStringOnlyReferenceBehavior()
+    {
+        var service = SetupMatchedReference(new ReferenceValue
+        {
+            Id = 1,
+            TestId = 1,
+            TestComponentId = 1,
+            Gender = ReferenceValueGender.Both,
+            AgeMin = 0,
+            AgeMax = 0,
+            AgeUnit = AgeUnit.Years,
+            NormalRange = "10-20",
+            LowLimit = null,
+            HighLimit = null,
+            LowComment = "Low value",
+            HighComment = "High value"
+        });
+
+        var individualEntryResult = await service.ValidateResultAsync(
+            1, "9.99", "male", new Age(30, 0, 0), false);
+        var batchEntryResult = await service.ValidateResultAsync(
+            1, "20.01", "male", new Age(30, 0, 0), false);
+        var editResult = await service.ValidateResultAsync(
+            1, "15", "male", new Age(30, 0, 0), false);
+
+        Assert.Equal(ResultStatus.Low, individualEntryResult.Status);
+        Assert.Equal("Low value", individualEntryResult.WarningComment);
+        Assert.Equal(ResultStatus.High, batchEntryResult.Status);
+        Assert.Equal("High value", batchEntryResult.WarningComment);
+        Assert.Equal(ResultStatus.Normal, editResult.Status);
+        Assert.Null(editResult.WarningComment);
+    }
+
+    private ResultValidationService SetupMatchedReference(ReferenceValue referenceValue)
+    {
+        SetupResultItem(1, referenceValue.TestComponentId);
+
+        _referenceValues
+            .Setup(r => r.GetByTestComponentIdAsync(referenceValue.TestComponentId, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<ReferenceValue> { referenceValue });
+
+        _matcher
+            .Setup(m => m.Match(
+                It.IsAny<IReadOnlyList<ReferenceValue>>(),
+                referenceValue.TestComponentId,
+                "male",
+                It.IsAny<Age>(),
+                false))
+            .Returns(ReferenceMatchResult.Matched(referenceValue));
+
+        return CreateService();
+    }
 }
