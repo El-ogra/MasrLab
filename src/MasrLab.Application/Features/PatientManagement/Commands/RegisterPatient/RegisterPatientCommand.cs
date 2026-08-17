@@ -8,6 +8,7 @@ public record RegisterPatientCommand(
     int AgeYears,
     int AgeMonths,
     int AgeDays,
+    AgeUnit AgeUnit,
     Gender Gender,
     string? Phone,
     string? Address,

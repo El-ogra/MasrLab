@@ -53,6 +53,7 @@ public class EnterTestResultCommandHandlerTests
             AgeYears: 30,
             AgeMonths: 0,
             AgeDays: 0,
+            AgeUnit: AgeUnit.Years,
             OverrideReason: overrideReason);
 
     private void SetupPatient(Gender gender = Gender.Male, bool pregnancy = false)

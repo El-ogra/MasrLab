@@ -2,6 +2,7 @@
 // intentionally NOT covered by tests here (unraised events such as PatientRegistered and
 // PatientUpdated, unimplemented invariants such as INV-01/INV-02, and partial state machines).
 
+using MasrLab.Domain.Common.Enums;
 using MasrLab.Domain.ValueObjects;
 
 namespace MasrLab.Domain.Tests;
@@ -82,6 +83,37 @@ public class AgeTests
         var age = new Age(2, 3, 0);
 
         Assert.Equal(27, age.TotalMonths);
+    }
+
+    [Fact]
+    public void ExplicitConstructor_WhenDaysRecorded_ShouldPreserveRecordedUnit()
+    {
+        var age = new Age(30, AgeUnit.Days);
+
+        Assert.Equal(0, age.Years);
+        Assert.Equal(0, age.Months);
+        Assert.Equal(30, age.Days);
+        Assert.Equal(AgeUnit.Days, age.RecordedUnit);
+    }
+
+    [Fact]
+    public void ExplicitConstructor_WhenMonthsRecorded_ShouldPreserveRecordedUnit()
+    {
+        var age = new Age(2, AgeUnit.Months);
+
+        Assert.Equal(0, age.Years);
+        Assert.Equal(2, age.Months);
+        Assert.Equal(0, age.Days);
+        Assert.Equal(AgeUnit.Months, age.RecordedUnit);
+    }
+
+    [Fact]
+    public void ExplicitConstructor_WhenValueIsZero_ShouldThrowArgumentException()
+    {
+        var ex = Assert.Throws<ArgumentException>(() => new Age(0, AgeUnit.Days));
+
+        Assert.Contains("Age value must be greater than zero", ex.Message);
+        Assert.Equal("value", ex.ParamName);
     }
 }
 

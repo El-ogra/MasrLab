@@ -1,5 +1,7 @@
 using MediatR;
 
+using MasrLab.Domain.Common.Enums;
+
 namespace MasrLab.Application.Features.ResultsEntry.Commands.EnterTestResult;
 
 public record EnterTestResultCommand(
@@ -11,4 +13,5 @@ public record EnterTestResultCommand(
     int AgeYears,
     int AgeMonths,
     int AgeDays,
+    AgeUnit AgeUnit,
     string? OverrideReason) : IRequest<Unit>;

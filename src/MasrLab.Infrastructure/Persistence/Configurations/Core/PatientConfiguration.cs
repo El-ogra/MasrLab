@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using MasrLab.Domain.Common.Enums;
 using MasrLab.Domain.Entities.Core;
 using MasrLab.Domain.ValueObjects;
 
@@ -26,6 +27,10 @@ public class PatientConfiguration : IEntityTypeConfiguration<Patient>
             age.Property(a => a.Years).HasColumnName("AgeYears").IsRequired();
             age.Property(a => a.Months).HasColumnName("AgeMonths").IsRequired();
             age.Property(a => a.Days).HasColumnName("AgeDays").IsRequired();
+            age.Property(a => a.RecordedUnit)
+                .HasColumnName("AgeUnit")
+                .HasDefaultValue(AgeUnit.Years)
+                .IsRequired();
         });
 
         builder.OwnsOne(e => e.Phone, phone =>

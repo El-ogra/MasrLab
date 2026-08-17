@@ -56,6 +56,7 @@ public class AuditBehaviorTests
             AgeYears: 30,
             AgeMonths: 0,
             AgeDays: 0,
+            AgeUnit: AgeUnit.Years,
             OverrideReason: null);
 
     [Fact]

@@ -15,7 +15,7 @@ public class ValidationBehaviorTests
         var behavior = new ValidationBehavior<RegisterPatientCommand, Unit>(validators);
 
         var command = new RegisterPatientCommand(
-            "Ahmed", 30, 0, 0, Gender.Male, null, null, null, null,
+            "Ahmed", 30, 0, 0, AgeUnit.Years, Gender.Male, null, null, null, null,
             "LAB-001", 1, 1, AccountType.Cash, null, false, false,
             false, false, false, false, false, false, false, false, null);
 
@@ -41,7 +41,7 @@ public class ValidationBehaviorTests
         var behavior = new ValidationBehavior<RegisterPatientCommand, Unit>(validators);
 
         var command = new RegisterPatientCommand(
-            "", 30, 0, 0, Gender.Male, null, null, null, null,
+            "", 30, 0, 0, AgeUnit.Years, Gender.Male, null, null, null, null,
             "LAB-001", 1, 1, AccountType.Cash, null, false, false,
             false, false, false, false, false, false, false, false, null);
 
@@ -59,7 +59,7 @@ public class ValidationBehaviorTests
         var behavior = new ValidationBehavior<RegisterPatientCommand, Unit>(validators);
 
         var command = new RegisterPatientCommand(
-            "Ahmed", 30, 0, 0, Gender.Male, null, null, null, null,
+            "Ahmed", 30, 0, 0, AgeUnit.Years, Gender.Male, null, null, null, null,
             "LAB-001", 1, 1, AccountType.Cash, null, false, false,
             false, false, false, false, false, false, false, false, null);
 

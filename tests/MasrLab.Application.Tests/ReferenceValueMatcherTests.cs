@@ -344,4 +344,50 @@ public class ReferenceValueMatcherTests
 
         Assert.Equal(ReferenceMatchKind.Matched, result.Kind);
     }
+
+    [Fact]
+    public void Match_ExplicitDays_DoesNotMatchMonthsRange()
+    {
+        var candidates = new List<ReferenceValue>
+        {
+            CreateRv(1, 1, 1, 12, AgeUnit.Months)
+        };
+
+        var result = _matcher.Match(
+            candidates, testComponentId: 1,
+            "male", new Age(30, AgeUnit.Days), isPregnant: false);
+
+        Assert.Equal(ReferenceMatchKind.NoRangeForDemographics, result.Kind);
+    }
+
+    [Fact]
+    public void Match_ExplicitMonths_DoesNotMatchDaysRange()
+    {
+        var candidates = new List<ReferenceValue>
+        {
+            CreateRv(1, 1, 1, 30, AgeUnit.Days)
+        };
+
+        var result = _matcher.Match(
+            candidates, testComponentId: 1,
+            "male", new Age(1, AgeUnit.Months), isPregnant: false);
+
+        Assert.Equal(ReferenceMatchKind.NoRangeForDemographics, result.Kind);
+    }
+
+    [Fact]
+    public void Match_LegacyAgeConstructor_UsesDerivedUnitPrecedence()
+    {
+        var candidates = new List<ReferenceValue>
+        {
+            CreateRv(1, 1, 1, 12, AgeUnit.Months)
+        };
+
+        var result = _matcher.Match(
+            candidates, testComponentId: 1,
+            "male", new Age(0, 2, 0), isPregnant: false);
+
+        Assert.Equal(ReferenceMatchKind.Matched, result.Kind);
+        Assert.Equal(1, result.MatchedValue!.Id);
+    }
 }

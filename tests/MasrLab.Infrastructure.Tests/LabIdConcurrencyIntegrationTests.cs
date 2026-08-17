@@ -78,7 +78,7 @@ public class LabIdConcurrencyIntegrationTests
     }
 
     private static RegisterPatientCommand CreateCommand(string labId) => new(
-        "Concurrent Patient", 30, 0, 0, Gender.Male, null, null, null, null,
+        "Concurrent Patient", 30, 0, 0, AgeUnit.Years, Gender.Male, null, null, null, null,
         labId, null, null, AccountType.Cash, null, false, false,
         false, false, false, false, false, false, false, false, null);
 }

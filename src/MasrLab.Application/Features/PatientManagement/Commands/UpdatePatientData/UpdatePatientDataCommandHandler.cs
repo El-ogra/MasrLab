@@ -26,7 +26,7 @@ public class UpdatePatientDataCommandHandler : IRequestHandler<UpdatePatientData
 
         patient.UpdateProfile(request.Name, request.Address, request.Notes, request.NationalId);
 
-        patient.Age = new Age(request.AgeYears, request.AgeMonths, request.AgeDays);
+        patient.Age = new Age(request.AgeYears, request.AgeMonths, request.AgeDays, request.AgeUnit);
         patient.Gender = request.Gender;
         patient.Phone = request.Phone is not null ? new EgyptianPhone(request.Phone) : null;
         patient.DoctorId = request.DoctorId;

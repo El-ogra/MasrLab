@@ -18,8 +18,8 @@ namespace MasrLab.Application.Tests;
 
 public class PatientAndVisitHandlersTests
 {
-    private static RegisterPatientCommand RegisterCommand(string name = "Mona") => new(name, 30, 1, 2, Gender.Female, "01012345678", "Cairo", "123", "note", "LAB-1", 2, 3, AccountType.Cash, "none", false, false, true, false, false, false, false, false, false, false, "diabetes");
-    private static UpdatePatientDataCommand UpdateCommand(int id = 1) => new(id, "Updated", 40, 0, 0, Gender.Male, "01012345678", "Giza", "456", "changed", 4, 5, null, false, false, false, true, false, false, false, false, false, false, null);
+    private static RegisterPatientCommand RegisterCommand(string name = "Mona") => new(name, 30, 1, 2, AgeUnit.Months, Gender.Female, "01012345678", "Cairo", "123", "note", "LAB-1", 2, 3, AccountType.Cash, "none", false, false, true, false, false, false, false, false, false, false, "diabetes");
+    private static UpdatePatientDataCommand UpdateCommand(int id = 1) => new(id, "Updated", 40, 0, 0, AgeUnit.Years, Gender.Male, "01012345678", "Giza", "456", "changed", 4, 5, null, false, false, false, true, false, false, false, false, false, false, null);
 
     [Fact]
     public async Task RegisterPatient_persists_complete_patient()

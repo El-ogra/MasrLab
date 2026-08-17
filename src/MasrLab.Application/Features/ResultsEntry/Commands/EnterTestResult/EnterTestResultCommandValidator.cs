@@ -30,6 +30,9 @@ public class EnterTestResultCommandValidator : AbstractValidator<EnterTestResult
         RuleFor(x => x.AgeDays)
             .InclusiveBetween(0, 30);
 
+        RuleFor(x => x.AgeUnit)
+            .IsInEnum();
+
         RuleFor(x => x.OverrideReason)
             .MaximumLength(500);
     }

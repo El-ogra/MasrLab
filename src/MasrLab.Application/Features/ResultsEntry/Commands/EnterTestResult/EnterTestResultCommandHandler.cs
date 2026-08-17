@@ -63,7 +63,7 @@ public class EnterTestResultCommandHandler : IRequestHandler<EnterTestResultComm
         }
 
         var gender = patient.Gender == Gender.Male ? "male" : "female";
-        var patientAge = new Age(request.AgeYears, request.AgeMonths, request.AgeDays);
+        var patientAge = new Age(request.AgeYears, request.AgeMonths, request.AgeDays, request.AgeUnit);
         var isPregnant = patient.Pregnancy;
 
         var validationResult = await _resultValidationService.ValidateResultAsync(

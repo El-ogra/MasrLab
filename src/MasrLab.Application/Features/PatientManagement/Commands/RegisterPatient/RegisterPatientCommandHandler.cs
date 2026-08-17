@@ -32,7 +32,7 @@ public class RegisterPatientCommandHandler : IRequestHandler<RegisterPatientComm
     {
         var patient = Patient.Register(request.Name, request.LabId, request.DoctorId, request.ReferralEntityId);
 
-        patient.Age = new Age(request.AgeYears, request.AgeMonths, request.AgeDays);
+        patient.Age = new Age(request.AgeYears, request.AgeMonths, request.AgeDays, request.AgeUnit);
         patient.Gender = request.Gender;
         patient.Phone = request.Phone is not null ? new EgyptianPhone(request.Phone) : null;
         patient.Address = request.Address;

@@ -9,6 +9,7 @@ public record UpdatePatientDataCommand(
     int AgeYears,
     int AgeMonths,
     int AgeDays,
+    AgeUnit AgeUnit,
     Gender Gender,
     string? Phone,
     string? Address,

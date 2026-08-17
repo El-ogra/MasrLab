@@ -46,6 +46,17 @@ public class ReferenceValueMatcher : IReferenceValueMatcher
 
     private static (int ageValue, AgeUnit requiredAgeUnit) GetUnitBandValues(Age patientAge)
     {
+        return patientAge.RecordedUnit switch
+        {
+            AgeUnit.Days => (patientAge.Days, AgeUnit.Days),
+            AgeUnit.Months => (patientAge.TotalMonths, AgeUnit.Months),
+            AgeUnit.Years => (patientAge.Years, AgeUnit.Years),
+            _ => GetDerivedUnitBandValues(patientAge)
+        };
+    }
+
+    private static (int ageValue, AgeUnit requiredAgeUnit) GetDerivedUnitBandValues(Age patientAge)
+    {
         if (patientAge.Years == 0 && patientAge.Months == 0)
             return (patientAge.Days, AgeUnit.Days);
 
