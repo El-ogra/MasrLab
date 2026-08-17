@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace MasrLab.Infrastructure.Tests;
 
+[Collection("LocalDb")]
 public class OutsourcedSampleRepositoryDateRangeIntegrationTests
 {
     private const string DatabasePrefix = "MasrLabDb_OutsourcedDateRange";

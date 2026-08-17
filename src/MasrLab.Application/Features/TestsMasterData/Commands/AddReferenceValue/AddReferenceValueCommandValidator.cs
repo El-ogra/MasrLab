@@ -7,6 +7,7 @@ public class AddReferenceValueCommandValidator : AbstractValidator<AddReferenceV
     public AddReferenceValueCommandValidator()
     {
         RuleFor(x => x.TestId).GreaterThan(0);
+        RuleFor(x => x.TestComponentId).GreaterThan(0);
         RuleFor(x => x.NormalRange).NotEmpty();
         RuleFor(x => x.AgeMin).GreaterThanOrEqualTo(0);
         RuleFor(x => x)

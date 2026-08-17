@@ -8,6 +8,7 @@ public class UpdateReferenceValueCommandValidator : AbstractValidator<UpdateRefe
     {
         RuleFor(x => x.Id).GreaterThan(0);
         RuleFor(x => x.TestId).GreaterThan(0);
+        RuleFor(x => x.TestComponentId).GreaterThan(0);
         RuleFor(x => x.NormalRange).NotEmpty();
         RuleFor(x => x.AgeMin).GreaterThanOrEqualTo(0);
         RuleFor(x => x)

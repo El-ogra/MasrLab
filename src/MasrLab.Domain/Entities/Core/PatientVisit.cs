@@ -46,13 +46,16 @@ public class PatientVisit : BaseEntity
         return Create(patient.Id, registeredByUserId, labId, effectiveDoctorId, referralEntityId);
     }
 
-    public void AddTest(int testId, decimal price, bool isOutsourced)
+    public void AddVisitTest(VisitTest visitTest)
     {
-        if (Status == VisitStatus.Closed)
-            throw new BusinessRuleViolationException("Cannot add tests to a closed visit.");
-        var visitTest = new VisitTest(Id, testId, price, isOutsourced);
+        if (Status == VisitStatus.Closed || Status == VisitStatus.Printed)
+            throw new BusinessRuleViolationException("Cannot add tests to a printed or closed visit.");
+
+        if (Status == VisitStatus.ResultsEntered)
+            Status = VisitStatus.Registered;
+
         VisitTests.Add(visitTest);
-        AddDomainEvent(new VisitTestAdded(Id, testId, price, isOutsourced));
+        AddDomainEvent(new VisitTestAdded(Id, visitTest.TestId, visitTest.Price, visitTest.IsOutsourced));
     }
 
     public void RemoveTest(int testId)

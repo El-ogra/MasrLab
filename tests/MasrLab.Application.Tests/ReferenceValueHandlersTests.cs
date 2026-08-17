@@ -19,6 +19,17 @@ public class ReferenceValueHandlersTests
     private readonly Mock<IRepository<CoreTestComponent>> _compRepoMock = new();
     private readonly Mock<IUnitOfWork> _uowMock = new();
 
+    public ReferenceValueHandlersTests()
+    {
+        _compRepoMock.Setup(x => x.GetByIdAsync(It.IsAny<int>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((int id, CancellationToken _) => new CoreTestComponent
+            {
+                Id = id,
+                TestId = 2,
+                ResultEntryKind = ResultEntryKind.Ordinary
+            });
+    }
+
     #region AddReferenceValueCommand Tests
 
     [Fact]
@@ -33,7 +44,7 @@ public class ReferenceValueHandlersTests
 
         var handler = new AddReferenceValueCommandHandler(_refsRepoMock.Object, _compRepoMock.Object, _uowMock.Object);
         var command = new AddReferenceValueCommand(
-            2, null, ReferenceValueGender.Male, 1, 9, AgeUnit.Years, "1-9",
+            2, 1, ReferenceValueGender.Male, 1, 9, AgeUnit.Years, "1-9",
             10m, 50m, "mg/dL", "L", "H", false, "high comment", "low comment");
 
         // Act
@@ -63,7 +74,7 @@ public class ReferenceValueHandlersTests
         // Arrange - نفس الجنس + نفس الوحدة + تداخل أعمار
         var existing = new ReferenceValue
         {
-            Id = 1, TestId = 2, Gender = ReferenceValueGender.Male,
+            Id = 1, TestId = 2, TestComponentId = 1, Gender = ReferenceValueGender.Male,
             AgeMin = 1, AgeMax = 9, AgeUnit = AgeUnit.Years
         };
         _refsRepoMock.Setup(x => x.GetByTestIdAsync(2, It.IsAny<CancellationToken>()))
@@ -71,7 +82,7 @@ public class ReferenceValueHandlersTests
 
         var handler = new AddReferenceValueCommandHandler(_refsRepoMock.Object, _compRepoMock.Object, _uowMock.Object);
         var command = new AddReferenceValueCommand(
-            2, null, ReferenceValueGender.Male, 5, 15, AgeUnit.Years, "5-15",
+            2, 1, ReferenceValueGender.Male, 5, 15, AgeUnit.Years, "5-15",
             null, null, null, null, null, false, null, null);
 
         // Act & Assert
@@ -85,7 +96,7 @@ public class ReferenceValueHandlersTests
         // Arrange - نطاق "بدون قيد" (0,0) يتداخل مع نطاق بعمر محدد
         var existing = new ReferenceValue
         {
-            Id = 1, TestId = 2, Gender = ReferenceValueGender.Both,
+            Id = 1, TestId = 2, TestComponentId = 1, Gender = ReferenceValueGender.Both,
             AgeMin = 0, AgeMax = 0, AgeUnit = AgeUnit.Years
         };
         _refsRepoMock.Setup(x => x.GetByTestIdAsync(2, It.IsAny<CancellationToken>()))
@@ -93,7 +104,7 @@ public class ReferenceValueHandlersTests
 
         var handler = new AddReferenceValueCommandHandler(_refsRepoMock.Object, _compRepoMock.Object, _uowMock.Object);
         var command = new AddReferenceValueCommand(
-            2, null, ReferenceValueGender.Male, 1, 29, AgeUnit.Days, "1-29",
+            2, 1, ReferenceValueGender.Male, 1, 29, AgeUnit.Days, "1-29",
             null, null, null, null, null, false, null, null);
 
         // Act & Assert
@@ -119,7 +130,7 @@ public class ReferenceValueHandlersTests
 
         var handler = new AddReferenceValueCommandHandler(_refsRepoMock.Object, _compRepoMock.Object, _uowMock.Object);
         var command = new AddReferenceValueCommand(
-            2, null, ReferenceValueGender.Male, 0, 120, AgeUnit.Years, "0-120",
+            2, 1, ReferenceValueGender.Male, 0, 120, AgeUnit.Years, "0-120",
             null, null, null, null, null, false, null, null);
 
         // Act
@@ -148,7 +159,7 @@ public class ReferenceValueHandlersTests
 
         var handler = new AddReferenceValueCommandHandler(_refsRepoMock.Object, _compRepoMock.Object, _uowMock.Object);
         var command = new AddReferenceValueCommand(
-            2, null, ReferenceValueGender.Male, 6, 10, AgeUnit.Days, "6-10",
+            2, 1, ReferenceValueGender.Male, 6, 10, AgeUnit.Days, "6-10",
             null, null, null, null, null, false, null, null);
 
         // Act
@@ -171,7 +182,7 @@ public class ReferenceValueHandlersTests
 
         var handler = new AddReferenceValueCommandHandler(_refsRepoMock.Object, _compRepoMock.Object, _uowMock.Object);
         var command = new AddReferenceValueCommand(
-            2, null, ReferenceValueGender.Female, 1, 9, AgeUnit.Years, "1-9",
+            2, 1, ReferenceValueGender.Female, 1, 9, AgeUnit.Years, "1-9",
             null, null, null, null, null, false, null, null);
 
         // Act & Assert
@@ -200,21 +211,29 @@ public class ReferenceValueHandlersTests
                 existingRefs.Add(r);
             });
 
+        _compRepoMock.Setup(x => x.GetByIdAsync(It.IsAny<int>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((int id, CancellationToken _) => new CoreTestComponent
+            {
+                Id = id,
+                TestId = 1,
+                ResultEntryKind = ResultEntryKind.Ordinary
+            });
+
         var handler = new AddReferenceValueCommandHandler(_refsRepoMock.Object, _compRepoMock.Object, _uowMock.Object);
 
         // Act - حفظ النطاق الأول: 1-29 Days
         await handler.Handle(new AddReferenceValueCommand(
-            1, null, ReferenceValueGender.Both, 1, 29, AgeUnit.Days, "1-29",
+            1, 1, ReferenceValueGender.Both, 1, 29, AgeUnit.Days, "1-29",
             null, null, null, null, null, false, null, null), default);
 
         // Act - حفظ النطاق الثاني: 1-12 Months
         await handler.Handle(new AddReferenceValueCommand(
-            1, null, ReferenceValueGender.Both, 1, 12, AgeUnit.Months, "1-12",
+            1, 1, ReferenceValueGender.Both, 1, 12, AgeUnit.Months, "1-12",
             null, null, null, null, null, false, null, null), default);
 
         // Act - حفظ النطاق الثالث: 0-120 Years
         await handler.Handle(new AddReferenceValueCommand(
-            1, null, ReferenceValueGender.Both, 0, 120, AgeUnit.Years, "0-120",
+            1, 1, ReferenceValueGender.Both, 0, 120, AgeUnit.Years, "0-120",
             null, null, null, null, null, false, null, null), default);
 
         // Assert - يجب أن تُحفظ النطاقات الثلاثة بنجاح
@@ -245,7 +264,7 @@ public class ReferenceValueHandlersTests
 
         var handler = new UpdateReferenceValueCommandHandler(_refsRepoMock.Object, _compRepoMock.Object, _uowMock.Object);
         var command = new UpdateReferenceValueCommand(
-            1, 2, null, ReferenceValueGender.Female, 5, 15, AgeUnit.Years, "5-15",
+            1, 2, 1, ReferenceValueGender.Female, 5, 15, AgeUnit.Years, "5-15",
             20m, 80m, "g/L", "L", "H", true, "high", "low");
 
         // Act
@@ -276,7 +295,7 @@ public class ReferenceValueHandlersTests
 
         var handler = new UpdateReferenceValueCommandHandler(_refsRepoMock.Object, _compRepoMock.Object, _uowMock.Object);
         var command = new UpdateReferenceValueCommand(
-            999, 2, null, ReferenceValueGender.Male, 1, 9, AgeUnit.Years, "1-9",
+            999, 2, 1, ReferenceValueGender.Male, 1, 9, AgeUnit.Years, "1-9",
             null, null, null, null, null, false, null, null);
 
         // Act & Assert
@@ -290,12 +309,12 @@ public class ReferenceValueHandlersTests
         // Arrange - نطاقان بنفس الجنس + نفس الوحدة + تداخل أعمار
         var existing = new ReferenceValue
         {
-            Id = 1, TestId = 2, Gender = ReferenceValueGender.Male,
+            Id = 1, TestId = 2, TestComponentId = 1, Gender = ReferenceValueGender.Male,
             AgeMin = 1, AgeMax = 9, AgeUnit = AgeUnit.Years
         };
         var another = new ReferenceValue
         {
-            Id = 2, TestId = 2, Gender = ReferenceValueGender.Male,
+            Id = 2, TestId = 2, TestComponentId = 1, Gender = ReferenceValueGender.Male,
             AgeMin = 5, AgeMax = 15, AgeUnit = AgeUnit.Years
         };
         _refsRepoMock.Setup(x => x.GetByIdAsync(1, It.IsAny<CancellationToken>()))
@@ -305,7 +324,7 @@ public class ReferenceValueHandlersTests
 
         var handler = new UpdateReferenceValueCommandHandler(_refsRepoMock.Object, _compRepoMock.Object, _uowMock.Object);
         var command = new UpdateReferenceValueCommand(
-            1, 2, null, ReferenceValueGender.Male, 1, 9, AgeUnit.Years, "1-9",
+            1, 2, 1, ReferenceValueGender.Male, 1, 9, AgeUnit.Years, "1-9",
             null, null, null, null, null, false, null, null);
 
         // Act & Assert
@@ -329,7 +348,7 @@ public class ReferenceValueHandlersTests
 
         var handler = new UpdateReferenceValueCommandHandler(_refsRepoMock.Object, _compRepoMock.Object, _uowMock.Object);
         var command = new UpdateReferenceValueCommand(
-            1, 2, null, ReferenceValueGender.Male, 1, 9, AgeUnit.Years, "1-9 updated",
+            1, 2, 1, ReferenceValueGender.Male, 1, 9, AgeUnit.Years, "1-9 updated",
             null, null, null, null, null, false, null, null);
 
         // Act
@@ -356,7 +375,7 @@ public class ReferenceValueHandlersTests
 
         var handler = new UpdateReferenceValueCommandHandler(_refsRepoMock.Object, _compRepoMock.Object, _uowMock.Object);
         var command = new UpdateReferenceValueCommand(
-            1, 2, null, ReferenceValueGender.Both, 0, 0, AgeUnit.Years, "All ages",
+            1, 2, 1, ReferenceValueGender.Both, 0, 0, AgeUnit.Years, "All ages",
             null, null, null, null, null, false, null, null);
 
         // Act
@@ -386,7 +405,7 @@ public class ReferenceValueHandlersTests
 
         var handler = new UpdateReferenceValueCommandHandler(_refsRepoMock.Object, _compRepoMock.Object, _uowMock.Object);
         var command = new UpdateReferenceValueCommand(
-            1, 2, null, ReferenceValueGender.Male, 1, 9, AgeUnit.Years, "1-9",
+            1, 2, 1, ReferenceValueGender.Male, 1, 9, AgeUnit.Years, "1-9",
             null, null, null, null, null, false, null, null);
 
         // Act & Assert

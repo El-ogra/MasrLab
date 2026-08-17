@@ -18,7 +18,7 @@ public class VisitTestTests
     {
         var visit = PatientVisit.Create(1, 1, "L1", null, null);
 
-        var ex = Assert.Throws<BusinessRuleViolationException>(() => visit.AddTest(1, -1m, false));
+        var ex = Assert.Throws<BusinessRuleViolationException>(() => visit.AddVisitTest(TestVisitTestHelpers.CreateVisitTest(visit.Id, 1, -1m, false)));
 
         Assert.Equal("Price cannot be negative.", ex.Message);
     }
@@ -28,7 +28,7 @@ public class VisitTestTests
     {
         var visit = PatientVisit.Create(1, 1, "L1", null, null);
 
-        visit.AddTest(1, 0m, false);
+        visit.AddVisitTest(TestVisitTestHelpers.CreateVisitTest(visit.Id, 1, 0m, false));
 
         Assert.Equal(0m, Assert.Single(visit.VisitTests).Price);
     }
@@ -38,7 +38,7 @@ public class VisitTestTests
     {
         var visit = PatientVisit.Create(1, 1, "L1", null, null);
 
-        visit.AddTest(1, 250m, false);
+        visit.AddVisitTest(TestVisitTestHelpers.CreateVisitTest(visit.Id, 1, 250m, false));
 
         Assert.Equal(250m, Assert.Single(visit.VisitTests).Price);
     }

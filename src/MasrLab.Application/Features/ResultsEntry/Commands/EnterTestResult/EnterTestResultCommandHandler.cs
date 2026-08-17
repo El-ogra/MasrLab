@@ -4,6 +4,7 @@ using MasrLab.Domain.Entities.Core;
 using MasrLab.Domain.Exceptions;
 using MasrLab.Domain.Interfaces;
 using MasrLab.Domain.Services;
+using MasrLab.Domain.ValueObjects;
 
 namespace MasrLab.Application.Features.ResultsEntry.Commands.EnterTestResult;
 
@@ -62,20 +63,28 @@ public class EnterTestResultCommandHandler : IRequestHandler<EnterTestResultComm
         }
 
         var gender = patient.Gender == Gender.Male ? "male" : "female";
+        var patientAge = new Age(request.AgeYears, request.AgeMonths, request.AgeDays);
+        var isPregnant = patient.Pregnancy;
 
-        var status = await _resultValidationService.ValidateResultAsync(
+        var validationResult = await _resultValidationService.ValidateResultAsync(
             request.VisitTestResultItemId,
             request.Value,
             gender,
-            request.AgeYears,
+            patientAge,
+            isPregnant,
             cancellationToken);
 
         var testResult = TestResult.Enter(request.VisitTestResultItemId, request.Value, request.EnteredByUserId);
 
         testResult.Unit = request.Unit;
-        testResult.ReferenceRange = request.ReferenceRange;
-        testResult.Status = status;
+        testResult.ReferenceRange = validationResult.ReferenceRange ?? string.Empty;
+        testResult.Status = validationResult.Status;
         testResult.OverrideReason = request.OverrideReason;
+
+        if (validationResult.WarningComment != null)
+        {
+            testResult.SetComment(validationResult.WarningComment);
+        }
 
         await _testResultRepository.AddAsync(testResult, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);

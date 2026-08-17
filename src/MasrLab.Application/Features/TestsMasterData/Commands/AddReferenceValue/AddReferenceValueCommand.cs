@@ -5,7 +5,7 @@ namespace MasrLab.Application.Features.TestsMasterData.Commands.AddReferenceValu
 
 public record AddReferenceValueCommand(
     int TestId,
-    int? TestComponentId,
+    int TestComponentId,
     ReferenceValueGender Gender,
     int AgeMin,
     int AgeMax,

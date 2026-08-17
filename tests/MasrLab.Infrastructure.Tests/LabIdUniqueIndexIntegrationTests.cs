@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace MasrLab.Infrastructure.Tests;
 
+[Collection("LocalDb")]
 public class LabIdUniqueIndexIntegrationTests
 {
     [LocalDbFact]

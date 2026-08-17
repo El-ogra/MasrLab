@@ -16,7 +16,7 @@ namespace MasrLab.Application.Tests;
 
 public class ResultsAndSamplesHandlersTests
 {
-    private static PatientVisit VisitWithResults() { var visit = PatientVisit.Create(1, 1, "L-1", null, null); visit.AddTest(1, 10m, false); visit.EnterAllResults(); return visit; }
+    private static PatientVisit VisitWithResults() { var visit = PatientVisit.Create(1, 1, "L-1", null, null); visit.AddVisitTest(TestVisitTestHelpers.CreateVisitTest(visit.Id, 1, 10m, false)); visit.EnterAllResults(); return visit; }
     private static PatientVisit OpenVisit() => PatientVisit.Create(1, 1, "L-1", null, null);
 
     [Fact]
@@ -37,7 +37,7 @@ public class ResultsAndSamplesHandlersTests
         var blankRepo = new Mock<IVisitRepository>(); var blankVisit = OpenVisit(); blankRepo.Setup(x => x.GetByIdAsync(1, It.IsAny<CancellationToken>())).ReturnsAsync(blankVisit);
         await new CreateBlankReportCommandHandler(blankRepo.Object, new Mock<IUnitOfWork>().Object).Handle(new(1), default);
         Assert.Equal(VisitStatus.ResultsEntered, blankVisit.Status);
-        var combinedRepo = new Mock<IVisitRepository>(); var combinedVisit = OpenVisit(); combinedVisit.AddTest(1, 10m, false); combinedRepo.Setup(x => x.GetByIdAsync(3, It.IsAny<CancellationToken>())).ReturnsAsync(combinedVisit);
+        var combinedRepo = new Mock<IVisitRepository>(); var combinedVisit = OpenVisit(); combinedVisit.AddVisitTest(TestVisitTestHelpers.CreateVisitTest(combinedVisit.Id, 1, 10m, false)); combinedRepo.Setup(x => x.GetByIdAsync(3, It.IsAny<CancellationToken>())).ReturnsAsync(combinedVisit);
         await new CreateCombinedReportCommandHandler(combinedRepo.Object, new Mock<IUnitOfWork>().Object).Handle(new(3, "1"), default);
         Assert.Equal(VisitStatus.ResultsEntered, combinedVisit.Status);
         combinedRepo.Setup(x => x.GetByIdAsync(4, It.IsAny<CancellationToken>())).ReturnsAsync((PatientVisit?)null);

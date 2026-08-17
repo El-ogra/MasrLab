@@ -99,4 +99,12 @@ public class VisitRepository : GenericRepository<PatientVisit>, IVisitRepository
             .Include(vt => vt.ResultItems)
             .FirstOrDefaultAsync(vt => vt.Id == visitTestId, cancellationToken);
     }
+
+    public async Task<PatientVisit?> GetByIdWithTestsAndResultItemsAsync(int id, CancellationToken cancellationToken = default)
+    {
+        return await _context.PatientVisits
+            .Include(v => v.VisitTests)
+                .ThenInclude(vt => vt.ResultItems.Where(ri => !ri.IsDeleted))
+            .FirstOrDefaultAsync(v => v.Id == id, cancellationToken);
+    }
 }

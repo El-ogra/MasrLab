@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace MasrLab.Infrastructure.Tests;
 
+[Collection("LocalDb")]
 public class VisitRepositoryDateRangeIntegrationTests
 {
     private const string DatabasePrefix = "MasrLabDb_VisitsDateRange";

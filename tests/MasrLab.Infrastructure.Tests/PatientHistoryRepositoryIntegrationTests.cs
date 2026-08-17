@@ -4,6 +4,7 @@ using MasrLab.Infrastructure.Persistence.Repositories;
 
 namespace MasrLab.Infrastructure.Tests;
 
+[Collection("LocalDb")]
 public sealed class PatientHistoryRepositoryIntegrationTests
 {
     private const string DatabasePrefix = "MasrLabDb_PatientHistory";

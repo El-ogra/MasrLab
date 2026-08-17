@@ -4,6 +4,7 @@ using MasrLab.Domain.Entities.Core;
 using MasrLab.Domain.Exceptions;
 using MasrLab.Domain.Interfaces;
 using MasrLab.Domain.Services;
+using MasrLab.Domain.ValueObjects;
 using Moq;
 
 namespace MasrLab.Application.Tests;
@@ -47,18 +48,18 @@ public class EnterTestResultCommandHandlerTests
             VisitTestResultItemId: 100,
             Value: "5.0",
             Unit: "cells/uL",
-            ReferenceRange: "1-10",
-            Status: ResultStatus.Normal,
             EnteredByUserId: 1,
             PatientId: 1,
             AgeYears: 30,
+            AgeMonths: 0,
+            AgeDays: 0,
             OverrideReason: overrideReason);
 
-    private void SetupPatient(Gender gender = Gender.Male)
+    private void SetupPatient(Gender gender = Gender.Male, bool pregnancy = false)
     {
         _patientRepository
             .Setup(r => r.GetByIdAsync(1, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new Patient { Id = 1, Name = "Ahmed", Gender = gender });
+            .ReturnsAsync(new Patient { Id = 1, Name = "Ahmed", Gender = gender, Pregnancy = pregnancy });
     }
 
     private void SetupVisitTestResultItem()
@@ -78,8 +79,15 @@ public class EnterTestResultCommandHandlerTests
     private void SetupValidationNormal()
     {
         _resultValidationService
-            .Setup(s => s.ValidateResultAsync(It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string?>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(ResultStatus.Normal);
+            .Setup(s => s.ValidateResultAsync(
+                It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string?>(),
+                It.IsAny<Age>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ResultValidationOutput
+            {
+                Status = ResultStatus.Normal,
+                ReferenceRange = "1-10",
+                MatchKind = ReferenceMatchKind.Matched
+            });
     }
 
     [Fact]
@@ -174,7 +182,9 @@ public class EnterTestResultCommandHandlerTests
         await CreateHandler().Handle(CreateCommand(), CancellationToken.None);
 
         _resultValidationService.Verify(
-            s => s.ValidateResultAsync(100, "5.0", "female", 30, It.IsAny<CancellationToken>()),
+            s => s.ValidateResultAsync(100, "5.0", "female",
+                It.Is<Age>(a => a.Years == 30 && a.Months == 0 && a.Days == 0),
+                false, It.IsAny<CancellationToken>()),
             Times.Once);
     }
 
@@ -186,16 +196,100 @@ public class EnterTestResultCommandHandlerTests
         _patientRepository
             .Setup(r => r.GetByIdAsync(1, It.IsAny<CancellationToken>()))
             .ReturnsAsync((Patient?)null);
-        _sampleTrackingService
-            .Setup(s => s.IsSampleCollectedAsync(10, 20, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(true);
 
         await Assert.ThrowsAsync<EntityNotFoundException>(
             () => CreateHandler().Handle(CreateCommand(), CancellationToken.None));
 
         _resultValidationService.Verify(
-            s => s.ValidateResultAsync(It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string?>(), It.IsAny<int>(), It.IsAny<CancellationToken>()),
+            s => s.ValidateResultAsync(It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string?>(),
+                It.IsAny<Age>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()),
             Times.Never);
         _testResultRepository.Verify(r => r.AddAsync(It.IsAny<TestResult>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task Handle_WhenValidationReturnsHighComment_SetsCommentOnTestResult()
+    {
+        SetupPatient();
+        SetupVisitTestResultItem();
+        SetupVisitTest();
+        _sampleTrackingService
+            .Setup(s => s.IsSampleCollectedAsync(10, 20, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
+
+        _resultValidationService
+            .Setup(s => s.ValidateResultAsync(
+                It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string?>(),
+                It.IsAny<Age>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ResultValidationOutput
+            {
+                Status = ResultStatus.High,
+                ReferenceRange = "4-8",
+                WarningComment = "Elevated level",
+                MatchKind = ReferenceMatchKind.Matched
+            });
+
+        TestResult? captured = null;
+        _testResultRepository
+            .Setup(r => r.AddAsync(It.IsAny<TestResult>(), It.IsAny<CancellationToken>()))
+            .Callback<TestResult, CancellationToken>((tr, _) => captured = tr);
+
+        await CreateHandler().Handle(CreateCommand(), CancellationToken.None);
+
+        Assert.NotNull(captured);
+        Assert.Equal(ResultStatus.High, captured.Status);
+        Assert.Equal("4-8", captured.ReferenceRange);
+        Assert.Equal("Elevated level", captured.Comment);
+    }
+
+    [Fact]
+    public async Task Handle_WhenValidationReturnsNoRangeConfigured_SetsNormalStatusAndNoComment()
+    {
+        SetupPatient();
+        SetupVisitTestResultItem();
+        SetupVisitTest();
+        _sampleTrackingService
+            .Setup(s => s.IsSampleCollectedAsync(10, 20, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
+
+        _resultValidationService
+            .Setup(s => s.ValidateResultAsync(
+                It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string?>(),
+                It.IsAny<Age>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ResultValidationOutput
+            {
+                Status = ResultStatus.Normal,
+                MatchKind = ReferenceMatchKind.NoRangeConfigured
+            });
+
+        TestResult? captured = null;
+        _testResultRepository
+            .Setup(r => r.AddAsync(It.IsAny<TestResult>(), It.IsAny<CancellationToken>()))
+            .Callback<TestResult, CancellationToken>((tr, _) => captured = tr);
+
+        await CreateHandler().Handle(CreateCommand(), CancellationToken.None);
+
+        Assert.NotNull(captured);
+        Assert.Equal(ResultStatus.Normal, captured.Status);
+        Assert.Null(captured.Comment);
+    }
+
+    [Fact]
+    public async Task Handle_WhenPatientIsPregnant_PassesTrueToValidation()
+    {
+        SetupPatient(pregnancy: true);
+        SetupVisitTestResultItem();
+        SetupVisitTest();
+        SetupValidationNormal();
+        _sampleTrackingService
+            .Setup(s => s.IsSampleCollectedAsync(10, 20, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
+
+        await CreateHandler().Handle(CreateCommand(), CancellationToken.None);
+
+        _resultValidationService.Verify(
+            s => s.ValidateResultAsync(100, "5.0", "male",
+                It.IsAny<Age>(), true, It.IsAny<CancellationToken>()),
+            Times.Once);
     }
 }

@@ -54,7 +54,7 @@ public class NewEventTests
     public void PatientVisit_RemoveTest_ShouldRaiseVisitTestRemoved()
     {
         var visit = PatientVisit.Create(1, 1, "L1", null, null);
-        visit.AddTest(10, 100m, false);
+        visit.AddVisitTest(TestVisitTestHelpers.CreateVisitTest(visit.Id, 10, 100m, false));
 
         visit.RemoveTest(10);
 
@@ -68,7 +68,7 @@ public class NewEventTests
     public void PatientVisit_RemoveTest_WhenTestNotFound_ShouldThrowBusinessRuleViolation()
     {
         var visit = PatientVisit.Create(1, 1, "L1", null, null);
-        visit.AddTest(10, 100m, false);
+        visit.AddVisitTest(TestVisitTestHelpers.CreateVisitTest(visit.Id, 10, 100m, false));
 
         var ex = Assert.Throws<BusinessRuleViolationException>(() => visit.RemoveTest(99));
 
@@ -100,7 +100,7 @@ public class NewEventTests
     {
         var result = TestResult.Enter(5, "12.5", 7);
 
-        result.Edit("13.0", 9);
+        result.Edit("13.0", null, 9);
 
         var evt = Assert.Single(result.DomainEvents.OfType<TestResultEdited>());
         Assert.Equal(result.Id, evt.ResultId);
@@ -115,7 +115,7 @@ public class NewEventTests
     {
         var result = TestResult.Enter(5, "12.5", 7);
 
-        var ex = Assert.Throws<BusinessRuleViolationException>(() => result.Edit("", 9));
+        var ex = Assert.Throws<BusinessRuleViolationException>(() => result.Edit("", null, 9));
 
         Assert.Equal("Test result value cannot be empty.", ex.Message);
     }

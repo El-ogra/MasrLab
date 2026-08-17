@@ -21,7 +21,16 @@ public record SampleUncollectedReverted(int SampleId, int VisitId) : DomainEvent
 
 public record TestResultEntered(int ResultId, int VisitTestResultItemId, string Value, int EnteredBy) : DomainEvent;
 
-public record TestResultEdited(int ResultId, int VisitTestResultItemId, string OldValue, string NewValue, int EditedBy) : DomainEvent;
+public record TestResultEdited(
+    int ResultId,
+    int VisitTestResultItemId,
+    string OldValue,
+    string NewValue,
+    string? OldComment,
+    string? NewComment,
+    Common.Enums.ResultEditChangeType ChangeType,
+    int EditedBy
+) : DomainEvent;
 
 public record ReceiptIssued(int ReceiptId, int VisitId, decimal Total, decimal Paid) : DomainEvent;
 

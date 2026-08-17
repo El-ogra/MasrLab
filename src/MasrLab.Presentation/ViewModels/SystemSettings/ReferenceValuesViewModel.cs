@@ -211,7 +211,7 @@ public partial class ReferenceValuesViewModel : ObservableObject
             var ageUnit = IsAgeEnabled ? SelectedAgeUnit : AgeUnit.Years;
 
             var command = new AddReferenceValueCommand(
-                _testId, SelectedComponent?.Id, gender, ageMin, ageMax, ageUnit,
+                _testId, SelectedComponent?.Id ?? 0, gender, ageMin, ageMax, ageUnit,
                 ReferenceRange, LowLimit, HighLimit, TestUnit,
                 LowFlag, HighFlag, ForPregnantOnly, HighComment, LowComment);
 
@@ -249,7 +249,7 @@ public partial class ReferenceValuesViewModel : ObservableObject
             var ageUnit = IsAgeEnabled ? SelectedAgeUnit : AgeUnit.Years;
 
             var command = new UpdateReferenceValueCommand(
-                SelectedReferenceValue.Id, _testId, SelectedComponent?.Id,
+                SelectedReferenceValue.Id, _testId, SelectedComponent?.Id ?? 0,
                 gender, ageMin, ageMax, ageUnit,
                 ReferenceRange, LowLimit, HighLimit, TestUnit,
                 LowFlag, HighFlag, ForPregnantOnly, HighComment, LowComment);

@@ -24,6 +24,12 @@ public class EnterTestResultCommandValidator : AbstractValidator<EnterTestResult
         RuleFor(x => x.AgeYears)
             .GreaterThanOrEqualTo(0);
 
+        RuleFor(x => x.AgeMonths)
+            .InclusiveBetween(0, 11);
+
+        RuleFor(x => x.AgeDays)
+            .InclusiveBetween(0, 30);
+
         RuleFor(x => x.OverrideReason)
             .MaximumLength(500);
     }

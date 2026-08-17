@@ -32,8 +32,11 @@ public static class DependencyInjection
         services.AddScoped<IReceiptCalculationService, ReceiptCalculationService>();
         services.AddScoped<IReferralCommissionService, ReferralCommissionService>();
         services.AddScoped<IResultValidationService, ResultValidationService>();
+        services.AddScoped<IReferenceValueMatcher, ReferenceValueMatcher>();
+        services.AddScoped<IVisitCompletionEvaluator, VisitCompletionEvaluator>();
         services.AddScoped<ISampleTrackingService, SampleTrackingService>();
         services.AddScoped<ITestComponentCardinalityService, TestComponentCardinalityService>();
+        services.AddScoped<IVisitTestSnapshotter, VisitTestSnapshotter>();
 
         return services;
     }

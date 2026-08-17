@@ -6,7 +6,7 @@ namespace MasrLab.Domain.Entities.Core;
 public class ReferenceValue : BaseEntity
 {
     public int TestId { get; set; }
-    public int? TestComponentId { get; set; }
+    public int TestComponentId { get; set; }
     public ReferenceValueGender Gender { get; set; }
     public int AgeMin { get; set; }
     public int AgeMax { get; set; }

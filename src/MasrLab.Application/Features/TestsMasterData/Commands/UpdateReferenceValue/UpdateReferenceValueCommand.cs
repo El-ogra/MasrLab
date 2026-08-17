@@ -6,7 +6,7 @@ namespace MasrLab.Application.Features.TestsMasterData.Commands.UpdateReferenceV
 public record UpdateReferenceValueCommand(
     int Id,
     int TestId,
-    int? TestComponentId,
+    int TestComponentId,
     ReferenceValueGender Gender,
     int AgeMin,
     int AgeMax,

@@ -13,7 +13,7 @@ public class ReferenceValueConfiguration : IEntityTypeConfiguration<ReferenceVal
         builder.Property(e => e.Id).ValueGeneratedOnAdd();
 
         builder.Property(e => e.TestId).IsRequired();
-        builder.Property(e => e.TestComponentId);
+        builder.Property(e => e.TestComponentId).IsRequired();
         builder.Property(e => e.Gender).IsRequired();
         builder.Property(e => e.AgeMin).IsRequired();
         builder.Property(e => e.AgeMax).IsRequired();

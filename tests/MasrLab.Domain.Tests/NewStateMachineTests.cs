@@ -12,7 +12,7 @@ public class NewStateMachineTests
     public void MarkAsPrinted_WhenResultsEntered_ShouldTransitionToPrinted()
     {
         var visit = PatientVisit.Create(1, 1, "L1", null, null);
-        visit.AddTest(1, 100m, false);
+        visit.AddVisitTest(TestVisitTestHelpers.CreateVisitTest(visit.Id, 1, 100m, false));
         visit.EnterAllResults();
 
         visit.MarkAsPrinted();

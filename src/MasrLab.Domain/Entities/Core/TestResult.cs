@@ -22,6 +22,9 @@ public class TestResult : BaseEntity
     public int EditedByUserId { get; set; }
     public DateTime? EditedAt { get; set; }
 
+    public string? Comment { get; private set; }
+    public bool ReprintRequired { get; private set; }
+
     public static TestResult Enter(int visitTestResultItemId, string value, int enteredByUserId)
     {
         if (visitTestResultItemId <= 0)
@@ -39,14 +42,71 @@ public class TestResult : BaseEntity
         return result;
     }
 
-    public void Edit(string newValue, int editedByUserId)
+    public void Edit(string newValue, string? newComment, int editedByUserId)
     {
         if (string.IsNullOrWhiteSpace(newValue))
             throw new BusinessRuleViolationException("Test result value cannot be empty.");
+
         var oldValue = Value;
+        var oldComment = Comment;
+        var commentChanged = !string.Equals(oldComment, newComment, StringComparison.Ordinal);
+
         Value = newValue;
+
+        if (newComment != null || commentChanged)
+            SetComment(newComment);
+
         EditedByUserId = editedByUserId;
         EditedAt = DateTime.UtcNow;
-        AddDomainEvent(new TestResultEdited(Id, VisitTestResultItemId, oldValue, newValue, editedByUserId));
+
+        var changeType = (oldValue != newValue, commentChanged) switch
+        {
+            (true, true) => ResultEditChangeType.ValueAndComment,
+            (true, false) => ResultEditChangeType.ValueOnly,
+            (false, true) => ResultEditChangeType.CommentOnly,
+            (false, false) => throw new BusinessRuleViolationException("No changes detected.")
+        };
+
+        AddDomainEvent(new TestResultEdited(
+            Id, VisitTestResultItemId, oldValue, newValue,
+            oldComment, newComment, changeType, editedByUserId));
+    }
+
+    public void EditComment(string? newComment, int editedByUserId)
+    {
+        var oldComment = Comment;
+        var commentChanged = !string.Equals(oldComment, newComment, StringComparison.Ordinal);
+
+        if (!commentChanged)
+            throw new BusinessRuleViolationException("No changes detected.");
+
+        EditedByUserId = editedByUserId;
+        EditedAt = DateTime.UtcNow;
+
+        SetComment(newComment);
+
+        AddDomainEvent(new TestResultEdited(
+            Id, VisitTestResultItemId, Value, Value,
+            oldComment, newComment, ResultEditChangeType.CommentOnly, editedByUserId));
+    }
+
+    public void SetComment(string? comment)
+    {
+        if (comment is not null && comment.Length > 1000)
+            throw new BusinessRuleViolationException("Comment cannot exceed 1000 characters.");
+        Comment = comment;
+    }
+
+    public void MarkReprintRequired()
+    {
+        ReprintRequired = true;
+    }
+
+    public void MarkPrinted(int printedByUserId)
+    {
+        PrintCount++;
+        PrintedByUserId = printedByUserId;
+        PrintedAt = DateTime.UtcNow;
+        ReprintRequired = false;
     }
 }

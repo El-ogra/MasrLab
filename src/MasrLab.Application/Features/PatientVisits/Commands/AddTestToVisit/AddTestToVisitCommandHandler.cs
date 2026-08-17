@@ -11,6 +11,8 @@ public class AddTestToVisitCommandHandler : IRequestHandler<AddTestToVisitComman
     private readonly IVisitRepository _visitRepository;
     private readonly IPriceListRepository _priceListRepository;
     private readonly IPriceListResolverService _priceListResolverService;
+    private readonly ITestRepository _testRepository;
+    private readonly IVisitTestSnapshotter _snapshotter;
     private readonly IRepository<Sample> _sampleRepository;
     private readonly IUnitOfWork _unitOfWork;
 
@@ -18,37 +20,44 @@ public class AddTestToVisitCommandHandler : IRequestHandler<AddTestToVisitComman
         IVisitRepository visitRepository,
         IPriceListRepository priceListRepository,
         IPriceListResolverService priceListResolverService,
+        ITestRepository testRepository,
+        IVisitTestSnapshotter snapshotter,
         IRepository<Sample> sampleRepository,
         IUnitOfWork unitOfWork)
     {
         _visitRepository = visitRepository;
         _priceListRepository = priceListRepository;
         _priceListResolverService = priceListResolverService;
+        _testRepository = testRepository;
+        _snapshotter = snapshotter;
         _sampleRepository = sampleRepository;
         _unitOfWork = unitOfWork;
     }
 
     public async Task<Unit> Handle(AddTestToVisitCommand request, CancellationToken cancellationToken)
     {
-        // 1. Load the tracked visit
         var visit = await _visitRepository.GetByIdAsync(request.PatientVisitId, cancellationToken);
         if (visit is null)
             throw new EntityNotFoundException(nameof(PatientVisit), request.PatientVisitId);
 
-        // 2. Resolve the price list
         var priceListId = await ResolvePriceListIdAsync(request.PriceListId, cancellationToken);
 
-        // 3. For each test: resolve price → add test → create sample
         foreach (var testId in request.TestIds)
         {
+            var test = await _testRepository.GetByIdWithComponentsAsync(testId, cancellationToken)
+                ?? throw new EntityNotFoundException(nameof(Test), testId);
+
             var price = await _priceListResolverService.ResolvePriceAsync(testId, priceListId, cancellationToken);
-            visit.AddTest(testId, price, request.MarkOutsourced);
+
+            var (visitTest, resultItems) = _snapshotter.CreateVisitTestSnapshot(
+                test, visit.Id, price, request.MarkOutsourced);
+
+            visit.AddVisitTest(visitTest);
 
             var sample = Sample.Create(visit.Id, testId);
             await _sampleRepository.AddAsync(sample, cancellationToken);
         }
 
-        // 4. Single save for the entire transaction
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         return Unit.Value;

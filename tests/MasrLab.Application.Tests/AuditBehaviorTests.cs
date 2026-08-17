@@ -51,11 +51,11 @@ public class AuditBehaviorTests
             VisitTestResultItemId: 100,
             Value: "5.0",
             Unit: "cells/uL",
-            ReferenceRange: "1-10",
-            Status: ResultStatus.Normal,
             EnteredByUserId: 1,
             PatientId: 1,
             AgeYears: 30,
+            AgeMonths: 0,
+            AgeDays: 0,
             OverrideReason: null);
 
     [Fact]

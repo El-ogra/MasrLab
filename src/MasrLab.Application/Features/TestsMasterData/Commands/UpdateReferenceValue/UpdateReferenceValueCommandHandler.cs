@@ -29,19 +29,16 @@ public class UpdateReferenceValueCommandHandler : IRequestHandler<UpdateReferenc
         if (existing is null)
             throw new EntityNotFoundException(nameof(ReferenceValue), request.Id);
 
-        if (request.TestComponentId.HasValue)
-        {
-            var component = await _componentRepository.GetByIdAsync(request.TestComponentId.Value, cancellationToken)
-                ?? throw new EntityNotFoundException(nameof(TestComponent), request.TestComponentId.Value);
+        var component = await _componentRepository.GetByIdAsync(request.TestComponentId, cancellationToken)
+            ?? throw new EntityNotFoundException(nameof(TestComponent), request.TestComponentId);
 
-            if (component.TestId != request.TestId)
-                throw new BusinessRuleViolationException(
-                    "The specified component does not belong to the given test.");
+        if (component.TestId != request.TestId)
+            throw new BusinessRuleViolationException(
+                "The specified component does not belong to the given test.");
 
-            if (component.ResultEntryKind == ResultEntryKind.CultureDetail)
-                throw new BusinessRuleViolationException(
-                    "Reference values cannot be added for CultureDetail components.");
-        }
+        if (component.ResultEntryKind == ResultEntryKind.CultureDetail)
+            throw new BusinessRuleViolationException(
+                "Reference values cannot be added for CultureDetail components.");
 
         var allRefs = await _referenceValueRepository.GetByTestIdAsync(request.TestId, cancellationToken);
 

@@ -29,6 +29,8 @@ public class MasrLabDbContext : DbContext
     public DbSet<TestGroup> TestGroups => Set<TestGroup>();
     public DbSet<TestGroupItem> TestGroupItems => Set<TestGroupItem>();
     public DbSet<Comment> Comments => Set<Comment>();
+    public DbSet<TestResultEditHistory> TestResultEditHistories => Set<TestResultEditHistory>();
+    public DbSet<TestComponentChoice> TestComponentChoices => Set<TestComponentChoice>();
     public DbSet<Sample> Samples => Set<Sample>();
     public DbSet<SampleCollection> SampleCollections => Set<SampleCollection>();
 
@@ -43,6 +45,7 @@ public class MasrLabDbContext : DbContext
     public DbSet<Organism> Organisms => Set<Organism>();
     public DbSet<Antibiotic> Antibiotics => Set<Antibiotic>();
     public DbSet<Sensitivity> Sensitivities => Set<Sensitivity>();
+    public DbSet<CulturePrintReceipt> CulturePrintReceipts => Set<CulturePrintReceipt>();
 
     // Financial
     public DbSet<Receipt> Receipts => Set<Receipt>();

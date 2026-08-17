@@ -7,5 +7,6 @@ public enum PermissionOperation
     Edit = 3,
     Delete = 4,
     Print = 5,
-    Export = 6
+    Export = 6,
+    EditPrinted = 7
 }

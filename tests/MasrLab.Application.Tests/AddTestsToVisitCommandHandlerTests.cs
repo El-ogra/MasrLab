@@ -1,4 +1,5 @@
 using MasrLab.Application.Features.VisitComposer.Commands.AddTestsToVisit;
+using MasrLab.Application.Services;
 using MasrLab.Domain.Common.Enums;
 using MasrLab.Domain.Entities.Core;
 using MasrLab.Domain.Entities.Settings;
@@ -19,6 +20,7 @@ public class AddTestsToVisitCommandHandlerTests
     private readonly Mock<IRepository<VisitCommercialPackage>> _visitPackageRepo;
     private readonly Mock<IPriceListResolverService> _priceListResolver;
     private readonly Mock<IPriceListRepository> _priceListRepo;
+    private readonly IVisitTestSnapshotter _snapshotter;
     private readonly Mock<IUnitOfWork> _unitOfWork;
 
     public AddTestsToVisitCommandHandlerTests()
@@ -31,6 +33,7 @@ public class AddTestsToVisitCommandHandlerTests
         _visitPackageRepo = new Mock<IRepository<VisitCommercialPackage>>();
         _priceListResolver = new Mock<IPriceListResolverService>();
         _priceListRepo = new Mock<IPriceListRepository>();
+        _snapshotter = new VisitTestSnapshotter();
         _unitOfWork = new Mock<IUnitOfWork>();
     }
 
@@ -44,6 +47,7 @@ public class AddTestsToVisitCommandHandlerTests
             _visitPackageRepo.Object,
             _priceListResolver.Object,
             _priceListRepo.Object,
+            _snapshotter,
             _unitOfWork.Object);
 
     private PatientVisit CreateVisit(int visitId = 1)
@@ -74,7 +78,7 @@ public class AddTestsToVisitCommandHandlerTests
                 TestId = testId,
                 Name = $"Component {i}",
                 Unit = "mg/dL",
-                DisplayOrder = i,
+                DisplayOrder = i + 1,
                 ResultEntryKind = ResultEntryKind.Ordinary
             });
         }
@@ -404,5 +408,110 @@ public class AddTestsToVisitCommandHandlerTests
                 CancellationToken.None));
 
         Assert.Contains("No tests", ex.Message);
+    }
+
+    [Fact]
+    public async Task Handle_WhenVisitIsClosed_ThrowsBusinessRuleViolationException()
+    {
+        var visit = CreateVisit();
+        visit.Close(0m);
+        SetupVisit(visit);
+        SetupDefaultPriceList();
+        SetupPrice(5, 10, 150m);
+        var test = CreateTest(5);
+        _testRepo.Setup(r => r.GetAllWithComponentsAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<Test> { test });
+
+        var ex = await Assert.ThrowsAsync<BusinessRuleViolationException>(
+            () => CreateHandler().Handle(
+                new AddTestsToVisitCommand(1, "Direct", null, null, "5", false),
+                CancellationToken.None));
+
+        Assert.Contains("closed", ex.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task Handle_WhenVisitIsPrinted_ThrowsBusinessRuleViolationException()
+    {
+        var visit = CreateVisit();
+        var preTest = CreateTest(99);
+        visit.VisitTests.Add(new VisitTest(1, 99, 100m, false));
+        visit.EnterAllResults();
+        visit.MarkAsPrinted();
+        SetupVisit(visit);
+
+        SetupDefaultPriceList();
+        SetupPrice(5, 10, 150m);
+        var test = CreateTest(5);
+        _testRepo.Setup(r => r.GetAllWithComponentsAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<Test> { test });
+
+        var ex = await Assert.ThrowsAsync<BusinessRuleViolationException>(
+            () => CreateHandler().Handle(
+                new AddTestsToVisitCommand(1, "Direct", null, null, "5", false),
+                CancellationToken.None));
+
+        Assert.Contains("printed", ex.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task Handle_ZeroActiveComponentTest_ThrowsBusinessRuleViolationException()
+    {
+        var visit = CreateVisit();
+        SetupVisit(visit);
+        SetupDefaultPriceList();
+        SetupPrice(5, 10, 150m);
+
+        var draftTest = new Test
+        {
+            Id = 5, Name = "Draft", ReportName = "Draft Report",
+            ReceiptName = "Draft Receipt", Price = 100m, IsDeleted = false
+        };
+        _testRepo.Setup(r => r.GetAllWithComponentsAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<Test> { draftTest });
+
+        var ex = await Assert.ThrowsAsync<BusinessRuleViolationException>(
+            () => CreateHandler().Handle(
+                new AddTestsToVisitCommand(1, "Direct", null, null, "5", false),
+                CancellationToken.None));
+
+        Assert.Contains("zero-component", ex.Message);
+    }
+
+    [Fact]
+    public async Task Handle_ResultsEnteredVisit_RevertsToRegistered()
+    {
+        var visit = CreateVisit();
+
+        var existingTest = new Test
+        {
+            Id = 99, Name = "Existing", ReportName = "Existing Report",
+            ReceiptName = "Existing Receipt", Price = 100m, IsDeleted = false
+        };
+        existingTest.TestComponents.Add(new TestComponent
+        {
+            Id = 9900, TestId = 99, Name = "WBC", Unit = "K/uL",
+            DisplayOrder = 1, ResultEntryKind = ResultEntryKind.Ordinary
+        });
+
+        var (existingVisitTest, _) = _snapshotter.CreateVisitTestSnapshot(existingTest, 1, 100m, false);
+        visit.VisitTests.Add(existingVisitTest);
+        visit.EnterAllResults();
+        SetupVisit(visit);
+
+        SetupDefaultPriceList();
+        SetupPrice(5, 10, 150m);
+        var newTest = CreateTest(5);
+        _testRepo.Setup(r => r.GetAllWithComponentsAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<Test> { newTest });
+
+        await CreateHandler().Handle(
+            new AddTestsToVisitCommand(1, "Direct", null, null, "5", false),
+            CancellationToken.None);
+
+        Assert.Equal(VisitStatus.Registered, visit.Status);
+        Assert.Equal(2, visit.VisitTests.Count);
+        Assert.Contains(visit.VisitTests, vt => vt.TestId == 99);
+        Assert.Contains(visit.VisitTests, vt => vt.TestId == 5);
     }
 }

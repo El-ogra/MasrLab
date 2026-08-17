@@ -52,5 +52,6 @@ public class PatientConfiguration : IEntityTypeConfiguration<Patient>
         builder.HasIndex(e => e.DoctorId);
         builder.HasIndex(e => e.NationalId);
         builder.HasIndex(e => e.IsDeleted);
+        builder.HasIndex(e => e.Name);
     }
 }

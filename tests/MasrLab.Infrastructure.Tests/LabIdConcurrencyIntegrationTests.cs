@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace MasrLab.Infrastructure.Tests;
 
+[Collection("LocalDb")]
 public class LabIdConcurrencyIntegrationTests
 {
     private const int ConcurrentRegistrations = 12;

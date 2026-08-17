@@ -16,6 +16,7 @@ public class AddTestsToVisitCommandHandler : IRequestHandler<AddTestsToVisitComm
     private readonly IRepository<VisitCommercialPackage> _visitPackageRepository;
     private readonly IPriceListResolverService _priceListResolver;
     private readonly IPriceListRepository _priceListRepository;
+    private readonly IVisitTestSnapshotter _snapshotter;
     private readonly IUnitOfWork _unitOfWork;
 
     public AddTestsToVisitCommandHandler(
@@ -27,6 +28,7 @@ public class AddTestsToVisitCommandHandler : IRequestHandler<AddTestsToVisitComm
         IRepository<VisitCommercialPackage> visitPackageRepository,
         IPriceListResolverService priceListResolver,
         IPriceListRepository priceListRepository,
+        IVisitTestSnapshotter snapshotter,
         IUnitOfWork unitOfWork)
     {
         _visitRepository = visitRepository;
@@ -37,6 +39,7 @@ public class AddTestsToVisitCommandHandler : IRequestHandler<AddTestsToVisitComm
         _visitPackageRepository = visitPackageRepository;
         _priceListResolver = priceListResolver;
         _priceListRepository = priceListRepository;
+        _snapshotter = snapshotter;
         _unitOfWork = unitOfWork;
     }
 
@@ -103,31 +106,11 @@ public class AddTestsToVisitCommandHandler : IRequestHandler<AddTestsToVisitComm
             var price = priceListId > 0
                 ? await _priceListResolver.ResolvePriceAsync(testId, priceListId, cancellationToken)
                 : test.Price;
-            var isCompound = test.TestComponents.Count > 1;
 
-            var visitTest = new VisitTest(visit.Id, testId, price, isOutsourced: false)
-            {
-                TestNameSnapshot = test.Name,
-                ReportNameSnapshot = test.ReportName,
-                ReceiptNameSnapshot = test.ReceiptName,
-                IsCompoundSnapshot = isCompound
-            };
+            var (visitTest, resultItems) = _snapshotter.CreateVisitTestSnapshot(
+                test, visit.Id, price, isOutsourced: false);
 
-            foreach (var component in test.TestComponents.OrderBy(c => c.DisplayOrder))
-            {
-                var resultItem = new VisitTestResultItem
-                {
-                    VisitTestId = visitTest.Id,
-                    SourceTestComponentId = component.Id,
-                    ComponentName = component.Name,
-                    ComponentUnit = component.Unit,
-                    DisplayOrder = component.DisplayOrder,
-                    ResultEntryKind = component.ResultEntryKind
-                };
-                visitTest.ResultItems.Add(resultItem);
-            }
-
-            visit.VisitTests.Add(visitTest);
+            visit.AddVisitTest(visitTest);
             newVisitTests.Add(visitTest);
 
             var sample = Sample.Create(visit.Id, testId);

@@ -1,9 +1,24 @@
 using MasrLab.Domain.Common.Enums;
+using MasrLab.Domain.Services;
+using MasrLab.Domain.ValueObjects;
 
 namespace MasrLab.Domain.Services;
 
+public sealed class ResultValidationOutput
+{
+    public ResultStatus Status { get; init; }
+    public string? ReferenceRange { get; init; }
+    public string? WarningComment { get; init; }
+    public ReferenceMatchKind MatchKind { get; init; }
+}
+
 public interface IResultValidationService
 {
-    Task<ResultStatus> ValidateResultAsync(int visitTestResultItemId, string value, string? gender, int ageYears, CancellationToken ct = default);
-    Task<(bool IsInRange, string? Comment)> IsResultInRangeAsync(int visitTestResultItemId, string value, string? gender, int ageYears, CancellationToken ct = default);
+    Task<ResultValidationOutput> ValidateResultAsync(
+        int visitTestResultItemId,
+        string value,
+        string? gender,
+        Age patientAge,
+        bool isPregnant,
+        CancellationToken ct = default);
 }

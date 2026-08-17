@@ -97,7 +97,7 @@ public class PatientVisitStateTests
     {
         var visit = PatientVisit.Create(1, 1, "L1", null, null);
 
-        visit.AddTest(10, 100m, true);
+        visit.AddVisitTest(TestVisitTestHelpers.CreateVisitTest(visit.Id, 10, 100m, true));
 
         var visitTest = Assert.Single(visit.VisitTests);
         Assert.Equal(10, visitTest.TestId);
@@ -117,16 +117,16 @@ public class PatientVisitStateTests
         var visit = PatientVisit.Create(1, 1, "L1", null, null);
         visit.Close(0m);
 
-        var ex = Assert.Throws<BusinessRuleViolationException>(() => visit.AddTest(1, 100m, false));
+        var ex = Assert.Throws<BusinessRuleViolationException>(() => visit.AddVisitTest(TestVisitTestHelpers.CreateVisitTest(visit.Id, 1, 100m, false)));
 
-        Assert.Equal("Cannot add tests to a closed visit.", ex.Message);
+        Assert.Contains("printed or closed", ex.Message);
     }
 
     [Fact]
     public void EnterAllResults_WhenRegisteredAndHasTests_ShouldTransitionToResultsEntered()
     {
         var visit = PatientVisit.Create(1, 1, "L1", null, null);
-        visit.AddTest(1, 100m, false);
+        visit.AddVisitTest(TestVisitTestHelpers.CreateVisitTest(visit.Id, 1, 100m, false));
 
         visit.EnterAllResults();
 
@@ -137,7 +137,7 @@ public class PatientVisitStateTests
     public void EnterAllResults_WhenStatusNotRegistered_ShouldThrowBusinessRuleViolation()
     {
         var visit = PatientVisit.Create(1, 1, "L1", null, null);
-        visit.AddTest(1, 100m, false);
+        visit.AddVisitTest(TestVisitTestHelpers.CreateVisitTest(visit.Id, 1, 100m, false));
         visit.EnterAllResults();
 
         var ex = Assert.Throws<BusinessRuleViolationException>(() => visit.EnterAllResults());
@@ -169,7 +169,7 @@ public class PatientVisitStateTests
     public void IssueReceipt_WhenResultsEntered_ShouldRemainResultsEntered()
     {
         var visit = PatientVisit.Create(1, 1, "L1", null, null);
-        visit.AddTest(1, 100m, false);
+        visit.AddVisitTest(TestVisitTestHelpers.CreateVisitTest(visit.Id, 1, 100m, false));
         visit.EnterAllResults();
 
         visit.IssueReceipt();
@@ -192,7 +192,7 @@ public class PatientVisitStateTests
     public void IssueReceipt_WhenPrinted_ShouldThrowBusinessRuleViolation()
     {
         var visit = PatientVisit.Create(1, 1, "L1", null, null);
-        visit.AddTest(1, 100m, false);
+        visit.AddVisitTest(TestVisitTestHelpers.CreateVisitTest(visit.Id, 1, 100m, false));
         visit.EnterAllResults();
         visit.MarkAsPrinted();
 

@@ -101,8 +101,11 @@ public class DoctorsReferralsAndTestsMasterDataHandlersTests
         var refs = new Mock<IReferenceValueRepository>(); ReferenceValue? saved = null;
         refs.Setup(x => x.AddAsync(It.IsAny<ReferenceValue>(), It.IsAny<CancellationToken>())).Callback<ReferenceValue, CancellationToken>((r, _) => saved = r);
         refs.Setup(x => x.GetByTestIdAsync(It.IsAny<int>(), It.IsAny<CancellationToken>())).ReturnsAsync(new List<ReferenceValue>());
-        await new AddReferenceValueCommandHandler(refs.Object, new Mock<IRepository<CoreTestComponent>>().Object, new Mock<IUnitOfWork>().Object).Handle(
-            new(2, null, ReferenceValueGender.Male, 1, 9, AgeUnit.Years, "1-9", null, null, null, null, null, false, "high", "low"), default);
+        var compRepo = new Mock<IRepository<CoreTestComponent>>();
+        compRepo.Setup(x => x.GetByIdAsync(It.IsAny<int>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((int id, CancellationToken _) => new CoreTestComponent { Id = id, TestId = 2, ResultEntryKind = ResultEntryKind.Ordinary });
+        await new AddReferenceValueCommandHandler(refs.Object, compRepo.Object, new Mock<IUnitOfWork>().Object).Handle(
+            new(2, 1, ReferenceValueGender.Male, 1, 9, AgeUnit.Years, "1-9", null, null, null, null, null, false, "high", "low"), default);
         Assert.NotNull(saved); Assert.Equal(ReferenceValueGender.Male, saved!.Gender); Assert.Equal("1-9", saved.NormalRange);
     }
 
@@ -110,20 +113,26 @@ public class DoctorsReferralsAndTestsMasterDataHandlersTests
     public async Task AddReferenceValue_throws_when_overlap_exists()
     {
         var refs = new Mock<IReferenceValueRepository>();
-        var existing = new ReferenceValue { Id = 1, TestId = 2, Gender = ReferenceValueGender.Male, AgeMin = 1, AgeMax = 9, AgeUnit = AgeUnit.Years };
+        var existing = new ReferenceValue { Id = 1, TestId = 2, TestComponentId = 1, Gender = ReferenceValueGender.Male, AgeMin = 1, AgeMax = 9, AgeUnit = AgeUnit.Years };
         refs.Setup(x => x.GetByTestIdAsync(2, It.IsAny<CancellationToken>())).ReturnsAsync(new List<ReferenceValue> { existing });
-        await Assert.ThrowsAsync<BusinessRuleViolationException>(() => new AddReferenceValueCommandHandler(refs.Object, new Mock<IRepository<CoreTestComponent>>().Object, new Mock<IUnitOfWork>().Object).Handle(
-            new(2, null, ReferenceValueGender.Male, 5, 15, AgeUnit.Years, "5-15", null, null, null, null, null, false, null, null), default));
+        var compRepo = new Mock<IRepository<CoreTestComponent>>();
+        compRepo.Setup(x => x.GetByIdAsync(It.IsAny<int>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((int id, CancellationToken _) => new CoreTestComponent { Id = id, TestId = 2, ResultEntryKind = ResultEntryKind.Ordinary });
+        await Assert.ThrowsAsync<BusinessRuleViolationException>(() => new AddReferenceValueCommandHandler(refs.Object, compRepo.Object, new Mock<IUnitOfWork>().Object).Handle(
+            new(2, 1, ReferenceValueGender.Male, 5, 15, AgeUnit.Years, "5-15", null, null, null, null, null, false, null, null), default));
     }
 
     [Fact]
     public async Task AddReferenceValue_throws_when_no_constraint_overlaps_with_range()
     {
         var refs = new Mock<IReferenceValueRepository>();
-        var existing = new ReferenceValue { Id = 1, TestId = 2, Gender = ReferenceValueGender.Both, AgeMin = 0, AgeMax = 0, AgeUnit = AgeUnit.Years };
+        var existing = new ReferenceValue { Id = 1, TestId = 2, TestComponentId = 1, Gender = ReferenceValueGender.Both, AgeMin = 0, AgeMax = 0, AgeUnit = AgeUnit.Years };
         refs.Setup(x => x.GetByTestIdAsync(2, It.IsAny<CancellationToken>())).ReturnsAsync(new List<ReferenceValue> { existing });
-        await Assert.ThrowsAsync<BusinessRuleViolationException>(() => new AddReferenceValueCommandHandler(refs.Object, new Mock<IRepository<CoreTestComponent>>().Object, new Mock<IUnitOfWork>().Object).Handle(
-            new(2, null, ReferenceValueGender.Male, 1, 29, AgeUnit.Days, "1-29", null, null, null, null, null, false, null, null), default));
+        var compRepo = new Mock<IRepository<CoreTestComponent>>();
+        compRepo.Setup(x => x.GetByIdAsync(It.IsAny<int>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((int id, CancellationToken _) => new CoreTestComponent { Id = id, TestId = 2, ResultEntryKind = ResultEntryKind.Ordinary });
+        await Assert.ThrowsAsync<BusinessRuleViolationException>(() => new AddReferenceValueCommandHandler(refs.Object, compRepo.Object, new Mock<IUnitOfWork>().Object).Handle(
+            new(2, 1, ReferenceValueGender.Male, 1, 29, AgeUnit.Days, "1-29", null, null, null, null, null, false, null, null), default));
     }
 
     [Fact]
@@ -132,8 +141,11 @@ public class DoctorsReferralsAndTestsMasterDataHandlersTests
         var refs = new Mock<IReferenceValueRepository>();
         refs.Setup(x => x.GetByTestIdAsync(It.IsAny<int>(), It.IsAny<CancellationToken>())).ReturnsAsync(new List<ReferenceValue>());
         var uow = new Mock<IUnitOfWork>(); uow.Setup(x => x.SaveChangesAsync(It.IsAny<CancellationToken>())).ThrowsAsync(new InvalidOperationException("write failed"));
-        await Assert.ThrowsAsync<InvalidOperationException>(() => new AddReferenceValueCommandHandler(refs.Object, new Mock<IRepository<CoreTestComponent>>().Object, uow.Object).Handle(
-            new(2, null, ReferenceValueGender.Female, 1, 9, AgeUnit.Years, "1-9", null, null, null, null, null, false, null, null), default));
+        var compRepo = new Mock<IRepository<CoreTestComponent>>();
+        compRepo.Setup(x => x.GetByIdAsync(It.IsAny<int>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((int id, CancellationToken _) => new CoreTestComponent { Id = id, TestId = 2, ResultEntryKind = ResultEntryKind.Ordinary });
+        await Assert.ThrowsAsync<InvalidOperationException>(() => new AddReferenceValueCommandHandler(refs.Object, compRepo.Object, uow.Object).Handle(
+            new(2, 1, ReferenceValueGender.Female, 1, 9, AgeUnit.Years, "1-9", null, null, null, null, null, false, null, null), default));
     }
 
     [Fact]

@@ -31,7 +31,7 @@ public class EventRaisedByEntityTests
     {
         var visit = PatientVisit.Create(1, 1, "L1", null, null);
 
-        visit.AddTest(10, 100m, true);
+        visit.AddVisitTest(TestVisitTestHelpers.CreateVisitTest(visit.Id, 10, 100m, true));
 
         var evt = Assert.Single(visit.DomainEvents.OfType<VisitTestAdded>());
         Assert.Equal(visit.Id, evt.VisitId);
@@ -46,7 +46,7 @@ public class EventRaisedByEntityTests
         var visit = PatientVisit.Create(1, 1, "L1", null, null);
         visit.Close(0m);
 
-        Assert.Throws<BusinessRuleViolationException>(() => visit.AddTest(1, 100m, false));
+        Assert.Throws<BusinessRuleViolationException>(() => visit.AddVisitTest(TestVisitTestHelpers.CreateVisitTest(visit.Id, 1, 100m, false)));
 
         Assert.Empty(visit.DomainEvents.OfType<VisitTestAdded>());
     }
@@ -67,7 +67,7 @@ public class EventRaisedByEntityTests
     public void EnterAllResults_ShouldNotRaiseAnyDomainEvent()
     {
         var visit = PatientVisit.Create(1, 1, "L1", null, null);
-        visit.AddTest(1, 100m, false);
+        visit.AddVisitTest(TestVisitTestHelpers.CreateVisitTest(visit.Id, 1, 100m, false));
         var countBefore = visit.DomainEvents.Count;
 
         visit.EnterAllResults();

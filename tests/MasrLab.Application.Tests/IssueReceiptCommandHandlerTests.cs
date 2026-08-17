@@ -46,7 +46,7 @@ public class IssueReceiptCommandHandlerTests
         foreach (var price in prices)
         {
             var testId = prices.ToList().IndexOf(price) + 1;
-            visit.AddTest(testId, price, false);
+            visit.AddVisitTest(TestVisitTestHelpers.CreateVisitTest(visit.Id, testId, price, false));
         }
 
         return visit;

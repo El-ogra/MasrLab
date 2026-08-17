@@ -123,7 +123,7 @@ public class NewInvariantTests
     public void PatientVisit_RemoveTest_WhenClosed_ShouldThrowBusinessRuleViolation()
     {
         var visit = PatientVisit.Create(1, 1, "L1", null, null);
-        visit.AddTest(10, 100m, false);
+        visit.AddVisitTest(TestVisitTestHelpers.CreateVisitTest(visit.Id, 10, 100m, false));
         visit.Close(100m);
 
         var ex = Assert.Throws<BusinessRuleViolationException>(() => visit.RemoveTest(10));
