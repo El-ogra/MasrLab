@@ -32,6 +32,13 @@ public record TestResultEdited(
     int EditedBy
 ) : DomainEvent;
 
+public record TestResultReferenceReapplied(
+    int ResultId,
+    string? OldComment,
+    string? NewComment,
+    int AppliedByUserId
+) : DomainEvent;
+
 public record ReceiptIssued(int ReceiptId, int VisitId, decimal Total, decimal Paid) : DomainEvent;
 
 public record ReceiptPaymentAdded(int ReceiptId, decimal Amount) : DomainEvent;

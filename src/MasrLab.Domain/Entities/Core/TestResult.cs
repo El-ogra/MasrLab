@@ -90,6 +90,33 @@ public class TestResult : BaseEntity
             oldComment, newComment, ResultEditChangeType.CommentOnly, editedByUserId));
     }
 
+    public void ReapplyReference(
+        string newReferenceRange,
+        ResultStatus newStatus,
+        string? newAutoComment,
+        string? previousAutoComment,
+        int appliedByUserId)
+    {
+        if (appliedByUserId <= 0)
+            throw new BusinessRuleViolationException("Applied-by user is required.");
+
+        var oldComment = Comment;
+        var shouldReplaceComment = Comment is null ||
+            string.Equals(Comment, previousAutoComment, StringComparison.Ordinal);
+
+        ReferenceRange = newReferenceRange;
+        Status = newStatus;
+
+        if (shouldReplaceComment)
+            SetComment(newAutoComment);
+
+        EditedByUserId = appliedByUserId;
+        EditedAt = DateTime.UtcNow;
+
+        AddDomainEvent(new TestResultReferenceReapplied(
+            Id, oldComment, Comment, appliedByUserId));
+    }
+
     public void SetComment(string? comment)
     {
         if (comment is not null && comment.Length > 1000)

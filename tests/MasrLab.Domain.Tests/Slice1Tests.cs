@@ -134,6 +134,51 @@ public class Slice1Tests
 
     #endregion
 
+    #region TestResult.ReapplyReference
+
+    [Fact]
+    public void TestResult_ReapplyReference_ReplacesPreviousAutomaticCommentAndRaisesEvent()
+    {
+        var result = TestResult.Enter(5, "12.5", 7);
+        result.ReferenceRange = "1-10";
+        result.Status = ResultStatus.High;
+        result.SetComment("old automatic comment");
+
+        result.ReapplyReference("2-8", ResultStatus.Low, "new automatic comment", "old automatic comment", 9);
+
+        Assert.Equal("2-8", result.ReferenceRange);
+        Assert.Equal(ResultStatus.Low, result.Status);
+        Assert.Equal("new automatic comment", result.Comment);
+        var evt = Assert.Single(result.DomainEvents.OfType<TestResultReferenceReapplied>());
+        Assert.Equal("old automatic comment", evt.OldComment);
+        Assert.Equal("new automatic comment", evt.NewComment);
+        Assert.Equal(9, evt.AppliedByUserId);
+    }
+
+    [Fact]
+    public void TestResult_ReapplyReference_ProtectsManualComment()
+    {
+        var result = TestResult.Enter(5, "12.5", 7);
+        result.SetComment("manual comment");
+
+        result.ReapplyReference("2-8", ResultStatus.Normal, "new automatic comment", "old automatic comment", 9);
+
+        Assert.Equal("manual comment", result.Comment);
+        Assert.Equal(ResultStatus.Normal, result.Status);
+    }
+
+    [Fact]
+    public void TestResult_ReapplyReference_SetsAutomaticCommentWhenCurrentCommentIsNull()
+    {
+        var result = TestResult.Enter(5, "12.5", 7);
+
+        result.ReapplyReference("2-8", ResultStatus.High, "new automatic comment", "old automatic comment", 9);
+
+        Assert.Equal("new automatic comment", result.Comment);
+    }
+
+    #endregion
+
     #region ResultEditChangeType enum
 
     [Fact]
@@ -142,6 +187,7 @@ public class Slice1Tests
         Assert.Equal(0, (int)ResultEditChangeType.ValueOnly);
         Assert.Equal(1, (int)ResultEditChangeType.CommentOnly);
         Assert.Equal(2, (int)ResultEditChangeType.ValueAndComment);
+        Assert.Equal(3, (int)ResultEditChangeType.ReferenceReapplied);
     }
 
     #endregion
