@@ -14,6 +14,7 @@ public class TestsMasterDataMappingProfile : Profile
             .ForMember(dest => dest.Components, opt => opt.Ignore());
         CreateMap<TestComponent, TestComponentDto>();
         CreateMap<ReferenceValue, ReferenceValueDto>();
-        CreateMap<PriceListItem, PriceListItemDto>();
+        CreateMap<PriceListItem, PriceListItemDto>()
+            .ForMember(dest => dest.TestGroupName, opt => opt.Ignore());
     }
 }
