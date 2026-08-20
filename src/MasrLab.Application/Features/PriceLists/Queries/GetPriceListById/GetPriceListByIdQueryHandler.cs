@@ -1,12 +1,11 @@
 using AutoMapper;
 using MediatR;
 using MasrLab.Application.Common.DTOs;
-using MasrLab.Domain.Entities.Settings;
 using MasrLab.Domain.Interfaces;
 
 namespace MasrLab.Application.Features.PriceLists.Queries.GetPriceListById;
 
-public class GetPriceListByIdQueryHandler : IRequestHandler<GetPriceListByIdQuery, PriceListWithItemsDto?>
+public class GetPriceListByIdQueryHandler : IRequestHandler<GetPriceListByIdQuery, PriceListDto?>
 {
     private readonly IPriceListRepository _priceListRepository;
     private readonly IMapper _mapper;
@@ -17,13 +16,13 @@ public class GetPriceListByIdQueryHandler : IRequestHandler<GetPriceListByIdQuer
         _mapper = mapper;
     }
 
-    public async Task<PriceListWithItemsDto?> Handle(GetPriceListByIdQuery request, CancellationToken cancellationToken)
+    public async Task<PriceListDto?> Handle(GetPriceListByIdQuery request, CancellationToken cancellationToken)
     {
         var priceList = await _priceListRepository.GetByIdWithItemsAsync(request.Id, cancellationToken);
 
         if (priceList is null)
             return null;
 
-        return _mapper.Map<PriceListWithItemsDto>(priceList);
+        return _mapper.Map<PriceListDto>(priceList);
     }
 }

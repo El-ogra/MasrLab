@@ -81,11 +81,10 @@ public class AddPriceListItemCommandHandlerTests
         priceListRepository.Setup(x => x.GetByIdWithItemsAsync(1, It.IsAny<CancellationToken>())).ReturnsAsync(list);
 
         var mapper = new Mock<AutoMapper.IMapper>();
-        mapper.Setup(x => x.Map<PriceListWithItemsDto>(list)).Returns(new PriceListWithItemsDto { Id = 1, Name = "Contract", Items = new[] { new PriceListItemDto { Id = 1, TestId = 2, Price = 50m } } });
+        mapper.Setup(x => x.Map<PriceListDto>(list)).Returns(new PriceListDto { Id = 1, Name = "Contract" });
         var read = new GetPriceListByIdQueryHandler(priceListRepository.Object, mapper.Object);
         var dto = await read.Handle(new GetPriceListByIdQuery(1), CancellationToken.None);
 
         Assert.Equal("Contract", dto!.Name);
-        Assert.Single(dto.Items);
     }
 }

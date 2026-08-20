@@ -18,8 +18,8 @@ public class UpdateTestInGroupCommandHandler : IRequestHandler<UpdateTestInGroup
 
     public async Task<Unit> Handle(UpdateTestInGroupCommand request, CancellationToken cancellationToken)
     {
-        var item = await _itemRepository.GetByIdAsync(request.Id, cancellationToken)
-            ?? throw new EntityNotFoundException(nameof(TestGroupItem), request.Id);
+        var item = await _itemRepository.GetByIdAsync(request.TestGroupItemId, cancellationToken)
+            ?? throw new EntityNotFoundException(nameof(TestGroupItem), request.TestGroupItemId);
 
         item.Price = request.Price;
         if (request.DisplayOrder.HasValue)

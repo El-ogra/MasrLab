@@ -14,6 +14,8 @@ public class TestGroupConfiguration : IEntityTypeConfiguration<TestGroup>
 
         builder.Property(e => e.GroupName).HasMaxLength(200).IsRequired();
 
+        builder.Ignore(e => e.TotalGroupPrice);
+
         builder.HasIndex(e => e.GroupName);
         builder.HasIndex(e => e.IsDeleted);
     }

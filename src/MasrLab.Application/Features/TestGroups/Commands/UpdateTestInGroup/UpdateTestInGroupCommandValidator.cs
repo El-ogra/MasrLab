@@ -6,7 +6,7 @@ public class UpdateTestInGroupCommandValidator : AbstractValidator<UpdateTestInG
 {
     public UpdateTestInGroupCommandValidator()
     {
-        RuleFor(x => x.Id).GreaterThan(0);
+        RuleFor(x => x.TestGroupItemId).GreaterThan(0);
         RuleFor(x => x.Price).GreaterThanOrEqualTo(0);
         RuleFor(x => x.DisplayOrder)
             .GreaterThan(0)

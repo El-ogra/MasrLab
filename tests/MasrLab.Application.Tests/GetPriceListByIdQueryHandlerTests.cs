@@ -25,12 +25,12 @@ public class GetPriceListByIdQueryHandlerTests
     public async Task Handle_WhenExists_ReturnsMappedDto()
     {
         var priceList = new PriceList { Id = 5, Name = "Cash", IsDefault = true, PriceListItems = new List<PriceListItem> { new() { Id = 1, TestId = 1, Price = 10m } } };
-        var dto = new PriceListWithItemsDto { Id = 5, Name = "Cash", IsDefault = true, Items = new[] { new PriceListItemDto { Id = 1, TestId = 1, Price = 10m } } };
+        var dto = new PriceListDto { Id = 5, Name = "Cash", IsDefault = true };
         _priceListRepository
             .Setup(r => r.GetByIdWithItemsAsync(5, It.IsAny<CancellationToken>()))
             .ReturnsAsync(priceList);
         _mapper
-            .Setup(m => m.Map<PriceListWithItemsDto>(priceList))
+            .Setup(m => m.Map<PriceListDto>(priceList))
             .Returns(dto);
 
         var result = await CreateHandler().Handle(
@@ -40,7 +40,6 @@ public class GetPriceListByIdQueryHandlerTests
         Assert.Equal(5, result!.Id);
         Assert.Equal("Cash", result.Name);
         Assert.True(result.IsDefault);
-        Assert.Single(result.Items);
     }
 
     [Fact]
