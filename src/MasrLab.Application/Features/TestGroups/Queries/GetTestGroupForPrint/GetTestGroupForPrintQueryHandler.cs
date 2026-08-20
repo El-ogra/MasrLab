@@ -26,11 +26,35 @@ public class GetTestGroupForPrintQueryHandler : IRequestHandler<GetTestGroupForP
         var tests = await _testRepository.GetAllAsync(cancellationToken);
         var testMap = tests.ToDictionary(t => t.Id);
 
+        var categories = group.TestGroupItems
+            .Where(i => testMap.ContainsKey(i.TestId))
+            .GroupBy(i => testMap[i.TestId].Group)
+            .OrderBy(g => g.Key)
+            .Select(g => new TestGroupPrintCategoryDto
+            {
+                ClinicalGroup = g.Key,
+                Items = g.OrderBy(i => i.DisplayOrder)
+                    .Select(i =>
+                    {
+                        var test = testMap[i.TestId];
+                        return new TestGroupPrintItemDto
+                        {
+                            TestId = i.TestId,
+                            TestName = test.Name,
+                            Price = i.Price,
+                            TurnaroundTime = test.TurnaroundTime,
+                            DisplayOrder = i.DisplayOrder
+                        };
+                    }).ToList()
+            }).ToList();
+
         return new TestGroupPrintDto
         {
             Id = group.Id,
             GroupName = group.GroupName,
             TotalGroupPrice = group.TestGroupItems.Sum(i => i.Price),
+            Currency = "L.E.",
+            Categories = categories,
             Items = group.TestGroupItems
                 .OrderBy(i => i.DisplayOrder)
                 .Select(i => new TestGroupItemDto
