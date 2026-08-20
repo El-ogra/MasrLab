@@ -117,13 +117,15 @@ public class TestGroupCommandHandlerTests
     [Fact]
     public async Task DeleteTestGroup_SoftDeletes()
     {
-        var group = new TestGroup { Id = 7, GroupName = "ToDelete" };
-        _groupRepo.Setup(x => x.GetByIdAsync(7, It.IsAny<CancellationToken>())).ReturnsAsync(group);
-        _itemRepo.Setup(x => x.GetByTestGroupIdAsync(7, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new List<TestGroupItem>());
+        var group = new TestGroup
+        {
+            Id = 7, GroupName = "ToDelete",
+            TestGroupItems = new List<TestGroupItem>()
+        };
+        _groupRepo.Setup(x => x.GetByIdWithItemsAsync(7, It.IsAny<CancellationToken>())).ReturnsAsync(group);
 
         var handler = new Features.TestGroups.Commands.DeleteTestGroup.DeleteTestGroupCommandHandler(
-            _groupRepo.Object, _itemRepo.Object, _unitOfWork.Object);
+            _groupRepo.Object, _unitOfWork.Object);
         await handler.Handle(new Features.TestGroups.Commands.DeleteTestGroup.DeleteTestGroupCommand(7), default);
 
         Assert.True(group.IsDeleted);
@@ -133,33 +135,35 @@ public class TestGroupCommandHandlerTests
     [Fact]
     public async Task DeleteTestGroup_CascadeSoftDeletesItems()
     {
-        var group = new TestGroup { Id = 7, GroupName = "ToDelete" };
         var items = new List<TestGroupItem>
         {
             new() { Id = 10, TestGroupId = 7, IsDeleted = false },
             new() { Id = 11, TestGroupId = 7, IsDeleted = false }
         };
-        _groupRepo.Setup(x => x.GetByIdAsync(7, It.IsAny<CancellationToken>())).ReturnsAsync(group);
-        _itemRepo.Setup(x => x.GetByTestGroupIdAsync(7, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(items);
+        var group = new TestGroup
+        {
+            Id = 7, GroupName = "ToDelete",
+            TestGroupItems = items
+        };
+        _groupRepo.Setup(x => x.GetByIdWithItemsAsync(7, It.IsAny<CancellationToken>())).ReturnsAsync(group);
 
         var handler = new Features.TestGroups.Commands.DeleteTestGroup.DeleteTestGroupCommandHandler(
-            _groupRepo.Object, _itemRepo.Object, _unitOfWork.Object);
+            _groupRepo.Object, _unitOfWork.Object);
         await handler.Handle(new Features.TestGroups.Commands.DeleteTestGroup.DeleteTestGroupCommand(7), default);
 
         Assert.True(group.IsDeleted);
         Assert.All(items, i => Assert.True(i.IsDeleted));
-        _itemRepo.Verify(x => x.Update(It.IsAny<TestGroupItem>()), Times.Exactly(2));
+        _groupRepo.Verify(x => x.Update(group), Times.Once);
     }
 
     [Fact]
     public async Task DeleteTestGroup_ThrowsWhenNotFound()
     {
-        _groupRepo.Setup(x => x.GetByIdAsync(99, It.IsAny<CancellationToken>()))
+        _groupRepo.Setup(x => x.GetByIdWithItemsAsync(99, It.IsAny<CancellationToken>()))
             .ReturnsAsync((TestGroup?)null);
 
         var handler = new Features.TestGroups.Commands.DeleteTestGroup.DeleteTestGroupCommandHandler(
-            _groupRepo.Object, _itemRepo.Object, _unitOfWork.Object);
+            _groupRepo.Object, _unitOfWork.Object);
         await Assert.ThrowsAsync<EntityNotFoundException>(() =>
             handler.Handle(new Features.TestGroups.Commands.DeleteTestGroup.DeleteTestGroupCommand(99), default));
     }
