@@ -12,6 +12,11 @@ public record ReferralEntityDto
     public string? Phone { get; init; }
     public string? Fax { get; init; }
     public string? Address { get; init; }
+    public string? City { get; init; }
+    public decimal? Discount { get; init; }
+    public decimal? Commission { get; init; }
     public int? PriceListId { get; init; }
+    public string? PriceListName { get; init; }
+    public bool IsLabToLabPriceList { get; init; }
     public decimal AccountBalance { get; init; }
 }

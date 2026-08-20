@@ -41,9 +41,23 @@ public class ReferralEntityConfiguration : IEntityTypeConfiguration<ReferralEnti
 
         builder.Property(e => e.PriceListId);
 
+        builder.HasOne(e => e.PriceList)
+            .WithMany()
+            .HasForeignKey(e => e.PriceListId)
+            .OnDelete(DeleteBehavior.Restrict);
+
         builder.Property(e => e.AccountBalance)
             .HasColumnType("decimal(18,2)")
             .IsRequired();
+
+        builder.Property(e => e.City)
+            .HasMaxLength(100);
+
+        builder.Property(e => e.Discount)
+            .HasColumnType("decimal(18,2)");
+
+        builder.Property(e => e.Commission)
+            .HasColumnType("decimal(18,2)");
 
         builder.HasIndex(e => e.Name);
         builder.HasIndex(e => e.EntityType);

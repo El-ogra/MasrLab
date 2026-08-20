@@ -14,6 +14,7 @@ public class PriceListConfiguration : IEntityTypeConfiguration<PriceList>
 
         builder.Property(e => e.Name).HasMaxLength(200).IsRequired();
         builder.Property(e => e.IsDefault).IsRequired();
+        builder.Property(e => e.IsLabToLab).IsRequired().HasDefaultValue(false);
 
         // Filtered unique index: only one PriceList can have IsDefault = true at a time.
         // The filter ensures the unique constraint applies only to rows where IsDefault = 1,
@@ -21,6 +22,11 @@ public class PriceListConfiguration : IEntityTypeConfiguration<PriceList>
         builder.HasIndex(e => e.IsDefault)
             .IsUnique()
             .HasFilter("[IsDefault] = 1");
+
+        // Filtered unique index: at most one PriceList can be flagged Lab-to-Lab.
+        builder.HasIndex(e => e.IsLabToLab)
+            .IsUnique()
+            .HasFilter("[IsLabToLab] = 1");
 
         builder.HasIndex(e => e.IsDeleted);
     }
