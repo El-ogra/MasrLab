@@ -21,7 +21,8 @@ public class RemoveTestFromGroupCommandHandler : IRequestHandler<RemoveTestFromG
         var item = await _itemRepository.GetByIdAsync(request.Id, cancellationToken)
             ?? throw new EntityNotFoundException(nameof(TestGroupItem), request.Id);
 
-        _itemRepository.Delete(item);
+        item.IsDeleted = true;
+        _itemRepository.Update(item);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         return Unit.Value;

@@ -301,7 +301,7 @@ public class TestGroupCommandHandlerTests
 
     // --- RemoveTestFromGroup ---
     [Fact]
-    public async Task RemoveTestFromGroup_DeletesItem()
+    public async Task RemoveTestFromGroup_SoftDeletesItem()
     {
         var item = new TestGroupItem { Id = 4 };
         _genericItemRepo.Setup(x => x.GetByIdAsync(4, It.IsAny<CancellationToken>())).ReturnsAsync(item);
@@ -310,7 +310,9 @@ public class TestGroupCommandHandlerTests
             _genericItemRepo.Object, _unitOfWork.Object);
         await handler.Handle(new Features.TestGroups.Commands.RemoveTestFromGroup.RemoveTestFromGroupCommand(4), default);
 
-        _genericItemRepo.Verify(x => x.Delete(item), Times.Once);
+        Assert.True(item.IsDeleted);
+        _genericItemRepo.Verify(x => x.Update(item), Times.Once);
+        _unitOfWork.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
