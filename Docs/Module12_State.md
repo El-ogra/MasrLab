@@ -10,12 +10,12 @@
 - [X] Slice 2 — Add Pipeline Correction (DONE)
 - [X] Slice 3 — Read Side: List, Detail, and OQ-5 Pool (DONE)
 - [X] Slice 4 — Edit Entity (DONE)
-- [ ] Slice 5 — Delete Entity (NOT STARTED)
+- [X] Slice 5 — Delete Entity (DONE)
 - [ ] Slice 6 — Function 5 Uplift (Typed FK + OQ-6 Validation) (NOT STARTED)
 - [ ] Slice 7 — E2E Integration & Regression Gate (NOT STARTED)
 
 ## Current Iteration
-- **Current Slice:** Slice 5
+- **Current Slice:** Slice 6
 - **Attempt Number:** 0
 - **Last Error:** None
 
@@ -24,3 +24,4 @@
 [2026-08-21] [SUCCESS] Slice 2 completed successfully. All 201 Domain + 492 Application tests passed. Per-type conditional validation, handler with IPriceListRepository, existing test updates all green.
 [2026-08-21] [SUCCESS] Slice 3 completed successfully. All 201 Domain + 492 Application tests passed. GetReferralEntities, GetReferralEntityById, GetExternalLabCandidates queries + mapping profile created.
 [2026-08-21] [SUCCESS] Slice 4 completed successfully. All 201 Domain + 492 Application tests passed. UpdateReferralEntityCommand with per-type handler logic and type immutability (OQ-7).
+[2026-08-21] [SUCCESS] Slice 5 completed successfully. All 201 Domain + 492 Application tests passed. DeleteReferralEntityCommand with soft delete (OQ-1).
