@@ -36,6 +36,8 @@ public class Test : BaseEntity
     public string? Tube3 { get; set; }
     public bool SentOutsideLab { get; set; }
     public string? OutsourcedLabName { get; set; }
+    public int? OutsourcedLabReferralEntityId { get; set; }
+    public ReferralEntity? OutsourcedLabReferralEntity { get; set; }
     public decimal? OutsourcedCostPrice { get; set; }
     public decimal? CostPrice { get; set; }
     public string? PatientQuestion { get; set; }

@@ -50,6 +50,7 @@ public class AddTestCommandHandler : IRequestHandler<AddTestCommand, Unit>
             Tube3 = request.Tube3,
             SentOutsideLab = request.SentOutsideLab,
             OutsourcedLabName = request.OutsourcedLabName,
+            OutsourcedLabReferralEntityId = request.SentOutsideLab ? request.OutsourcedLabReferralEntityId : null,
             OutsourcedCostPrice = request.OutsourcedCostPrice,
             PatientQuestion = request.PatientQuestion,
             CostPrice = request.CostPrice

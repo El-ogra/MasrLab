@@ -52,6 +52,7 @@ public class UpdateTestCommandHandler : IRequestHandler<UpdateTestCommand, Unit>
         test.Tube3 = request.Tube3;
         test.SentOutsideLab = request.SentOutsideLab;
         test.OutsourcedLabName = request.OutsourcedLabName;
+        test.OutsourcedLabReferralEntityId = request.SentOutsideLab ? request.OutsourcedLabReferralEntityId : null;
         test.OutsourcedCostPrice = request.OutsourcedCostPrice;
         test.PatientQuestion = request.PatientQuestion;
         test.CostPrice = request.CostPrice;

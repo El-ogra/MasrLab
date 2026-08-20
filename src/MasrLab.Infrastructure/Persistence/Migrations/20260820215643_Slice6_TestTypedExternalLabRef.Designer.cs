@@ -4,6 +4,7 @@ using MasrLab.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace MasrLab.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(MasrLabDbContext))]
-    partial class MasrLabDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260820215643_Slice6_TestTypedExternalLabRef")]
+    partial class Slice6_TestTypedExternalLabRef
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

@@ -35,5 +35,6 @@ public record AddTestCommand(
     string? OutsourcedLabName,
     decimal? OutsourcedCostPrice,
     string? PatientQuestion,
-    decimal? CostPrice = null
+    decimal? CostPrice = null,
+    int? OutsourcedLabReferralEntityId = null
 ) : IRequest<Unit>;

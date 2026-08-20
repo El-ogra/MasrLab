@@ -42,6 +42,7 @@ public class TestConfiguration : IEntityTypeConfiguration<Test>
         builder.Property(e => e.Tube3).HasMaxLength(200);
         builder.Property(e => e.SentOutsideLab).IsRequired();
         builder.Property(e => e.OutsourcedLabName).HasMaxLength(200);
+        builder.Property(e => e.OutsourcedLabReferralEntityId);
         builder.Property(e => e.OutsourcedCostPrice).HasColumnType("decimal(18,2)");
         builder.Property(e => e.CostPrice).HasColumnType("decimal(18,2)");
         builder.Property(e => e.PatientQuestion).HasMaxLength(2000);
@@ -50,6 +51,11 @@ public class TestConfiguration : IEntityTypeConfiguration<Test>
         builder.HasIndex(e => e.Barcode);
         builder.HasIndex(e => e.IsDeleted);
         builder.HasIndex(e => e.ArrangeNo);
+
+        builder.HasOne(e => e.OutsourcedLabReferralEntity)
+            .WithMany()
+            .HasForeignKey(e => e.OutsourcedLabReferralEntityId)
+            .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasMany(e => e.TestComponents)
             .WithOne()
