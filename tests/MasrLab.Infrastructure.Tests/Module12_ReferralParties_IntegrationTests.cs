@@ -122,13 +122,14 @@ public class Module12_ReferralParties_IntegrationTests
             await using (var afterDeleteCtx = LocalDbTestDatabase.CreateContext(db))
             {
                 var remaining = await afterDeleteCtx.ReferralEntities.ToListAsync();
-                Assert.Single(remaining);
-                Assert.Equal("Hospital XYZ", remaining[0].Name);
+                Assert.Equal(2, remaining.Count);
+                Assert.Contains(remaining, e => e.Name == "Hospital XYZ");
+                Assert.Contains(remaining, e => e.Name == "External Lab ABC");
 
                 var withDeleted = await afterDeleteCtx.ReferralEntities
                     .IgnoreQueryFilters()
                     .ToListAsync();
-                Assert.Equal(2, withDeleted.Count);
+                Assert.Equal(3, withDeleted.Count);
             }
         }
         finally
