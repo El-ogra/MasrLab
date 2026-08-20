@@ -29,4 +29,12 @@ public class UpdatePriceListNameCommandValidatorTests
         var result = _validator.Validate(command);
         Assert.True(result.IsValid);
     }
+
+    [Fact]
+    public void Validate_WhenNameExceeds200Chars_ShouldFail()
+    {
+        var command = new UpdatePriceListNameCommand(1, new string('A', 201));
+        var result = _validator.Validate(command);
+        Assert.False(result.IsValid);
+    }
 }

@@ -9,7 +9,7 @@ namespace MasrLab.Application.Tests;
 public class DeletePriceListItemCommandHandlerTests
 {
     [Fact]
-    public async Task Handle_HardDeletesAndSaves()
+    public async Task Handle_SoftDeletesAndSaves()
     {
         var item = new PriceListItem { Id = 3 };
         var repository = new Mock<IRepository<PriceListItem>>();
@@ -19,7 +19,8 @@ public class DeletePriceListItemCommandHandlerTests
         await new DeletePriceListItemCommandHandler(repository.Object, unitOfWork.Object)
             .Handle(new DeletePriceListItemCommand(3), CancellationToken.None);
 
-        repository.Verify(x => x.Delete(item), Times.Once);
+        Assert.True(item.IsDeleted);
+        repository.Verify(x => x.Update(item), Times.Once);
         unitOfWork.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
     }
 

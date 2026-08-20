@@ -10,6 +10,7 @@ public class UpdatePriceListNameCommandValidator : AbstractValidator<UpdatePrice
             .GreaterThan(0);
 
         RuleFor(x => x.Name)
-            .NotEmpty();
+            .NotEmpty()
+            .MaximumLength(200);
     }
 }

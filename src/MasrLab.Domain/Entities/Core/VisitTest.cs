@@ -30,7 +30,7 @@ public class VisitTest : BaseEntity
     public int? VisitCommercialPackageId { get; set; }
 
     public int? SourceTestGroupId { get; set; }
-    public string TestGroupNameSnapshot { get; set; } = string.Empty;
+    public string? TestGroupNameSnapshot { get; set; }
 
     public ICollection<VisitTestResultItem> ResultItems { get; set; } = new List<VisitTestResultItem>();
 

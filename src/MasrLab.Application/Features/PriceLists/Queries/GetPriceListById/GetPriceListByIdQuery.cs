@@ -3,4 +3,4 @@ using MediatR;
 
 namespace MasrLab.Application.Features.PriceLists.Queries.GetPriceListById;
 
-public record GetPriceListByIdQuery(int Id) : IRequest<PriceListDto?>;
+public record GetPriceListByIdQuery(int Id) : IRequest<PriceListWithItemsDto?>;

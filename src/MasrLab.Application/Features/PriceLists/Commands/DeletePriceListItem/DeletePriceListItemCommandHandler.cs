@@ -24,7 +24,8 @@ public class DeletePriceListItemCommandHandler : IRequestHandler<DeletePriceList
         if (item is null)
             throw new EntityNotFoundException(nameof(PriceListItem), request.PriceListItemId);
 
-        _itemRepository.Delete(item);
+        item.IsDeleted = true;
+        _itemRepository.Update(item);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
         return Unit.Value;
     }

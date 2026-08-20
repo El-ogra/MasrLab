@@ -28,6 +28,7 @@ public class VisitTestConfiguration : IEntityTypeConfiguration<VisitTest>
         builder.HasIndex(e => e.PatientVisitId);
         builder.HasIndex(e => e.TestId);
         builder.HasIndex(e => e.IsDeleted);
+        builder.HasIndex(e => e.SourceTestGroupId);
 
         builder.HasIndex(e => new { e.PatientVisitId, e.TestId })
             .IsUnique()

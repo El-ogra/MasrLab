@@ -49,7 +49,7 @@ public class DeletePriceListCommandHandlerTests
     }
 
     [Fact]
-    public async Task Handle_WhenListIsDefault_StillDeletesSuccessfully()
+    public async Task Handle_WhenListIsDefault_ClearsDefaultBeforeSoftDelete()
     {
         var priceList = new PriceList { Id = 4, Name = "Default", IsDefault = true, IsDeleted = false };
         _repository
@@ -59,7 +59,9 @@ public class DeletePriceListCommandHandlerTests
         await CreateHandler().Handle(
             new DeletePriceListCommand(4), CancellationToken.None);
 
+        Assert.False(priceList.IsDefault);
         Assert.True(priceList.IsDeleted);
         _repository.Verify(r => r.Update(priceList), Times.Once);
+        _unitOfWork.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
     }
 }

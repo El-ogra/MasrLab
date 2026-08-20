@@ -17,7 +17,7 @@ public class PriceListItemConfiguration : IEntityTypeConfiguration<PriceListItem
         builder.Property(e => e.TestId).IsRequired();
         builder.Property(e => e.Price).HasColumnType("decimal(18,2)").IsRequired();
 
-        builder.HasIndex(e => new { e.PriceListId, e.TestId }).IsUnique();
+        builder.HasIndex(e => new { e.PriceListId, e.TestId }).IsUnique().HasFilter("[IsDeleted] = 0");
         builder.HasIndex(e => e.PriceListId);
         builder.HasIndex(e => e.TestId);
         builder.HasIndex(e => e.IsDeleted);

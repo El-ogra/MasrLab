@@ -70,18 +70,22 @@ public class AddPriceListItemCommandHandlerTests
     [Fact]
     public async Task Slice1_GetPriceListByIdQuery_RemainsAvailableAfterItemAddPath()
     {
-        var list = new PriceList { Id = 1, Name = "Contract" };
+        var list = new PriceList { Id = 1, Name = "Contract", PriceListItems = new List<PriceListItem> { new() { Id = 1, TestId = 2, Price = 50m } } };
         _priceLists.Setup(x => x.GetByIdAsync(1, It.IsAny<CancellationToken>())).ReturnsAsync(list);
         _tests.Setup(x => x.GetByIdAsync(2, It.IsAny<CancellationToken>())).ReturnsAsync(new Test { Id = 2 });
         _items.Setup(x => x.GetByPriceListAndTestAsync(1, 2, It.IsAny<CancellationToken>())).ReturnsAsync((PriceListItem?)null);
         _items.Setup(x => x.AddAsync(It.IsAny<PriceListItem>(), It.IsAny<CancellationToken>())).Returns(Task.CompletedTask);
         await CreateHandler().Handle(new AddPriceListItemCommand(1, 2, 50m), CancellationToken.None);
 
+        var priceListRepository = new Mock<IPriceListRepository>();
+        priceListRepository.Setup(x => x.GetByIdWithItemsAsync(1, It.IsAny<CancellationToken>())).ReturnsAsync(list);
+
         var mapper = new Mock<AutoMapper.IMapper>();
-        mapper.Setup(x => x.Map<PriceListDto>(list)).Returns(new PriceListDto { Id = 1, Name = "Contract" });
-        var read = new GetPriceListByIdQueryHandler(_priceLists.Object, mapper.Object);
+        mapper.Setup(x => x.Map<PriceListWithItemsDto>(list)).Returns(new PriceListWithItemsDto { Id = 1, Name = "Contract", Items = new[] { new PriceListItemDto { Id = 1, TestId = 2, Price = 50m } } });
+        var read = new GetPriceListByIdQueryHandler(priceListRepository.Object, mapper.Object);
         var dto = await read.Handle(new GetPriceListByIdQuery(1), CancellationToken.None);
 
         Assert.Equal("Contract", dto!.Name);
+        Assert.Single(dto.Items);
     }
 }

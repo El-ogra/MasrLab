@@ -1,4 +1,5 @@
 using MasrLab.Domain.Entities.Core;
+using MasrLab.Domain.Exceptions;
 using MasrLab.Domain.Interfaces;
 using MediatR;
 
@@ -17,6 +18,11 @@ public class AddTestGroupCommandHandler : IRequestHandler<AddTestGroupCommand, i
 
     public async Task<int> Handle(AddTestGroupCommand request, CancellationToken cancellationToken)
     {
+        if (await _repository.NameExistsAsync(request.GroupName, null, cancellationToken))
+        {
+            throw new BusinessRuleViolationException("A group with this name already exists.");
+        }
+
         var group = new TestGroup
         {
             GroupName = request.GroupName

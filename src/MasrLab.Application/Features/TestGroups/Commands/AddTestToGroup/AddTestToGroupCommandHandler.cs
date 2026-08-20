@@ -9,15 +9,18 @@ public class AddTestToGroupCommandHandler : IRequestHandler<AddTestToGroupComman
 {
     private readonly ITestGroupRepository _groupRepository;
     private readonly ITestGroupItemRepository _itemRepository;
+    private readonly IRepository<Test> _testRepository;
     private readonly IUnitOfWork _unitOfWork;
 
     public AddTestToGroupCommandHandler(
         ITestGroupRepository groupRepository,
         ITestGroupItemRepository itemRepository,
+        IRepository<Test> testRepository,
         IUnitOfWork unitOfWork)
     {
         _groupRepository = groupRepository;
         _itemRepository = itemRepository;
+        _testRepository = testRepository;
         _unitOfWork = unitOfWork;
     }
 
@@ -26,7 +29,16 @@ public class AddTestToGroupCommandHandler : IRequestHandler<AddTestToGroupComman
         var group = await _groupRepository.GetByIdAsync(request.TestGroupId, cancellationToken)
             ?? throw new EntityNotFoundException(nameof(TestGroup), request.TestGroupId);
 
+        var test = await _testRepository.GetByIdAsync(request.TestId, cancellationToken)
+            ?? throw new EntityNotFoundException(nameof(Test), request.TestId);
+
         var existingItems = await _itemRepository.GetByTestGroupIdAsync(request.TestGroupId, cancellationToken);
+
+        if (existingItems.Any(i => i.TestId == request.TestId))
+        {
+            throw new BusinessRuleViolationException("A test with this ID already exists in the group.");
+        }
+
         var nextOrder = existingItems.Count > 0 ? existingItems.Max(i => i.DisplayOrder) + 1 : 1;
 
         var item = new TestGroupItem

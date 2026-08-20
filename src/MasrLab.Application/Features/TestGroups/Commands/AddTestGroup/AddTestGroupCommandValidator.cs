@@ -6,6 +6,8 @@ public class AddTestGroupCommandValidator : AbstractValidator<AddTestGroupComman
 {
     public AddTestGroupCommandValidator()
     {
-        RuleFor(x => x.GroupName).NotEmpty();
+        RuleFor(x => x.GroupName)
+            .NotEmpty()
+            .MaximumLength(200);
     }
 }

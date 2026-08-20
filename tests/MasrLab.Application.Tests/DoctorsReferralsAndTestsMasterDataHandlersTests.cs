@@ -81,12 +81,12 @@ public class DoctorsReferralsAndTestsMasterDataHandlersTests
     [Fact]
     public async Task GetPriceListForPrint_returns_list_and_mapped_items()
     {
-        var repo = new Mock<IRepository<PriceList>>();
+        var repo = new Mock<IPriceListRepository>();
         var testRepo = new Mock<IRepository<CoreTest>>();
         var mapper = new Mock<IMapper>();
         var item = new PriceListItem { Id = 5, TestId = 2, Price = 12m };
         var test = new CoreTest { Id = 2, Name = "CBC", Group = "Hematology" };
-        repo.Setup(x => x.GetByIdAsync(1, It.IsAny<CancellationToken>()))
+        repo.Setup(x => x.GetByIdWithItemsAsync(1, It.IsAny<CancellationToken>()))
             .ReturnsAsync(new PriceList { Id = 1, Name = "Cash", PriceListItems = new List<PriceListItem> { item } });
         testRepo.Setup(x => x.GetAllAsync(It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<CoreTest> { test });
@@ -104,8 +104,8 @@ public class DoctorsReferralsAndTestsMasterDataHandlersTests
     [Fact]
     public async Task GetPriceListForPrint_throws_for_missing_list()
     {
-        var repo = new Mock<IRepository<PriceList>>();
-        repo.Setup(x => x.GetByIdAsync(1, It.IsAny<CancellationToken>()))
+        var repo = new Mock<IPriceListRepository>();
+        repo.Setup(x => x.GetByIdWithItemsAsync(1, It.IsAny<CancellationToken>()))
             .ReturnsAsync((PriceList?)null);
         await Assert.ThrowsAsync<EntityNotFoundException>(
             () => new GetPriceListForPrintQueryHandler(

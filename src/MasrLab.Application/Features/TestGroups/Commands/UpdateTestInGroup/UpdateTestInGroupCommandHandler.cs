@@ -22,6 +22,10 @@ public class UpdateTestInGroupCommandHandler : IRequestHandler<UpdateTestInGroup
             ?? throw new EntityNotFoundException(nameof(TestGroupItem), request.Id);
 
         item.Price = request.Price;
+        if (request.DisplayOrder.HasValue)
+        {
+            item.DisplayOrder = request.DisplayOrder.Value;
+        }
         _itemRepository.Update(item);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 

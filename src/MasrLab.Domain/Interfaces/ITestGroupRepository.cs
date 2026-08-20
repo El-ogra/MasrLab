@@ -6,4 +6,5 @@ public interface ITestGroupRepository : IRepository<TestGroup>
 {
     Task<IReadOnlyList<TestGroup>> GetAllWithItemsAsync(CancellationToken cancellationToken = default);
     Task<TestGroup?> GetByIdWithItemsAsync(int id, CancellationToken cancellationToken = default);
+    Task<bool> NameExistsAsync(string name, int? excludeId, CancellationToken cancellationToken = default);
 }

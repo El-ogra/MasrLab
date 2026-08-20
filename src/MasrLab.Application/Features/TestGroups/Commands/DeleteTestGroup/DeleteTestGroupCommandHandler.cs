@@ -8,11 +8,16 @@ namespace MasrLab.Application.Features.TestGroups.Commands.DeleteTestGroup;
 public class DeleteTestGroupCommandHandler : IRequestHandler<DeleteTestGroupCommand, Unit>
 {
     private readonly ITestGroupRepository _repository;
+    private readonly ITestGroupItemRepository _itemRepository;
     private readonly IUnitOfWork _unitOfWork;
 
-    public DeleteTestGroupCommandHandler(ITestGroupRepository repository, IUnitOfWork unitOfWork)
+    public DeleteTestGroupCommandHandler(
+        ITestGroupRepository repository,
+        ITestGroupItemRepository itemRepository,
+        IUnitOfWork unitOfWork)
     {
         _repository = repository;
+        _itemRepository = itemRepository;
         _unitOfWork = unitOfWork;
     }
 
@@ -22,6 +27,14 @@ public class DeleteTestGroupCommandHandler : IRequestHandler<DeleteTestGroupComm
             ?? throw new EntityNotFoundException(nameof(TestGroup), request.Id);
 
         group.IsDeleted = true;
+
+        var items = await _itemRepository.GetByTestGroupIdAsync(request.Id, cancellationToken);
+        foreach (var item in items)
+        {
+            item.IsDeleted = true;
+            _itemRepository.Update(item);
+        }
+
         _repository.Update(group);
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 

@@ -193,6 +193,6 @@ public class Slice8SelectionGroupPricingTests
         var vt = Assert.Single(visit.VisitTests);
         Assert.Equal(150m, vt.Price);
         Assert.Null(vt.SourceTestGroupId);
-        Assert.Equal(string.Empty, vt.TestGroupNameSnapshot);
+        Assert.Null(vt.TestGroupNameSnapshot);
     }
 }

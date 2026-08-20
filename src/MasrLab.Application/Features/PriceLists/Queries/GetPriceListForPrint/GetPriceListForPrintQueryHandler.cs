@@ -10,23 +10,23 @@ namespace MasrLab.Application.Features.PriceLists.Queries.GetPriceListForPrint;
 
 public class GetPriceListForPrintQueryHandler : IRequestHandler<GetPriceListForPrintQuery, PriceListPrintDto?>
 {
-    private readonly IRepository<PriceList> _repository;
+    private readonly IPriceListRepository _priceListRepository;
     private readonly IRepository<Test> _testRepository;
     private readonly IMapper _mapper;
 
     public GetPriceListForPrintQueryHandler(
-        IRepository<PriceList> repository,
+        IPriceListRepository priceListRepository,
         IRepository<Test> testRepository,
         IMapper mapper)
     {
-        _repository = repository;
+        _priceListRepository = priceListRepository;
         _testRepository = testRepository;
         _mapper = mapper;
     }
 
     public async Task<PriceListPrintDto?> Handle(GetPriceListForPrintQuery request, CancellationToken cancellationToken)
     {
-        var priceList = await _repository.GetByIdAsync(request.PriceListId, cancellationToken);
+        var priceList = await _priceListRepository.GetByIdWithItemsAsync(request.PriceListId, cancellationToken);
         if (priceList is null)
             throw new EntityNotFoundException(nameof(PriceList), request.PriceListId);
 

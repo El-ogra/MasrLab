@@ -15,4 +15,12 @@ public class PriceListRepository : GenericRepository<PriceList>, IPriceListRepos
         return await _context.PriceLists
             .FirstOrDefaultAsync(p => p.IsDefault, cancellationToken);
     }
+
+    public async Task<PriceList?> GetByIdWithItemsAsync(int id, CancellationToken cancellationToken = default)
+    {
+        return await _context.PriceLists
+            .AsNoTracking()
+            .Include(p => p.PriceListItems)
+            .FirstOrDefaultAsync(p => p.Id == id, cancellationToken);
+    }
 }

@@ -7,6 +7,8 @@ public class RenameTestGroupCommandValidator : AbstractValidator<RenameTestGroup
     public RenameTestGroupCommandValidator()
     {
         RuleFor(x => x.Id).GreaterThan(0);
-        RuleFor(x => x.GroupName).NotEmpty();
+        RuleFor(x => x.GroupName)
+            .NotEmpty()
+            .MaximumLength(200);
     }
 }

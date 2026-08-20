@@ -21,6 +21,11 @@ public class RenameTestGroupCommandHandler : IRequestHandler<RenameTestGroupComm
         var group = await _repository.GetByIdAsync(request.Id, cancellationToken)
             ?? throw new EntityNotFoundException(nameof(TestGroup), request.Id);
 
+        if (await _repository.NameExistsAsync(request.GroupName, request.Id, cancellationToken))
+        {
+            throw new BusinessRuleViolationException("A group with this name already exists.");
+        }
+
         group.GroupName = request.GroupName;
         _repository.Update(group);
         await _unitOfWork.SaveChangesAsync(cancellationToken);

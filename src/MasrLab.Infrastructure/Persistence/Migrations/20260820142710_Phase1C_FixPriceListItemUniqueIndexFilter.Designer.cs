@@ -4,6 +4,7 @@ using MasrLab.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace MasrLab.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(MasrLabDbContext))]
-    partial class MasrLabDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260820142710_Phase1C_FixPriceListItemUniqueIndexFilter")]
+    partial class Phase1C_FixPriceListItemUniqueIndexFilter
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -1578,6 +1581,7 @@ namespace MasrLab.Infrastructure.Persistence.Migrations
                         .HasColumnType("int");
 
                     b.Property<string>("TestGroupNameSnapshot")
+                        .IsRequired()
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
@@ -1605,8 +1609,6 @@ namespace MasrLab.Infrastructure.Persistence.Migrations
                     b.HasIndex("PatientVisitId");
 
                     b.HasIndex("ReceiptId");
-
-                    b.HasIndex("SourceTestGroupId");
 
                     b.HasIndex("TestId");
 

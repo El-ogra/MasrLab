@@ -9,28 +9,28 @@ namespace MasrLab.Application.Tests;
 
 public class GetPriceListByIdQueryHandlerTests
 {
-    private readonly Mock<IRepository<PriceList>> _repository;
+    private readonly Mock<IPriceListRepository> _priceListRepository;
     private readonly Mock<IMapper> _mapper;
 
     public GetPriceListByIdQueryHandlerTests()
     {
-        _repository = new Mock<IRepository<PriceList>>();
+        _priceListRepository = new Mock<IPriceListRepository>();
         _mapper = new Mock<IMapper>();
     }
 
     private GetPriceListByIdQueryHandler CreateHandler()
-        => new(_repository.Object, _mapper.Object);
+        => new(_priceListRepository.Object, _mapper.Object);
 
     [Fact]
     public async Task Handle_WhenExists_ReturnsMappedDto()
     {
-        var priceList = new PriceList { Id = 5, Name = "Cash" };
-        var dto = new PriceListDto { Id = 5, Name = "Cash" };
-        _repository
-            .Setup(r => r.GetByIdAsync(5, It.IsAny<CancellationToken>()))
+        var priceList = new PriceList { Id = 5, Name = "Cash", IsDefault = true, PriceListItems = new List<PriceListItem> { new() { Id = 1, TestId = 1, Price = 10m } } };
+        var dto = new PriceListWithItemsDto { Id = 5, Name = "Cash", IsDefault = true, Items = new[] { new PriceListItemDto { Id = 1, TestId = 1, Price = 10m } } };
+        _priceListRepository
+            .Setup(r => r.GetByIdWithItemsAsync(5, It.IsAny<CancellationToken>()))
             .ReturnsAsync(priceList);
         _mapper
-            .Setup(m => m.Map<PriceListDto>(priceList))
+            .Setup(m => m.Map<PriceListWithItemsDto>(priceList))
             .Returns(dto);
 
         var result = await CreateHandler().Handle(
@@ -39,13 +39,15 @@ public class GetPriceListByIdQueryHandlerTests
         Assert.NotNull(result);
         Assert.Equal(5, result!.Id);
         Assert.Equal("Cash", result.Name);
+        Assert.True(result.IsDefault);
+        Assert.Single(result.Items);
     }
 
     [Fact]
     public async Task Handle_WhenNotFound_ReturnsNull()
     {
-        _repository
-            .Setup(r => r.GetByIdAsync(99, It.IsAny<CancellationToken>()))
+        _priceListRepository
+            .Setup(r => r.GetByIdWithItemsAsync(99, It.IsAny<CancellationToken>()))
             .ReturnsAsync((PriceList?)null);
 
         var result = await CreateHandler().Handle(

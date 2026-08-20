@@ -21,6 +21,11 @@ public class DeletePriceListCommandHandler : IRequestHandler<DeletePriceListComm
         var priceList = await _repository.GetByIdAsync(request.PriceListId, cancellationToken)
             ?? throw new EntityNotFoundException(nameof(PriceList), request.PriceListId);
 
+        if (priceList.IsDefault)
+        {
+            priceList.IsDefault = false;
+        }
+
         priceList.IsDeleted = true;
         _repository.Update(priceList);
         await _unitOfWork.SaveChangesAsync(cancellationToken);

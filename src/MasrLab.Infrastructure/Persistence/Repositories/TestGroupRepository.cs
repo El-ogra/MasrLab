@@ -25,4 +25,10 @@ public class TestGroupRepository : GenericRepository<TestGroup>, ITestGroupRepos
             .Include(g => g.TestGroupItems)
             .FirstOrDefaultAsync(g => g.Id == id, cancellationToken);
     }
+
+    public async Task<bool> NameExistsAsync(string name, int? excludeId, CancellationToken cancellationToken = default)
+    {
+        return await _context.TestGroups
+            .AnyAsync(g => g.GroupName == name && !g.IsDeleted && (!excludeId.HasValue || g.Id != excludeId.Value), cancellationToken);
+    }
 }

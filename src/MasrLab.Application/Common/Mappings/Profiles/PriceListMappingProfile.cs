@@ -9,5 +9,9 @@ public class PriceListMappingProfile : Profile
     public PriceListMappingProfile()
     {
         CreateMap<PriceList, PriceListDto>();
+
+        CreateMap<PriceList, PriceListWithItemsDto>()
+            .ForMember(dest => dest.Items,
+                opt => opt.MapFrom(src => src.PriceListItems));
     }
 }

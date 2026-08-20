@@ -78,10 +78,42 @@ public class TestGroupValidatorTests
     }
 
     [Fact]
+    public void UpdateTestInGroup_ZeroDisplayOrder_Fails()
+    {
+        var v = new UpdateTestInGroupCommandValidator();
+        var result = v.Validate(new UpdateTestInGroupCommand(1, 10m, DisplayOrder: 0));
+        Assert.False(result.IsValid);
+    }
+
+    [Fact]
+    public void UpdateTestInGroup_NullDisplayOrder_Passes()
+    {
+        var v = new UpdateTestInGroupCommandValidator();
+        var result = v.Validate(new UpdateTestInGroupCommand(1, 10m, DisplayOrder: null));
+        Assert.True(result.IsValid);
+    }
+
+    [Fact]
     public void RemoveTestFromGroup_ZeroId_Fails()
     {
         var v = new RemoveTestFromGroupCommandValidator();
         var result = v.Validate(new RemoveTestFromGroupCommand(0));
+        Assert.False(result.IsValid);
+    }
+
+    [Fact]
+    public void AddTestGroup_NameExceeding200Chars_Fails()
+    {
+        var v = new AddTestGroupCommandValidator();
+        var result = v.Validate(new AddTestGroupCommand(new string('A', 201)));
+        Assert.False(result.IsValid);
+    }
+
+    [Fact]
+    public void RenameTestGroup_NameExceeding200Chars_Fails()
+    {
+        var v = new RenameTestGroupCommandValidator();
+        var result = v.Validate(new RenameTestGroupCommand(1, new string('A', 201)));
         Assert.False(result.IsValid);
     }
 }

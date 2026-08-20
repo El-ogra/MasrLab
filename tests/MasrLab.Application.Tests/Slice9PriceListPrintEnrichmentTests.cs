@@ -15,7 +15,7 @@ public class Slice9PriceListPrintEnrichmentTests
     [Fact]
     public async Task RPR01_GroupsTestsByClinicalCategory_ViaTestGroupName()
     {
-        var repo = new Mock<IRepository<PriceList>>();
+        var repo = new Mock<IPriceListRepository>();
         var testRepo = new Mock<IRepository<CoreTest>>();
         var mapper = new Mock<IMapper>();
 
@@ -26,7 +26,7 @@ public class Slice9PriceListPrintEnrichmentTests
             new() { Id = 3, TestId = 30, Price = 10m }
         };
         var list = new PriceList { Id = 1, Name = "Real Lab", PriceListItems = items };
-        repo.Setup(x => x.GetByIdAsync(1, It.IsAny<CancellationToken>())).ReturnsAsync(list);
+        repo.Setup(x => x.GetByIdWithItemsAsync(1, It.IsAny<CancellationToken>())).ReturnsAsync(list);
 
         var tests = new List<CoreTest>
         {
@@ -55,12 +55,12 @@ public class Slice9PriceListPrintEnrichmentTests
     [Fact]
     public async Task RPR02_PriceIsDecimal_FormattedWithLESuffixByPresentation()
     {
-        var repo = new Mock<IRepository<PriceList>>();
+        var repo = new Mock<IPriceListRepository>();
         var testRepo = new Mock<IRepository<CoreTest>>();
         var mapper = new Mock<IMapper>();
 
         var item = new PriceListItem { Id = 1, TestId = 10, Price = 50m };
-        repo.Setup(x => x.GetByIdAsync(1, It.IsAny<CancellationToken>()))
+        repo.Setup(x => x.GetByIdWithItemsAsync(1, It.IsAny<CancellationToken>()))
             .ReturnsAsync(new PriceList { Id = 1, Name = "Real Lab", PriceListItems = new List<PriceListItem> { item } });
         testRepo.Setup(x => x.GetAllAsync(It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<CoreTest> { new() { Id = 10, Group = "Blood" } });
@@ -77,12 +77,12 @@ public class Slice9PriceListPrintEnrichmentTests
     [Fact]
     public async Task ItemWithUnknownTestId_GetsEmptyTestGroupName()
     {
-        var repo = new Mock<IRepository<PriceList>>();
+        var repo = new Mock<IPriceListRepository>();
         var testRepo = new Mock<IRepository<CoreTest>>();
         var mapper = new Mock<IMapper>();
 
         var item = new PriceListItem { Id = 1, TestId = 999, Price = 30m };
-        repo.Setup(x => x.GetByIdAsync(1, It.IsAny<CancellationToken>()))
+        repo.Setup(x => x.GetByIdWithItemsAsync(1, It.IsAny<CancellationToken>()))
             .ReturnsAsync(new PriceList { Id = 1, Name = "List", PriceListItems = new List<PriceListItem> { item } });
         testRepo.Setup(x => x.GetAllAsync(It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<CoreTest>());
@@ -98,11 +98,11 @@ public class Slice9PriceListPrintEnrichmentTests
     [Fact]
     public async Task EmptyPriceList_ReturnsEmptyItems()
     {
-        var repo = new Mock<IRepository<PriceList>>();
+        var repo = new Mock<IPriceListRepository>();
         var testRepo = new Mock<IRepository<CoreTest>>();
         var mapper = new Mock<IMapper>();
 
-        repo.Setup(x => x.GetByIdAsync(1, It.IsAny<CancellationToken>()))
+        repo.Setup(x => x.GetByIdWithItemsAsync(1, It.IsAny<CancellationToken>()))
             .ReturnsAsync(new PriceList { Id = 1, Name = "Empty", PriceListItems = new List<PriceListItem>() });
         testRepo.Setup(x => x.GetAllAsync(It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<CoreTest>());
