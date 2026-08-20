@@ -276,6 +276,22 @@ public class TestsMasterDataMappingProfileTests
         Assert.Equal(5, dto.TestId);
         Assert.Equal(250m, dto.Price);
     }
+
+    [Fact]
+    public void Map_PriceList_ToPriceListDto_MapsIdAndName()
+    {
+        var priceList = new PriceList
+        {
+            Id = 7,
+            Name = "Contract A",
+            IsDefault = true
+        };
+
+        var dto = _mapper.Map<PriceListDto>(priceList);
+
+        Assert.Equal(7, dto.Id);
+        Assert.Equal("Contract A", dto.Name);
+    }
 }
 
 public class VisitMappingProfileTests
