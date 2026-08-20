@@ -43,10 +43,33 @@ public class GetPriceListForPrintQueryHandler : IRequestHandler<GetPriceListForP
             return dto;
         }).ToList() ?? new List<PriceListItemDto>();
 
+        var categories = priceList.PriceListItems?
+            .Where(i => testMap.ContainsKey(i.TestId))
+            .GroupBy(i => testMap[i.TestId].Group)
+            .OrderBy(g => g.Key)
+            .Select(g => new PriceListPrintCategoryDto
+            {
+                ClinicalGroup = g.Key,
+                Items = g.Select(i =>
+                {
+                    var test = testMap[i.TestId];
+                    return new PriceListPrintItemDto
+                    {
+                        TestId = i.TestId,
+                        TestName = test.Name,
+                        Price = i.Price,
+                        TurnaroundTime = test.TurnaroundTime,
+                        CollectionNotes = test.SampleType
+                    };
+                }).ToList()
+            }).ToList() ?? new List<PriceListPrintCategoryDto>();
+
         return new PriceListPrintDto
         {
             Id = priceList.Id,
             Name = priceList.Name,
+            Currency = "L.E.",
+            Categories = categories,
             Items = items
         };
     }
