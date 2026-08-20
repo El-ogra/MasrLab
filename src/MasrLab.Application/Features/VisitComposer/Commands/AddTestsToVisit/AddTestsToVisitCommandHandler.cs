@@ -111,6 +111,7 @@ public class AddTestsToVisitCommandHandler : IRequestHandler<AddTestsToVisitComm
                 test, visit.Id, price, isOutsourced: false);
 
             visit.AddVisitTest(visitTest);
+            visit.ExtendPromisedDelivery(test.TestTimeDays);
             newVisitTests.Add(visitTest);
 
             var sample = Sample.Create(visit.Id, testId);

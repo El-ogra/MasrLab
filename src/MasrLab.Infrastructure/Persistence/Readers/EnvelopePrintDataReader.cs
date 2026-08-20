@@ -11,7 +11,7 @@ public sealed class EnvelopePrintDataReader(MasrLabDbContext context) : IEnvelop
         var data = await (from visit in context.PatientVisits.AsNoTracking()
                           join patient in context.Patients.AsNoTracking() on visit.PatientId equals patient.Id
                           where visit.Id == patientVisitId
-                          select new { patient.Name, PatientCode = patient.LabId, LaboratoryNumber = visit.LabId, visit.Id, visit.VisitDate })
+                          select new { patient.Name, PatientCode = patient.LabId, LaboratoryNumber = visit.LabId, visit.Id, visit.VisitDate, visit.PromisedDeliveryAt })
             .SingleOrDefaultAsync(ct);
         if (data is null)
             return null;
@@ -25,7 +25,7 @@ public sealed class EnvelopePrintDataReader(MasrLabDbContext context) : IEnvelop
         return new EnvelopePrintDto
         {
             PatientName = data.Name, PatientCode = data.PatientCode, LaboratoryNumber = data.LaboratoryNumber,
-            VisitNumber = data.Id, DeliveryDate = data.VisitDate, DeliveryTicketNumber = $"DLV-{data.Id:D6}",
+            VisitNumber = data.Id, DeliveryDate = data.PromisedDeliveryAt ?? data.VisitDate, DeliveryTicketNumber = $"DLV-{data.Id:D6}",
             BarcodeSettings = new EnvelopeBarcodeSettingsDto
             {
                 UseBarcode = settingValues.TryGetValue("Envelope_UseBarcode", out var enabled) && bool.TryParse(enabled, out var useBarcode) && useBarcode,

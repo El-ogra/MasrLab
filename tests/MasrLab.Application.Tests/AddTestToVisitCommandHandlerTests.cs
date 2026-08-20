@@ -71,7 +71,7 @@ public class AddTestToVisitCommandHandlerTests
             .ReturnsAsync(price);
     }
 
-    private Test SetupTest(int testId, string name = "Test1", int componentCount = 1)
+    private Test SetupTest(int testId, string name = "Test1", int componentCount = 1, int testTimeDays = 0)
     {
         var test = new Test
         {
@@ -80,6 +80,7 @@ public class AddTestToVisitCommandHandlerTests
             ReportName = name + " Report",
             ReceiptName = name + " Receipt",
             Price = 100m,
+            TestTimeDays = testTimeDays,
             IsDeleted = false
         };
         for (int i = 0; i < componentCount; i++)
@@ -103,15 +104,16 @@ public class AddTestToVisitCommandHandlerTests
     [Fact]
     public async Task Handle_WithDefaultPriceList_AddsTestAndCreatesSample()
     {
-        SetupVisit();
+        var visit = SetupVisit();
         SetupDefaultPriceList(priceListId: 10);
         SetupPrice(testId: 5, priceListId: 10, price: 150m);
-        SetupTest(testId: 5);
+        SetupTest(testId: 5, testTimeDays: 3);
 
         await CreateHandler().Handle(
             new AddTestToVisitCommand(1, new[] { 5 }, null, false),
             CancellationToken.None);
 
+        Assert.Equal(visit.VisitDate.AddDays(3), visit.PromisedDeliveryAt);
         _sampleRepository.Verify(r => r.AddAsync(
             It.Is<Sample>(s => s.PatientVisitId == 1 && s.TestId == 5),
             It.IsAny<CancellationToken>()), Times.Once);
@@ -198,17 +200,18 @@ public class AddTestToVisitCommandHandlerTests
     [Fact]
     public async Task Handle_WithMultipleTests_AddsAllTestsAndCreatesSamples()
     {
-        SetupVisit();
+        var visit = SetupVisit();
         SetupDefaultPriceList(priceListId: 10);
         SetupPrice(testId: 5, priceListId: 10, price: 150m);
         SetupPrice(testId: 6, priceListId: 10, price: 200m);
-        SetupTest(testId: 5);
-        SetupTest(testId: 6);
+        SetupTest(testId: 5, testTimeDays: 2);
+        SetupTest(testId: 6, testTimeDays: 5);
 
         await CreateHandler().Handle(
             new AddTestToVisitCommand(1, new[] { 5, 6 }, null, false),
             CancellationToken.None);
 
+        Assert.Equal(visit.VisitDate.AddDays(5), visit.PromisedDeliveryAt);
         _sampleRepository.Verify(r => r.AddAsync(
             It.Is<Sample>(s => s.PatientVisitId == 1 && s.TestId == 5),
             It.IsAny<CancellationToken>()), Times.Once);
@@ -216,6 +219,22 @@ public class AddTestToVisitCommandHandlerTests
             It.Is<Sample>(s => s.PatientVisitId == 1 && s.TestId == 6),
             It.IsAny<CancellationToken>()), Times.Once);
         _unitOfWork.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task Handle_WhenAddingLongerTest_ExtendsExistingPromisedDelivery()
+    {
+        var visit = SetupVisit();
+        visit.SetPromisedDelivery(visit.VisitDate.AddDays(2));
+        SetupDefaultPriceList(priceListId: 10);
+        SetupPrice(testId: 5, priceListId: 10, price: 150m);
+        SetupTest(testId: 5, testTimeDays: 5);
+
+        await CreateHandler().Handle(
+            new AddTestToVisitCommand(1, new[] { 5 }, null, false),
+            CancellationToken.None);
+
+        Assert.Equal(visit.VisitDate.AddDays(5), visit.PromisedDeliveryAt);
     }
 
     [Fact]

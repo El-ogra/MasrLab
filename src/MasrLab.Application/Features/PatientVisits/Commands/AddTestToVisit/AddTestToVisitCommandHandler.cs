@@ -53,6 +53,7 @@ public class AddTestToVisitCommandHandler : IRequestHandler<AddTestToVisitComman
                 test, visit.Id, price, request.MarkOutsourced);
 
             visit.AddVisitTest(visitTest);
+            visit.ExtendPromisedDelivery(test.TestTimeDays);
 
             var sample = Sample.Create(visit.Id, testId);
             await _sampleRepository.AddAsync(sample, cancellationToken);

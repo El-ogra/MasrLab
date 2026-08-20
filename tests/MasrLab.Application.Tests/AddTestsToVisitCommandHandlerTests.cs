@@ -58,7 +58,7 @@ public class AddTestsToVisitCommandHandlerTests
         return visit;
     }
 
-    private Test CreateTest(int testId, string name = "Test1", string group = "CBC", int componentCount = 1)
+    private Test CreateTest(int testId, string name = "Test1", string group = "CBC", int componentCount = 1, int testTimeDays = 0)
     {
         var test = new Test
         {
@@ -68,6 +68,7 @@ public class AddTestsToVisitCommandHandlerTests
             ReceiptName = name + " Receipt",
             Group = group,
             Price = 100m,
+            TestTimeDays = testTimeDays,
             IsDeleted = false
         };
         for (int i = 0; i < componentCount; i++)
@@ -113,7 +114,7 @@ public class AddTestsToVisitCommandHandlerTests
         SetupVisit(visit);
         SetupDefaultPriceList();
         SetupPrice(5, 10, 150m);
-        var test = CreateTest(5);
+        var test = CreateTest(5, testTimeDays: 3);
         _testRepo.Setup(r => r.GetAllWithComponentsAsync(It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<Test> { test });
 
@@ -124,8 +125,29 @@ public class AddTestsToVisitCommandHandlerTests
         var vt = Assert.Single(visit.VisitTests);
         Assert.Equal(5, vt.TestId);
         Assert.Equal(150m, vt.Price);
+        Assert.Equal(visit.VisitDate.AddDays(3), visit.PromisedDeliveryAt);
         Assert.Single(visit.Samples);
         _unitOfWork.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task DirectSource_StoresLongestPromisedDeliveryAmongAddedTests()
+    {
+        var visit = CreateVisit();
+        SetupVisit(visit);
+        SetupDefaultPriceList();
+        SetupPrice(5, 10, 150m);
+        SetupPrice(6, 10, 200m);
+        var shortTest = CreateTest(5, testTimeDays: 2);
+        var longTest = CreateTest(6, testTimeDays: 5);
+        _testRepo.Setup(r => r.GetAllWithComponentsAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<Test> { shortTest, longTest });
+
+        await CreateHandler().Handle(
+            new AddTestsToVisitCommand(1, "Direct", null, null, "5,6", false),
+            CancellationToken.None);
+
+        Assert.Equal(visit.VisitDate.AddDays(5), visit.PromisedDeliveryAt);
     }
 
     [Fact]

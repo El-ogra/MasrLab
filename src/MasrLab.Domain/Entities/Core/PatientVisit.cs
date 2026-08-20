@@ -16,6 +16,7 @@ public class PatientVisit : BaseEntity
     public int? DoctorId { get; set; }
     public int? ReferralEntityId { get; set; }
     public bool TakenOutsideLab { get; set; }
+    public DateTime? PromisedDeliveryAt { get; private set; }
 
     public ICollection<VisitTest> VisitTests { get; set; } = new List<VisitTest>();
     public ICollection<Sample> Samples { get; set; } = new List<Sample>();
@@ -56,6 +57,21 @@ public class PatientVisit : BaseEntity
 
         VisitTests.Add(visitTest);
         AddDomainEvent(new VisitTestAdded(Id, visitTest.TestId, visitTest.Price, visitTest.IsOutsourced));
+    }
+
+    public void SetPromisedDelivery(DateTime? promisedDeliveryAt)
+    {
+        PromisedDeliveryAt = promisedDeliveryAt;
+    }
+
+    public void ExtendPromisedDelivery(int testTimeDays)
+    {
+        if (testTimeDays < 0)
+            throw new BusinessRuleViolationException("Test turnaround time cannot be negative.");
+
+        var candidate = VisitDate.AddDays(testTimeDays);
+        if (PromisedDeliveryAt is null || candidate > PromisedDeliveryAt.Value)
+            PromisedDeliveryAt = candidate;
     }
 
     public void RemoveTest(int testId)

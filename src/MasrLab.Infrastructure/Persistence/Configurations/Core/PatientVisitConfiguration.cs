@@ -18,6 +18,7 @@ public class PatientVisitConfiguration : IEntityTypeConfiguration<PatientVisit>
         builder.Property(e => e.RegisteredByUserId).IsRequired();
         builder.Property(e => e.LabId).HasMaxLength(100).IsRequired();
         builder.Property(e => e.TakenOutsideLab).IsRequired();
+        builder.Property(e => e.PromisedDeliveryAt).HasColumnType("datetime2").IsRequired(false);
 
         builder.HasIndex(e => e.PatientId);
         builder.HasIndex(e => e.LabId).IsUnique();
