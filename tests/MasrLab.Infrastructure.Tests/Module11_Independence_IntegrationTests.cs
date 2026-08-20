@@ -1,4 +1,5 @@
 using MasrLab.Application;
+using MasrLab.Application.Common.Interfaces;
 using MasrLab.Application.Features.VisitComposer.Commands.AddTestsToVisit;
 using MasrLab.Application.Services;
 using MasrLab.Domain.Common.Enums;
@@ -9,10 +10,12 @@ using MasrLab.Domain.Services;
 using MasrLab.Infrastructure.Persistence;
 using MasrLab.Infrastructure.Persistence.Interceptors;
 using MasrLab.Infrastructure.Persistence.Repositories;
+using MasrLab.Infrastructure.Services;
 using MediatR;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace MasrLab.Infrastructure.Tests;
 
@@ -112,6 +115,14 @@ public class Module11_Independence_IntegrationTests
                 // Override domain services that depend on repositories
                 services.AddScoped<IPriceListResolverService, PriceListResolverService>();
                 services.AddScoped<IVisitTestSnapshotter, VisitTestSnapshotter>();
+
+                // Services required by AuditBehavior (registered via AddApplication)
+                services.AddSingleton<ICurrentUserService, CurrentUserService>();
+                services.AddScoped<IDateTimeService, DateTimeService>();
+                services.AddScoped<IRequestAuditLogRepository, RequestAuditLogRepository>();
+
+                // Logging infrastructure (required to resolve ILogger<>)
+                services.AddLogging();
 
                 var provider = services.BuildServiceProvider();
                 var mediator = provider.GetRequiredService<IMediator>();
