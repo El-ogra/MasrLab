@@ -23,6 +23,7 @@ public class TestResult : BaseEntity
     public DateTime? EditedAt { get; set; }
 
     public string? Comment { get; private set; }
+    public string? AutoCommentSnapshot { get; private set; }
     public bool ReprintRequired { get; private set; }
 
     public static TestResult Enter(int visitTestResultItemId, string value, int enteredByUserId)
@@ -94,7 +95,6 @@ public class TestResult : BaseEntity
         string newReferenceRange,
         ResultStatus newStatus,
         string? newAutoComment,
-        string? previousAutoComment,
         int appliedByUserId)
     {
         if (appliedByUserId <= 0)
@@ -102,13 +102,13 @@ public class TestResult : BaseEntity
 
         var oldComment = Comment;
         var shouldReplaceComment = Comment is null ||
-            string.Equals(Comment, previousAutoComment, StringComparison.Ordinal);
+            string.Equals(Comment, AutoCommentSnapshot, StringComparison.Ordinal);
 
         ReferenceRange = newReferenceRange;
         Status = newStatus;
 
         if (shouldReplaceComment)
-            SetComment(newAutoComment);
+            SetAutomaticComment(newAutoComment);
 
         EditedByUserId = appliedByUserId;
         EditedAt = DateTime.UtcNow;
@@ -122,6 +122,14 @@ public class TestResult : BaseEntity
         if (comment is not null && comment.Length > 1000)
             throw new BusinessRuleViolationException("Comment cannot exceed 1000 characters.");
         Comment = comment;
+    }
+
+    public void SetAutomaticComment(string? comment)
+    {
+        if (comment is not null && comment.Length > 1000)
+            throw new BusinessRuleViolationException("Comment cannot exceed 1000 characters.");
+        Comment = comment;
+        AutoCommentSnapshot = comment;
     }
 
     public void MarkReprintRequired()

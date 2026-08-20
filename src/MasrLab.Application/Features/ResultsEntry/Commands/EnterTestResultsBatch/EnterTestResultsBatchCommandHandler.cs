@@ -74,7 +74,7 @@ public class EnterTestResultsBatchCommandHandler
             testResult.Status = validationResult.Status;
 
             if (validationResult.WarningComment != null)
-                testResult.SetComment(validationResult.WarningComment);
+                testResult.SetAutomaticComment(validationResult.WarningComment);
 
             ApplyCommentPatch(testResult, item.CommentPatch);
         }

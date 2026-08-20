@@ -25,7 +25,6 @@ public class ReapplyReferenceValuesCommandHandlerTests
     private readonly Mock<IVisitRepository> _visitRepository = new();
     private readonly Mock<IPatientRepository> _patientRepository = new();
     private readonly Mock<IResultValidationService> _resultValidationService = new();
-    private readonly Mock<IReferenceValueRepository> _referenceValueRepository = new();
     private readonly Mock<IRepository<TestResultEditHistory>> _historyRepository = new();
     private readonly Mock<IUnitOfWork> _unitOfWork = new();
 
@@ -36,8 +35,6 @@ public class ReapplyReferenceValuesCommandHandlerTests
             _visitRepository.Object,
             _patientRepository.Object,
             _resultValidationService.Object,
-            _referenceValueRepository.Object,
-            new ReferenceValueMatcher(),
             _historyRepository.Object,
             _unitOfWork.Object);
 
@@ -114,29 +111,10 @@ public class ReapplyReferenceValuesCommandHandlerTests
         result.ReferenceRange = "1-10";
         result.Status = ResultStatus.High;
         if (comment is not null)
-            result.SetComment(comment);
+            result.SetAutomaticComment(comment);
         return result;
     }
 
-    private void SetupPreviousHighComment(string comment = "old high")
-    {
-        _referenceValueRepository
-            .Setup(r => r.GetByTestComponentIdAsync(1, It.IsAny<CancellationToken>()))
-            .ReturnsAsync(new[]
-            {
-                new ReferenceValue
-                {
-                    Id = 1,
-                    TestComponentId = 1,
-                    Gender = ReferenceValueGender.Both,
-                    AgeUnit = AgeUnit.Years,
-                    NormalRange = "1-10",
-                    AgeMin = 0,
-                    AgeMax = 0,
-                    HighComment = comment
-                }
-            });
-    }
 
     [Fact]
     public async Task Reapply_UpdatesStatusRangeAndAutomaticComment()
@@ -144,7 +122,6 @@ public class ReapplyReferenceValuesCommandHandlerTests
         var result = CreateResult();
         var visit = CreateResultsEnteredVisit();
         SetupFullChain(result, visit);
-        SetupPreviousHighComment();
         SetupValidation(ResultStatus.Low, "2-8", "new low");
 
         await CreateHandler().Handle(
@@ -167,10 +144,10 @@ public class ReapplyReferenceValuesCommandHandlerTests
     [Fact]
     public async Task Reapply_ProtectsManualComment()
     {
-        var result = CreateResult("manual comment");
+        var result = CreateResult();
+        result.SetComment("manual comment");
         var visit = CreateResultsEnteredVisit();
         SetupFullChain(result, visit);
-        SetupPreviousHighComment();
         SetupValidation(ResultStatus.Normal, "2-8", null);
 
         await CreateHandler().Handle(
@@ -195,7 +172,6 @@ public class ReapplyReferenceValuesCommandHandlerTests
         result.PrintCount = 1;
         var visit = CreateResultsEnteredVisit();
         SetupFullChain(result, visit);
-        SetupPreviousHighComment();
         SetupValidation(ResultStatus.High, "2-8", "new high");
 
         await CreateHandler().Handle(
@@ -219,7 +195,6 @@ public class ReapplyReferenceValuesCommandHandlerTests
             Pregnancy = false
         };
         SetupFullChain(result, visit, patient);
-        SetupPreviousHighComment();
         SetupValidation();
 
         await CreateHandler().Handle(
@@ -236,7 +211,7 @@ public class ReapplyReferenceValuesCommandHandlerTests
     }
 
     [Fact]
-    public async Task Reapply_RequiresResultsEnteredVisit()
+    public async Task Reapply_RejectsRegisteredVisit()
     {
         var result = CreateResult();
         var visit = PatientVisit.Create(PatientId, 1, "L-1", null, null);
@@ -252,5 +227,22 @@ public class ReapplyReferenceValuesCommandHandlerTests
                 It.IsAny<int>(), It.IsAny<string>(), It.IsAny<string?>(),
                 It.IsAny<Age>(), It.IsAny<bool>(), It.IsAny<CancellationToken>()),
             Times.Never);
+    }
+
+    [Fact]
+    public async Task Reapply_AllowsPrintedVisitAndMarksResultForReprint()
+    {
+        var result = CreateResult();
+        result.PrintCount = 1;
+        var visit = CreateResultsEnteredVisit();
+        visit.MarkAsPrinted();
+        SetupFullChain(result, visit);
+        SetupValidation(ResultStatus.High, "2-8", "new high");
+
+        await CreateHandler().Handle(
+            new ReapplyReferenceValuesCommand(TestResultId, AppliedByUserId),
+            CancellationToken.None);
+
+        Assert.True(result.ReprintRequired);
     }
 }

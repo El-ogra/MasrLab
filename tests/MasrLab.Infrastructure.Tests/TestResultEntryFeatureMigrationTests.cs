@@ -22,10 +22,11 @@ public sealed class TestResultEntryFeatureMigrationTests
         var columns = await context.Database
             .SqlQueryRaw<string>(
                 "SELECT COLUMN_NAME AS Value FROM INFORMATION_SCHEMA.COLUMNS " +
-                "WHERE TABLE_NAME = 'TestResults' AND COLUMN_NAME IN ('Comment', 'ReprintRequired')")
+                "WHERE TABLE_NAME = 'TestResults' AND COLUMN_NAME IN ('Comment', 'AutoCommentSnapshot', 'ReprintRequired')")
             .ToListAsync();
 
         Assert.Contains("Comment", columns);
+        Assert.Contains("AutoCommentSnapshot", columns);
         Assert.Contains("ReprintRequired", columns);
 
         var commentMaxLen = await context.Database
@@ -35,6 +36,22 @@ public sealed class TestResultEntryFeatureMigrationTests
             .SingleAsync();
 
         Assert.Equal(1000, commentMaxLen);
+
+        var snapshotMaxLen = await context.Database
+            .SqlQueryRaw<int>(
+                "SELECT CHARACTER_MAXIMUM_LENGTH AS Value FROM INFORMATION_SCHEMA.COLUMNS " +
+                "WHERE TABLE_NAME = 'TestResults' AND COLUMN_NAME = 'AutoCommentSnapshot'")
+            .SingleAsync();
+
+        Assert.Equal(1000, snapshotMaxLen);
+
+        var snapshotNullable = await context.Database
+            .SqlQueryRaw<string>(
+                "SELECT IS_NULLABLE AS Value FROM INFORMATION_SCHEMA.COLUMNS " +
+                "WHERE TABLE_NAME = 'TestResults' AND COLUMN_NAME = 'AutoCommentSnapshot'")
+            .SingleAsync();
+
+        Assert.Equal("YES", snapshotNullable);
 
         var reprintNullable = await context.Database
             .SqlQueryRaw<string>(

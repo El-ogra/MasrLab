@@ -44,6 +44,14 @@ public class ApplyCommentTemplateCommandHandler : IRequestHandler<ApplyCommentTe
         var visitTest = await _visitRepository.GetVisitTestAsync(resultItem.VisitTestId, cancellationToken)
             ?? throw new EntityNotFoundException(nameof(VisitTest), resultItem.VisitTestId);
 
+        var visit = await _visitRepository.GetByIdAsync(
+            visitTest.PatientVisitId, cancellationToken)
+            ?? throw new EntityNotFoundException(nameof(PatientVisit), visitTest.PatientVisitId);
+
+        if (visit.Status != VisitStatus.ResultsEntered && visit.Status != VisitStatus.Printed)
+            throw new BusinessRuleViolationException(
+                "Visit must be in ResultsEntered or Printed status to apply a comment template.");
+
         var template = await _commentTemplateRepository.GetByIdAsync(
             request.CommentTemplateId, cancellationToken)
             ?? throw new EntityNotFoundException(nameof(CommentTemplate), request.CommentTemplateId);

@@ -4,7 +4,6 @@ using MasrLab.Domain.Entities.Core;
 using MasrLab.Domain.Exceptions;
 using MasrLab.Domain.Interfaces;
 using MasrLab.Domain.Services;
-using MasrLab.Domain.ValueObjects;
 
 namespace MasrLab.Application.Features.ResultsEntry.Commands.ReapplyReferenceValues;
 
@@ -16,8 +15,6 @@ public sealed class ReapplyReferenceValuesCommandHandler
     private readonly IVisitRepository _visitRepository;
     private readonly IPatientRepository _patientRepository;
     private readonly IResultValidationService _resultValidationService;
-    private readonly IReferenceValueRepository _referenceValueRepository;
-    private readonly IReferenceValueMatcher _referenceValueMatcher;
     private readonly IRepository<TestResultEditHistory> _historyRepository;
     private readonly IUnitOfWork _unitOfWork;
 
@@ -27,8 +24,6 @@ public sealed class ReapplyReferenceValuesCommandHandler
         IVisitRepository visitRepository,
         IPatientRepository patientRepository,
         IResultValidationService resultValidationService,
-        IReferenceValueRepository referenceValueRepository,
-        IReferenceValueMatcher referenceValueMatcher,
         IRepository<TestResultEditHistory> historyRepository,
         IUnitOfWork unitOfWork)
     {
@@ -37,8 +32,6 @@ public sealed class ReapplyReferenceValuesCommandHandler
         _visitRepository = visitRepository;
         _patientRepository = patientRepository;
         _resultValidationService = resultValidationService;
-        _referenceValueRepository = referenceValueRepository;
-        _referenceValueMatcher = referenceValueMatcher;
         _historyRepository = historyRepository;
         _unitOfWork = unitOfWork;
     }
@@ -64,9 +57,9 @@ public sealed class ReapplyReferenceValuesCommandHandler
             visitTest.PatientVisitId, cancellationToken)
             ?? throw new EntityNotFoundException(nameof(PatientVisit), visitTest.PatientVisitId);
 
-        if (visit.Status != VisitStatus.ResultsEntered)
+        if (visit.Status != VisitStatus.ResultsEntered && visit.Status != VisitStatus.Printed)
             throw new BusinessRuleViolationException(
-                "Visit must be in ResultsEntered status to reapply reference values.");
+                "Visit must be in ResultsEntered or Printed status to reapply reference values.");
 
         var patient = await _patientRepository.GetByIdAsync(
             visit.PatientId, cancellationToken)
@@ -74,13 +67,6 @@ public sealed class ReapplyReferenceValuesCommandHandler
 
         var gender = patient.Gender == Gender.Male ? "male" : "female";
         var oldComment = testResult.Comment;
-        var previousAutoComment = await ReconstructPreviousAutoCommentAsync(
-            testResult,
-            resultItem.SourceTestComponentId,
-            gender,
-            patient.Age,
-            patient.Pregnancy,
-            cancellationToken);
 
         var validationResult = await _resultValidationService.ValidateResultAsync(
             testResult.VisitTestResultItemId,
@@ -94,7 +80,6 @@ public sealed class ReapplyReferenceValuesCommandHandler
             validationResult.ReferenceRange ?? string.Empty,
             validationResult.Status,
             validationResult.WarningComment,
-            previousAutoComment,
             request.AppliedByUserId);
 
         if (testResult.PrintCount > 0)
@@ -120,44 +105,4 @@ public sealed class ReapplyReferenceValuesCommandHandler
         return Unit.Value;
     }
 
-    private async Task<string?> ReconstructPreviousAutoCommentAsync(
-        TestResult testResult,
-        int testComponentId,
-        string gender,
-        Age patientAge,
-        bool isPregnant,
-        CancellationToken cancellationToken)
-    {
-        if (string.IsNullOrWhiteSpace(testResult.ReferenceRange))
-            return null;
-
-        var candidates = await _referenceValueRepository.GetByTestComponentIdAsync(
-            testComponentId, cancellationToken);
-        var previousRangeCandidates = candidates
-            .Where(value => string.Equals(
-                value.NormalRange,
-                testResult.ReferenceRange,
-                StringComparison.Ordinal))
-            .ToList();
-
-        if (previousRangeCandidates.Count == 0)
-            return null;
-
-        var previousMatch = _referenceValueMatcher.Match(
-            previousRangeCandidates,
-            testComponentId,
-            gender,
-            patientAge,
-            isPregnant);
-
-        if (previousMatch.Kind != ReferenceMatchKind.Matched)
-            return null;
-
-        return testResult.Status switch
-        {
-            ResultStatus.High => previousMatch.MatchedValue?.HighComment,
-            ResultStatus.Low => previousMatch.MatchedValue?.LowComment,
-            _ => null
-        };
-    }
 }

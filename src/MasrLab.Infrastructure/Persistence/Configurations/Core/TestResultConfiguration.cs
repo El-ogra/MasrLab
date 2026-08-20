@@ -26,6 +26,7 @@ public class TestResultConfiguration : IEntityTypeConfiguration<TestResult>
         builder.Property(e => e.PrintedAt);
         builder.Property(e => e.PrintCount).IsRequired();
         builder.Property(e => e.Comment).HasMaxLength(1000);
+        builder.Property(e => e.AutoCommentSnapshot).HasMaxLength(1000);
         builder.Property(e => e.ReprintRequired).IsRequired();
 
         builder.HasOne<VisitTestResultItem>()

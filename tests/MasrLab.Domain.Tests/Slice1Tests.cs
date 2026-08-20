@@ -142,13 +142,14 @@ public class Slice1Tests
         var result = TestResult.Enter(5, "12.5", 7);
         result.ReferenceRange = "1-10";
         result.Status = ResultStatus.High;
-        result.SetComment("old automatic comment");
+        result.SetAutomaticComment("old automatic comment");
 
-        result.ReapplyReference("2-8", ResultStatus.Low, "new automatic comment", "old automatic comment", 9);
+        result.ReapplyReference("2-8", ResultStatus.Low, "new automatic comment", 9);
 
         Assert.Equal("2-8", result.ReferenceRange);
         Assert.Equal(ResultStatus.Low, result.Status);
         Assert.Equal("new automatic comment", result.Comment);
+        Assert.Equal("new automatic comment", result.AutoCommentSnapshot);
         var evt = Assert.Single(result.DomainEvents.OfType<TestResultReferenceReapplied>());
         Assert.Equal("old automatic comment", evt.OldComment);
         Assert.Equal("new automatic comment", evt.NewComment);
@@ -161,7 +162,7 @@ public class Slice1Tests
         var result = TestResult.Enter(5, "12.5", 7);
         result.SetComment("manual comment");
 
-        result.ReapplyReference("2-8", ResultStatus.Normal, "new automatic comment", "old automatic comment", 9);
+        result.ReapplyReference("2-8", ResultStatus.Normal, "new automatic comment", 9);
 
         Assert.Equal("manual comment", result.Comment);
         Assert.Equal(ResultStatus.Normal, result.Status);
@@ -172,9 +173,10 @@ public class Slice1Tests
     {
         var result = TestResult.Enter(5, "12.5", 7);
 
-        result.ReapplyReference("2-8", ResultStatus.High, "new automatic comment", "old automatic comment", 9);
+        result.ReapplyReference("2-8", ResultStatus.High, "new automatic comment", 9);
 
         Assert.Equal("new automatic comment", result.Comment);
+        Assert.Equal("new automatic comment", result.AutoCommentSnapshot);
     }
 
     #endregion

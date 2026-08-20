@@ -94,6 +94,10 @@ public class CommentTemplateCommandHandlerTests
 
         var resultItem = new VisitTestResultItem { Id = 100, VisitTestId = 10 };
         var visitTest = new VisitTest(1, 20, 100m, false);
+        var visit = PatientVisit.Create(1, 1, "L-1", null, null);
+        visit.AddVisitTest(visitTest);
+        visit.EnterAllResults();
+        visit.MarkAsPrinted();
         var template = new CommentTemplate { Id = 7, TestId = 20, Text = "New comment" };
         TestResultEditHistory? addedHistory = null;
 
@@ -107,6 +111,7 @@ public class CommentTemplateCommandHandlerTests
         results.Setup(x => x.GetByIdAsync(1, It.IsAny<CancellationToken>())).ReturnsAsync(testResult);
         resultItems.Setup(x => x.GetByIdAsync(100, It.IsAny<CancellationToken>())).ReturnsAsync(resultItem);
         visits.Setup(x => x.GetVisitTestAsync(10, It.IsAny<CancellationToken>())).ReturnsAsync(visitTest);
+        visits.Setup(x => x.GetByIdAsync(1, It.IsAny<CancellationToken>())).ReturnsAsync(visit);
         templates.Setup(x => x.GetByIdAsync(7, It.IsAny<CancellationToken>())).ReturnsAsync(template);
         history
             .Setup(x => x.AddAsync(It.IsAny<TestResultEditHistory>(), It.IsAny<CancellationToken>()))
@@ -124,5 +129,45 @@ public class CommentTemplateCommandHandlerTests
         Assert.Equal("New comment", addedHistory.NewComment);
         Assert.Equal(2, addedHistory.EditedByUserId);
         unitOfWork.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Theory]
+    [InlineData(VisitStatus.Registered)]
+    [InlineData(VisitStatus.Closed)]
+    public async Task ApplyCommentTemplate_rejects_non_editable_visit_status(VisitStatus status)
+    {
+        var testResult = TestResult.Enter(100, "5", 1);
+        testResult.Id = 1;
+        var resultItem = new VisitTestResultItem { Id = 100, VisitTestId = 10 };
+        var visitTest = new VisitTest(1, 20, 100m, false);
+        var visit = PatientVisit.Create(1, 1, "L-1", null, null);
+        visit.AddVisitTest(visitTest);
+        if (status == VisitStatus.ResultsEntered)
+            visit.EnterAllResults();
+        if (status == VisitStatus.Closed)
+        {
+            visit.EnterAllResults();
+            visit.Close(100m);
+        }
+
+        var results = new Mock<ITestResultRepository>();
+        var resultItems = new Mock<IVisitTestResultItemRepository>();
+        var visits = new Mock<IVisitRepository>();
+        var templates = new Mock<IRepository<CommentTemplate>>();
+        var history = new Mock<IRepository<TestResultEditHistory>>();
+        var unitOfWork = new Mock<IUnitOfWork>();
+
+        results.Setup(x => x.GetByIdAsync(1, It.IsAny<CancellationToken>())).ReturnsAsync(testResult);
+        resultItems.Setup(x => x.GetByIdAsync(100, It.IsAny<CancellationToken>())).ReturnsAsync(resultItem);
+        visits.Setup(x => x.GetVisitTestAsync(10, It.IsAny<CancellationToken>())).ReturnsAsync(visitTest);
+        visits.Setup(x => x.GetByIdAsync(1, It.IsAny<CancellationToken>())).ReturnsAsync(visit);
+
+        await Assert.ThrowsAsync<MasrLab.Domain.Exceptions.BusinessRuleViolationException>(() =>
+            new ApplyCommentTemplateCommandHandler(
+                    results.Object, resultItems.Object, visits.Object, templates.Object, history.Object, unitOfWork.Object)
+                .Handle(new(1, 7, 2), CancellationToken.None));
+
+        templates.Verify(x => x.GetByIdAsync(It.IsAny<int>(), It.IsAny<CancellationToken>()), Times.Never);
+        unitOfWork.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
     }
 }

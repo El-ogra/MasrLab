@@ -90,8 +90,10 @@ public class EditTestResultCommandHandler
             testResult.ReferenceRange = validationResult.ReferenceRange ?? string.Empty;
             testResult.Status = validationResult.Status;
 
-            if (validationResult.WarningComment != null && request.CommentPatch is not { UpdateComment: true })
-                testResult.SetComment(validationResult.WarningComment);
+            if (request.CommentPatch is not { UpdateComment: true })
+            {
+                testResult.SetAutomaticComment(validationResult.WarningComment);
+            }
 
             await _completionEvaluator.EvaluateAsync(visit, cancellationToken);
         }

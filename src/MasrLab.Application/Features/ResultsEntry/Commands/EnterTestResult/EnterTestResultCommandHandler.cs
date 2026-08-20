@@ -83,7 +83,7 @@ public class EnterTestResultCommandHandler : IRequestHandler<EnterTestResultComm
 
         if (validationResult.WarningComment != null)
         {
-            testResult.SetComment(validationResult.WarningComment);
+            testResult.SetAutomaticComment(validationResult.WarningComment);
         }
 
         await _testResultRepository.AddAsync(testResult, cancellationToken);
