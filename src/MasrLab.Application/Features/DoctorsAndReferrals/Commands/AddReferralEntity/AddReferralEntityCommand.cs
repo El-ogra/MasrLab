@@ -10,6 +10,9 @@ public record AddReferralEntityCommand(
     string? Phone,
     string? Fax,
     string? Address,
-    int PriceListId,
+    string? City,
+    decimal? Discount,
+    decimal? Commission,
+    int? PriceListId,
     decimal AccountBalance
 ) : IRequest<Unit>;

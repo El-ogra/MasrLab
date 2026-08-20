@@ -19,7 +19,7 @@ public class AdditionalCommandValidatorTests
         yield return Case("AddNewCulture", new object?[] { 1, "blood", null, null, null, "aerobic", 0 }, new object?[] { 1, "", null, null, null, "", -1 });
         yield return Case("EnterCultureResult", new object?[] { 1, null, null, null, "aerobic", 0 }, new object?[] { 0, null, null, null, "", -1 });
         yield return Case("AddDoctor", new object?[] { "Dr A", null, null, 0m }, new object?[] { "", null, null, 101m });
-        yield return Case("AddReferralEntity", new object?[] { "Lab", 0, null, null, null, null, 1, 0m }, new object?[] { "", 0, null, null, null, null, 0, 0m });
+        yield return Case("AddReferralEntity", new object?[] { "Lab", 2, null, null, null, null, null, null, null, 1, 0m }, new object?[] { "", 2, null, null, null, null, null, null, null, 0, 0m });
         yield return Case("AddCommentTemplate", new object?[] { 1, "note" }, new object?[] { 0, "" });
         yield return Case("UpdateCommentTemplate", new object?[] { 1, 1, "note" }, new object?[] { 0, 0, "" });
         yield return Case("DeleteCommentTemplate", new object?[] { 1, 1 }, new object?[] { 0, 0 });

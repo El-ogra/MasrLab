@@ -50,7 +50,9 @@ public class DoctorsReferralsAndTestsMasterDataHandlersTests
     public async Task AddReferralEntity_persists_contact_and_balance()
     {
         var repo = new Mock<IRepository<ReferralEntity>>(); ReferralEntity? saved = null; repo.Setup(x => x.AddAsync(It.IsAny<ReferralEntity>(), It.IsAny<CancellationToken>())).Callback<ReferralEntity, CancellationToken>((e, _) => saved = e);
-        await new AddReferralEntityCommandHandler(repo.Object, new Mock<IUnitOfWork>().Object).Handle(new("Clinic", ReferralEntityType.ReferralEntity, "Sara", "01012345678", "fax", "Giza", 2, 99m), default);
+        var priceRepo = new Mock<IPriceListRepository>();
+        priceRepo.Setup(x => x.GetLabToLabAsync(It.IsAny<CancellationToken>())).ReturnsAsync((PriceList?)null);
+        await new AddReferralEntityCommandHandler(repo.Object, priceRepo.Object, new Mock<IUnitOfWork>().Object).Handle(new("Clinic", ReferralEntityType.ReferralEntity, "Sara", "01012345678", "fax", "Giza", "Cairo", null, null, 2, 99m), default);
         Assert.NotNull(saved); Assert.Equal("Clinic", saved!.Name); Assert.Equal(2, saved.PriceListId); Assert.Equal(99m, saved.AccountBalance);
     }
 
@@ -58,7 +60,8 @@ public class DoctorsReferralsAndTestsMasterDataHandlersTests
     public async Task AddReferralEntity_rejects_invalid_phone()
     {
         var repo = new Mock<IRepository<ReferralEntity>>();
-        await Assert.ThrowsAnyAsync<Exception>(() => new AddReferralEntityCommandHandler(repo.Object, new Mock<IUnitOfWork>().Object).Handle(new("Clinic", ReferralEntityType.ReferralEntity, null, "bad", null, null, 2, 0), default));
+        var priceRepo = new Mock<IPriceListRepository>();
+        await Assert.ThrowsAnyAsync<Exception>(() => new AddReferralEntityCommandHandler(repo.Object, priceRepo.Object, new Mock<IUnitOfWork>().Object).Handle(new("Clinic", ReferralEntityType.ReferralEntity, null, "bad", null, null, null, null, null, 2, 0), default));
         repo.Verify(x => x.AddAsync(It.IsAny<ReferralEntity>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 

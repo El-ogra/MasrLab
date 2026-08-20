@@ -23,4 +23,10 @@ public class PriceListRepository : GenericRepository<PriceList>, IPriceListRepos
             .Include(p => p.PriceListItems)
             .FirstOrDefaultAsync(p => p.Id == id, cancellationToken);
     }
+
+    public async Task<PriceList?> GetLabToLabAsync(CancellationToken cancellationToken = default)
+    {
+        return await _context.PriceLists
+            .FirstOrDefaultAsync(p => p.IsLabToLab, cancellationToken);
+    }
 }

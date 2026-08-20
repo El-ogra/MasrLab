@@ -7,7 +7,7 @@
 
 ## Completed Slices
 - [X] Slice 1 — Domain & Schema Foundation (DONE)
-- [ ] Slice 2 — Add Pipeline Correction (NOT STARTED)
+- [X] Slice 2 — Add Pipeline Correction (DONE)
 - [ ] Slice 3 — Read Side: List, Detail, and OQ-5 Pool (NOT STARTED)
 - [ ] Slice 4 — Edit Entity (NOT STARTED)
 - [ ] Slice 5 — Delete Entity (NOT STARTED)
@@ -15,9 +15,10 @@
 - [ ] Slice 7 — E2E Integration & Regression Gate (NOT STARTED)
 
 ## Current Iteration
-- **Current Slice:** Slice 2
+- **Current Slice:** Slice 3
 - **Attempt Number:** 0
 - **Last Error:** None
 
 ## Execution Log
 [2026-08-21] [SUCCESS] Slice 1 completed successfully. All 12 Domain + 492 Application + 5 Infrastructure tests passed. Migration Slice12_ReferralEntityLabToLabDiscriminator applied.
+[2026-08-21] [SUCCESS] Slice 2 completed successfully. All 201 Domain + 492 Application tests passed. Per-type conditional validation, handler with IPriceListRepository, existing test updates all green.
