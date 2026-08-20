@@ -300,31 +300,89 @@ public class AddTestsToVisitCommandHandlerTests
     }
 
     [Fact]
-    public async Task SelectionGroupSource_ResolvesTestsFromGroupItems()
+    public async Task SelectionGroupSource_UsesGroupItemPrices_AndStampsGroupId()
     {
         var visit = CreateVisit();
         SetupVisit(visit);
-        SetupDefaultPriceList();
         var test1 = CreateTest(10);
         var test2 = CreateTest(20);
         _testRepo.Setup(r => r.GetAllWithComponentsAsync(It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<Test> { test1, test2 });
+        _groupRepo.Setup(r => r.GetByIdAsync(100, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new TestGroup { Id = 100, GroupName = "Checkup A" });
         _groupItemRepo.Setup(r => r.GetByTestGroupIdAsync(100, It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<TestGroupItem>
             {
-                new() { TestGroupId = 100, TestId = 20, DisplayOrder = 1 },
-                new() { TestGroupId = 100, TestId = 10, DisplayOrder = 2 }
+                new() { TestGroupId = 100, TestId = 20, Price = 75m, DisplayOrder = 1 },
+                new() { TestGroupId = 100, TestId = 10, Price = 50m, DisplayOrder = 2 }
             });
-        SetupPrice(10, 10, 50m);
-        SetupPrice(20, 10, 75m);
 
         await CreateHandler().Handle(
             new AddTestsToVisitCommand(1, "SelectionGroup", 100, null, null, false),
             CancellationToken.None);
 
         Assert.Equal(2, visit.VisitTests.Count);
-        Assert.Contains(visit.VisitTests, vt => vt.TestId == 20);
-        Assert.Contains(visit.VisitTests, vt => vt.TestId == 10);
+
+        var vt20 = Assert.Single(visit.VisitTests, vt => vt.TestId == 20);
+        Assert.Equal(75m, vt20.Price);
+        Assert.Equal(100, vt20.SourceTestGroupId);
+        Assert.Equal("Checkup A", vt20.TestGroupNameSnapshot);
+
+        var vt10 = Assert.Single(visit.VisitTests, vt => vt.TestId == 10);
+        Assert.Equal(50m, vt10.Price);
+        Assert.Equal(100, vt10.SourceTestGroupId);
+        Assert.Equal("Checkup A", vt10.TestGroupNameSnapshot);
+
+        // Verify price list resolver was NOT called for these tests
+        _priceListResolver.Verify(
+            s => s.ResolvePriceAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<CancellationToken>()),
+            Times.Never);
+    }
+
+    [Fact]
+    public async Task SelectionGroupSource_GroupNotFound_Throws()
+    {
+        var visit = CreateVisit();
+        SetupVisit(visit);
+        var test = CreateTest(10);
+        _testRepo.Setup(r => r.GetAllWithComponentsAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<Test> { test });
+        _groupItemRepo.Setup(r => r.GetByTestGroupIdAsync(999, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<TestGroupItem>
+            {
+                new() { TestGroupId = 999, TestId = 10, Price = 50m, DisplayOrder = 1 }
+            });
+        _groupRepo.Setup(r => r.GetByIdAsync(999, It.IsAny<CancellationToken>()))
+            .ReturnsAsync((TestGroup?)null);
+
+        await Assert.ThrowsAsync<EntityNotFoundException>(
+            () => CreateHandler().Handle(
+                new AddTestsToVisitCommand(1, "SelectionGroup", 999, null, null, false),
+                CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task SelectionGroupSource_ZeroPriceItem_UsesZero()
+    {
+        var visit = CreateVisit();
+        SetupVisit(visit);
+        var test = CreateTest(10);
+        _testRepo.Setup(r => r.GetAllWithComponentsAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<Test> { test });
+        _groupRepo.Setup(r => r.GetByIdAsync(100, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new TestGroup { Id = 100, GroupName = "Empty Priced" });
+        _groupItemRepo.Setup(r => r.GetByTestGroupIdAsync(100, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<TestGroupItem>
+            {
+                new() { TestGroupId = 100, TestId = 10, Price = 0m, DisplayOrder = 1 }
+            });
+
+        await CreateHandler().Handle(
+            new AddTestsToVisitCommand(1, "SelectionGroup", 100, null, null, false),
+            CancellationToken.None);
+
+        var vt = Assert.Single(visit.VisitTests);
+        Assert.Equal(0m, vt.Price);
     }
 
     [Fact]

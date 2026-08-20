@@ -29,6 +29,9 @@ public class VisitTest : BaseEntity
     public bool IsCompoundSnapshot { get; set; }
     public int? VisitCommercialPackageId { get; set; }
 
+    public int? SourceTestGroupId { get; set; }
+    public string TestGroupNameSnapshot { get; set; } = string.Empty;
+
     public ICollection<VisitTestResultItem> ResultItems { get; set; } = new List<VisitTestResultItem>();
 
     public VisitTest(int patientVisitId, int testId, decimal price, bool isOutsourced)

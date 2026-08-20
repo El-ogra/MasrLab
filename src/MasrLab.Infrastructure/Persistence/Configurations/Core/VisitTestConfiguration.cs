@@ -22,6 +22,9 @@ public class VisitTestConfiguration : IEntityTypeConfiguration<VisitTest>
         builder.Property(e => e.ReceiptNameSnapshot).HasMaxLength(200).IsRequired();
         builder.Property(e => e.IsCompoundSnapshot).IsRequired();
 
+        builder.Property(e => e.SourceTestGroupId);
+        builder.Property(e => e.TestGroupNameSnapshot).HasMaxLength(200);
+
         builder.HasIndex(e => e.PatientVisitId);
         builder.HasIndex(e => e.TestId);
         builder.HasIndex(e => e.IsDeleted);

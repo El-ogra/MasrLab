@@ -77,6 +77,18 @@ public class AddTestsToVisitCommandHandler : IRequestHandler<AddTestsToVisitComm
         var defaultPriceList = await _priceListRepository.GetDefaultAsync(cancellationToken);
         var priceListId = defaultPriceList?.Id ?? 0;
 
+        // --- Slice 8: load group snapshot data for SelectionGroup source ---
+        TestGroup? selectionGroup = null;
+        Dictionary<int, decimal>? groupPriceMap = null;
+        if (request.Source == "SelectionGroup" && request.TestGroupId.HasValue)
+        {
+            selectionGroup = await _groupRepository.GetByIdAsync(request.TestGroupId.Value, cancellationToken)
+                ?? throw new EntityNotFoundException(nameof(TestGroup), request.TestGroupId.Value);
+
+            var groupItems = await _groupItemRepository.GetByTestGroupIdAsync(request.TestGroupId.Value, cancellationToken);
+            groupPriceMap = groupItems.ToDictionary(i => i.TestId, i => i.Price);
+        }
+
         VisitCommercialPackage? visitPackage = null;
         CommercialPackage? package = null;
         if (request.Source == "CommercialPackage" && request.CommercialPackageId.HasValue)
@@ -103,12 +115,29 @@ public class AddTestsToVisitCommandHandler : IRequestHandler<AddTestsToVisitComm
         foreach (var testId in testIdsToProcess)
         {
             var test = testMap[testId];
-            var price = priceListId > 0
-                ? await _priceListResolver.ResolvePriceAsync(testId, priceListId, cancellationToken)
-                : test.Price;
+
+            // Slice 8: SelectionGroup uses TestGroupItem.Price; other sources use price list.
+            decimal price;
+            if (request.Source == "SelectionGroup" && groupPriceMap is not null && groupPriceMap.TryGetValue(testId, out var groupPrice))
+            {
+                price = groupPrice;
+            }
+            else
+            {
+                price = priceListId > 0
+                    ? await _priceListResolver.ResolvePriceAsync(testId, priceListId, cancellationToken)
+                    : test.Price;
+            }
 
             var (visitTest, resultItems) = _snapshotter.CreateVisitTestSnapshot(
                 test, visit.Id, price, isOutsourced: false);
+
+            // Slice 8: stamp group provenance for SelectionGroup source.
+            if (request.Source == "SelectionGroup" && selectionGroup is not null)
+            {
+                visitTest.SourceTestGroupId = selectionGroup.Id;
+                visitTest.TestGroupNameSnapshot = selectionGroup.GroupName;
+            }
 
             visit.AddVisitTest(visitTest);
             visit.ExtendPromisedDelivery(test.TestTimeDays);
