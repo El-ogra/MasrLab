@@ -41,6 +41,23 @@ public class GetTestsListQueryHandler : IRequestHandler<GetTestsListQuery, IRead
             query = query.Where(t => t.Id == request.IdFilter.Value);
         }
 
+        if (!string.IsNullOrWhiteSpace(request.SearchText))
+        {
+            var searchText = request.SearchText.Trim();
+
+            if (int.TryParse(searchText, out var searchId))
+            {
+                query = query.Where(t => t.Id == searchId);
+            }
+            else
+            {
+                var searchLower = searchText.ToLower();
+                query = query.Where(t =>
+                    t.Name.ToLower().Contains(searchLower) ||
+                    t.Group.ToLower().Contains(searchLower));
+            }
+        }
+
         var result = query.OrderBy(t => t.Group).ThenBy(t => t.ArrangeNo).ToList();
 
         return result.Select(t => new TestDto

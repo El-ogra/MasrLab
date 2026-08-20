@@ -6,5 +6,6 @@ namespace MasrLab.Application.Features.TestsMasterData.Queries.GetTestsList;
 public record GetTestsListQuery(
     string? NameFilter,
     string? GroupFilter,
-    int? IdFilter
+    int? IdFilter,
+    string? SearchText = null
 ) : IRequest<IReadOnlyList<TestDto>>;
