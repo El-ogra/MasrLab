@@ -1,3 +1,4 @@
+using AutoMapper;
 using MasrLab.Application.Common.DTOs;
 using MasrLab.Domain.Entities.Core;
 using MasrLab.Domain.Interfaces;
@@ -9,11 +10,13 @@ public class GetTestGroupsQueryHandler : IRequestHandler<GetTestGroupsQuery, IRe
 {
     private readonly ITestGroupRepository _groupRepository;
     private readonly IRepository<Test> _testRepository;
+    private readonly IMapper _mapper;
 
-    public GetTestGroupsQueryHandler(ITestGroupRepository groupRepository, IRepository<Test> testRepository)
+    public GetTestGroupsQueryHandler(ITestGroupRepository groupRepository, IRepository<Test> testRepository, IMapper mapper)
     {
         _groupRepository = groupRepository;
         _testRepository = testRepository;
+        _mapper = mapper;
     }
 
     public async Task<IReadOnlyList<TestGroupDto>> Handle(GetTestGroupsQuery request, CancellationToken cancellationToken)
@@ -22,23 +25,19 @@ public class GetTestGroupsQueryHandler : IRequestHandler<GetTestGroupsQuery, IRe
         var tests = await _testRepository.GetAllAsync(cancellationToken);
         var testMap = tests.ToDictionary(t => t.Id);
 
-        return groups.Select(g => new TestGroupDto
+        return groups.Select(g =>
         {
-            Id = g.Id,
-            GroupName = g.GroupName,
-            ItemCount = g.TestGroupItems.Count,
-            TotalPrice = g.TestGroupItems.Sum(i => i.Price),
-            Items = g.TestGroupItems
-                .OrderBy(i => i.DisplayOrder)
-                .Select(i => new TestGroupItemDto
-                {
-                    Id = i.Id,
-                    TestGroupId = i.TestGroupId,
-                    TestId = i.TestId,
-                    TestName = testMap.TryGetValue(i.TestId, out var t) ? t.Name : string.Empty,
-                    Price = i.Price,
-                    DisplayOrder = i.DisplayOrder
-                }).ToList()
+            var dto = _mapper.Map<TestGroupDto>(g);
+            var enrichedItems = dto.Items.Select(i => new TestGroupItemDto
+            {
+                Id = i.Id,
+                TestGroupId = i.TestGroupId,
+                TestId = i.TestId,
+                TestName = testMap.TryGetValue(i.TestId, out var t) ? t.Name : string.Empty,
+                Price = i.Price,
+                DisplayOrder = i.DisplayOrder
+            }).ToList();
+            return dto with { Items = enrichedItems };
         }).ToList();
     }
 }

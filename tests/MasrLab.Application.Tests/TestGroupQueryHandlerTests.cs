@@ -1,18 +1,29 @@
+using AutoMapper;
 using MasrLab.Application.Features.TestGroups.Queries.GetTestGroups;
 using MasrLab.Application.Features.TestGroups.Queries.GetTestGroupById;
 using MasrLab.Domain.Entities.Core;
 using MasrLab.Domain.Interfaces;
+using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
 
 namespace MasrLab.Application.Tests;
 
 public class TestGroupQueryHandlerTests
 {
+    private static IMapper CreateMapper()
+    {
+        var expression = new MapperConfigurationExpression();
+        expression.AddMaps(typeof(MasrLab.Application.DependencyInjection).Assembly);
+        var config = new MapperConfiguration(expression, NullLoggerFactory.Instance);
+        return config.CreateMapper();
+    }
+
     [Fact]
     public async Task GetTestGroups_ReturnsGroupsWithItemsAndTestNames()
     {
         var groupRepo = new Mock<ITestGroupRepository>();
         var testRepo = new Mock<IRepository<Test>>();
+        var mapper = CreateMapper();
 
         var test1 = new Test { Id = 10, Name = "CBC" };
         var test2 = new Test { Id = 20, Name = "Stool" };
@@ -31,7 +42,7 @@ public class TestGroupQueryHandlerTests
         groupRepo.Setup(x => x.GetAllWithItemsAsync(It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<TestGroup> { group });
 
-        var handler = new GetTestGroupsQueryHandler(groupRepo.Object, testRepo.Object);
+        var handler = new GetTestGroupsQueryHandler(groupRepo.Object, testRepo.Object, mapper);
         var result = await handler.Handle(new GetTestGroupsQuery(), default);
 
         Assert.Single(result);
@@ -47,10 +58,11 @@ public class TestGroupQueryHandlerTests
     {
         var groupRepo = new Mock<ITestGroupRepository>();
         var testRepo = new Mock<IRepository<Test>>();
+        var mapper = CreateMapper();
         groupRepo.Setup(x => x.GetByIdWithItemsAsync(99, It.IsAny<CancellationToken>()))
             .ReturnsAsync((TestGroup?)null);
 
-        var handler = new GetTestGroupByIdQueryHandler(groupRepo.Object, testRepo.Object);
+        var handler = new GetTestGroupByIdQueryHandler(groupRepo.Object, testRepo.Object, mapper);
         var result = await handler.Handle(new GetTestGroupByIdQuery(99), default);
 
         Assert.Null(result);
@@ -61,6 +73,7 @@ public class TestGroupQueryHandlerTests
     {
         var groupRepo = new Mock<ITestGroupRepository>();
         var testRepo = new Mock<IRepository<Test>>();
+        var mapper = CreateMapper();
 
         var test = new Test { Id = 5, Name = "Urine" };
         testRepo.Setup(x => x.GetAllAsync(It.IsAny<CancellationToken>()))
@@ -77,7 +90,7 @@ public class TestGroupQueryHandlerTests
         groupRepo.Setup(x => x.GetByIdWithItemsAsync(3, It.IsAny<CancellationToken>()))
             .ReturnsAsync(group);
 
-        var handler = new GetTestGroupByIdQueryHandler(groupRepo.Object, testRepo.Object);
+        var handler = new GetTestGroupByIdQueryHandler(groupRepo.Object, testRepo.Object, mapper);
         var result = await handler.Handle(new GetTestGroupByIdQuery(3), default);
 
         Assert.NotNull(result);
