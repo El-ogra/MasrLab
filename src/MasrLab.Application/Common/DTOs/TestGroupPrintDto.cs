@@ -1,10 +1,9 @@
 namespace MasrLab.Application.Common.DTOs;
 
-public record TestGroupDto
+public record TestGroupPrintDto
 {
     public int Id { get; init; }
     public string GroupName { get; init; } = string.Empty;
-    public int ItemCount { get; init; }
-    public decimal TotalPrice { get; init; }
+    public decimal TotalGroupPrice { get; init; }
     public IReadOnlyList<TestGroupItemDto> Items { get; init; } = Array.Empty<TestGroupItemDto>();
 }

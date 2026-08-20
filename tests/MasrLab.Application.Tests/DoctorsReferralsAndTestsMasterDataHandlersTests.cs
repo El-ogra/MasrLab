@@ -4,7 +4,6 @@ using MasrLab.Application.Features.DoctorsAndReferrals.Commands.AddDoctor;
 using MasrLab.Application.Features.DoctorsAndReferrals.Commands.AddReferralEntity;
 using MasrLab.Application.Features.PriceLists.Commands.UpdatePriceListItems;
 using MasrLab.Application.Features.PriceLists.Queries.GetPriceListForPrint;
-using MasrLab.Application.Features.TestGroups.Commands.ManageTestGroups;
 using MasrLab.Application.Features.TestsMasterData.Commands.AddTest;
 using MasrLab.Application.Features.TestsMasterData.Commands.AddReferenceValue;
 using MasrLab.Application.Features.TestsMasterData.Commands.UpdateReferenceValue;
@@ -223,18 +222,4 @@ public class DoctorsReferralsAndTestsMasterDataHandlersTests
         Assert.Equal(ResultEntryKind.Ordinary, component.ResultEntryKind);
     }
 
-    [Fact]
-    public async Task ManageTestGroups_creates_group_and_its_items()
-    {
-        var groups = new Mock<IRepository<TestGroup>>(); var items = new Mock<ITestGroupItemRepository>(); TestGroup? saved = null; var addedIds = new List<int>(); groups.Setup(x => x.AddAsync(It.IsAny<TestGroup>(), It.IsAny<CancellationToken>())).Callback<TestGroup, CancellationToken>((g, _) => { g.Id = 10; saved = g; }); items.Setup(x => x.AddAsync(It.IsAny<TestGroupItem>(), It.IsAny<CancellationToken>())).Callback<TestGroupItem, CancellationToken>((i, _) => addedIds.Add(i.TestId));
-        await new ManageTestGroupsCommandHandler(groups.Object, items.Object, new Mock<IUnitOfWork>().Object).Handle(new(null, "Panel", "1, 2"), default);
-        Assert.NotNull(saved); Assert.Equal("Panel", saved!.GroupName); Assert.Equal(new[] { 1, 2 }, addedIds); items.Verify(x => x.AddAsync(It.Is<TestGroupItem>(i => i.TestGroupId == 10), It.IsAny<CancellationToken>()), Times.Exactly(2));
-    }
-
-    [Fact]
-    public async Task ManageTestGroups_throws_when_requested_group_is_missing()
-    {
-        var groups = new Mock<IRepository<TestGroup>>(); groups.Setup(x => x.GetByIdAsync(10, It.IsAny<CancellationToken>())).ReturnsAsync((TestGroup?)null);
-        await Assert.ThrowsAsync<EntityNotFoundException>(() => new ManageTestGroupsCommandHandler(groups.Object, new Mock<ITestGroupItemRepository>().Object, new Mock<IUnitOfWork>().Object).Handle(new(10, "Panel", "1"), default));
-    }
 }

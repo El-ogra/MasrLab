@@ -85,6 +85,7 @@ public static class DependencyInjection
         services.AddScoped<ISystemSettingRepository, SystemSettingRepository>();
         services.AddScoped<ISampleRepository, SampleRepository>();
         services.AddScoped<ITestGroupItemRepository, TestGroupItemRepository>();
+        services.AddScoped<ITestGroupRepository, TestGroupRepository>();
         services.AddScoped<IAntibioticRepository, AntibioticRepository>();
         services.AddScoped<IPriceListRepository, PriceListRepository>();
         services.AddScoped<ITestRepository, TestRepository>();
