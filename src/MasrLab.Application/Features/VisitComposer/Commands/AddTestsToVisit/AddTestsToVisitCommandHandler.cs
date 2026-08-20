@@ -129,15 +129,13 @@ public class AddTestsToVisitCommandHandler : IRequestHandler<AddTestsToVisitComm
                     : test.Price;
             }
 
-            var (visitTest, resultItems) = _snapshotter.CreateVisitTestSnapshot(
-                test, visit.Id, price, isOutsourced: false);
-
-            // Slice 8: stamp group provenance for SelectionGroup source.
-            if (request.Source == "SelectionGroup" && selectionGroup is not null)
-            {
-                visitTest.SourceTestGroupId = selectionGroup.Id;
-                visitTest.TestGroupNameSnapshot = selectionGroup.GroupName;
-            }
+            var (visitTest, resultItems) = request.Source == "SelectionGroup" && selectionGroup is not null
+                ? _snapshotter.CreateVisitTestSnapshot(
+                    test, visit.Id, price, isOutsourced: false,
+                    sourceTestGroupId: selectionGroup.Id,
+                    testGroupNameSnapshot: selectionGroup.GroupName)
+                : _snapshotter.CreateVisitTestSnapshot(
+                    test, visit.Id, price, isOutsourced: false);
 
             visit.AddVisitTest(visitTest);
             visit.ExtendPromisedDelivery(test.TestTimeDays);

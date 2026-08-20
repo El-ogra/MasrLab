@@ -218,4 +218,42 @@ public class VisitTestSnapshotterTests
 
         Assert.Contains("draft", ex.Message);
     }
+
+    [Fact]
+    public void CreateVisitTestSnapshot_WithGroupSnapshot_SetsSourceTestGroupIdAndGroupName()
+    {
+        var test = new Test { Id = 90, Name = "Group Test" };
+        test.TestComponents.Add(new TestComponent
+        {
+            Id = 901, TestId = 90, Name = "Comp1", Unit = "U1",
+            DisplayOrder = 1, ResultEntryKind = ResultEntryKind.Ordinary
+        });
+
+        var (visitTest, resultItems) = _snapshotter.CreateVisitTestSnapshot(
+            test, visitId: 10, price: 75m, isOutsourced: false,
+            sourceTestGroupId: 5, testGroupNameSnapshot: "Checkup Panel");
+
+        Assert.Equal(5, visitTest.SourceTestGroupId);
+        Assert.Equal("Checkup Panel", visitTest.TestGroupNameSnapshot);
+        Assert.Equal(90, visitTest.TestId);
+        Assert.Equal(75m, visitTest.Price);
+    }
+
+    [Fact]
+    public void CreateVisitTestSnapshot_WithGroupSnapshot_NullValues_RemainsNull()
+    {
+        var test = new Test { Id = 91, Name = "No Group Test" };
+        test.TestComponents.Add(new TestComponent
+        {
+            Id = 911, TestId = 91, Name = "Comp1", Unit = "U1",
+            DisplayOrder = 1, ResultEntryKind = ResultEntryKind.Ordinary
+        });
+
+        var (visitTest, resultItems) = _snapshotter.CreateVisitTestSnapshot(
+            test, visitId: 11, price: 50m, isOutsourced: false,
+            sourceTestGroupId: null, testGroupNameSnapshot: null);
+
+        Assert.Null(visitTest.SourceTestGroupId);
+        Assert.Null(visitTest.TestGroupNameSnapshot);
+    }
 }

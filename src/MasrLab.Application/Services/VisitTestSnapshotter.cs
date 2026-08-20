@@ -45,4 +45,14 @@ public class VisitTestSnapshotter : IVisitTestSnapshotter
 
         return (visitTest, resultItems);
     }
+
+    public (VisitTest VisitTest, IReadOnlyList<VisitTestResultItem> ResultItems) CreateVisitTestSnapshot(
+        Test test, int visitId, decimal price, bool isOutsourced,
+        int? sourceTestGroupId, string? testGroupNameSnapshot)
+    {
+        var result = CreateVisitTestSnapshot(test, visitId, price, isOutsourced);
+        result.VisitTest.SourceTestGroupId = sourceTestGroupId;
+        result.VisitTest.TestGroupNameSnapshot = testGroupNameSnapshot;
+        return result;
+    }
 }
