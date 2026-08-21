@@ -43,6 +43,12 @@ public class AddReferralEntityCommandHandler : IRequestHandler<AddReferralEntity
         {
             throw new BusinessRuleViolationException("Referral/Contract entities require a price list.");
         }
+        else if (request.EntityType == ReferralEntityType.ReferralEntity && request.PriceListId is not null)
+        {
+            var priceList = await _priceListRepository.GetByIdAsync(request.PriceListId.Value, cancellationToken);
+            if (priceList is null)
+                throw new EntityNotFoundException(nameof(MasrLab.Domain.Entities.Settings.PriceList), request.PriceListId.Value);
+        }
 
         var referralEntity = new ReferralEntity
         {
@@ -55,8 +61,7 @@ public class AddReferralEntityCommandHandler : IRequestHandler<AddReferralEntity
             City = request.City,
             Discount = request.Discount,
             Commission = request.Commission,
-            PriceListId = resolvedPriceListId,
-            AccountBalance = request.AccountBalance
+            PriceListId = resolvedPriceListId
         };
 
         await _referralEntityRepository.AddAsync(referralEntity, cancellationToken);

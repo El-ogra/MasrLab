@@ -10,17 +10,33 @@ namespace MasrLab.Application.Features.TestsMasterData.Queries.GetTestsList;
 public class GetTestsListQueryHandler : IRequestHandler<GetTestsListQuery, IReadOnlyList<TestDto>>
 {
     private readonly ITestRepository _testRepository;
+    private readonly IReferralEntityRepository _referralEntityRepository;
     private readonly IMapper _mapper;
 
-    public GetTestsListQueryHandler(ITestRepository testRepository, IMapper mapper)
+    public GetTestsListQueryHandler(ITestRepository testRepository, IReferralEntityRepository referralEntityRepository, IMapper mapper)
     {
         _testRepository = testRepository;
+        _referralEntityRepository = referralEntityRepository;
         _mapper = mapper;
     }
 
     public async Task<IReadOnlyList<TestDto>> Handle(GetTestsListQuery request, CancellationToken cancellationToken)
     {
         var tests = await _testRepository.GetAllWithComponentsAsync(cancellationToken);
+
+        var labIds = tests
+            .Where(t => t.SentOutsideLab && t.OutsourcedLabReferralEntityId.HasValue)
+            .Select(t => t.OutsourcedLabReferralEntityId!.Value)
+            .Distinct()
+            .ToList();
+
+        var labNames = new Dictionary<int, string>();
+        foreach (var labId in labIds)
+        {
+            var lab = await _referralEntityRepository.GetByIdAsync(labId, cancellationToken);
+            if (lab != null)
+                labNames[labId] = lab.Name;
+        }
 
         var query = tests.AsEnumerable();
 
@@ -92,6 +108,8 @@ public class GetTestsListQueryHandler : IRequestHandler<GetTestsListQuery, IRead
             Tube3 = t.Tube3,
             SentOutsideLab = t.SentOutsideLab,
             OutsourcedLabName = t.OutsourcedLabName,
+            OutsourcedLabReferralEntityId = t.OutsourcedLabReferralEntityId,
+            OutsourcedLabNameResolved = t.OutsourcedLabReferralEntityId.HasValue && labNames.TryGetValue(t.OutsourcedLabReferralEntityId.Value, out var resolved) ? resolved : null,
             OutsourcedCostPrice = t.OutsourcedCostPrice,
             CostPrice = t.CostPrice,
             PatientQuestion = t.PatientQuestion,

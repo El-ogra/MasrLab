@@ -28,7 +28,7 @@ public class GetTestsListCostPriceTests
         repo.Setup(r => r.GetAllWithComponentsAsync(It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<Test> { test });
 
-        var handler = new GetTestsListQueryHandler(repo.Object, new Mock<IMapper>().Object);
+        var handler = new GetTestsListQueryHandler(repo.Object, new Mock<IReferralEntityRepository>().Object, new Mock<IMapper>().Object);
         var result = await handler.Handle(new GetTestsListQuery(null, null, null), CancellationToken.None);
 
         Assert.Single(result);
@@ -55,7 +55,7 @@ public class GetTestsListCostPriceTests
         repo.Setup(r => r.GetAllWithComponentsAsync(It.IsAny<CancellationToken>()))
             .ReturnsAsync(new List<Test> { test });
 
-        var handler = new GetTestsListQueryHandler(repo.Object, new Mock<IMapper>().Object);
+        var handler = new GetTestsListQueryHandler(repo.Object, new Mock<IReferralEntityRepository>().Object, new Mock<IMapper>().Object);
         var result = await handler.Handle(new GetTestsListQuery(null, null, null), CancellationToken.None);
 
         Assert.Single(result);

@@ -11,15 +11,18 @@ public class GetTestWithReferencesQueryHandler : IRequestHandler<GetTestWithRefe
 {
     private readonly IRepository<Test> _testRepository;
     private readonly IReferenceValueRepository _referenceValueRepository;
+    private readonly IReferralEntityRepository _referralEntityRepository;
     private readonly IMapper _mapper;
 
     public GetTestWithReferencesQueryHandler(
         IRepository<Test> testRepository,
         IReferenceValueRepository referenceValueRepository,
+        IReferralEntityRepository referralEntityRepository,
         IMapper mapper)
     {
         _testRepository = testRepository;
         _referenceValueRepository = referenceValueRepository;
+        _referralEntityRepository = referralEntityRepository;
         _mapper = mapper;
     }
 
@@ -30,6 +33,13 @@ public class GetTestWithReferencesQueryHandler : IRequestHandler<GetTestWithRefe
             return null;
 
         var referenceValues = await _referenceValueRepository.GetByTestIdAsync(request.TestId, cancellationToken);
+
+        string? resolvedLabName = null;
+        if (test.SentOutsideLab && test.OutsourcedLabReferralEntityId.HasValue)
+        {
+            var labEntity = await _referralEntityRepository.GetByIdAsync(test.OutsourcedLabReferralEntityId.Value, cancellationToken);
+            resolvedLabName = labEntity?.Name;
+        }
 
         return new TestWithReferencesDto
         {
@@ -63,6 +73,8 @@ public class GetTestWithReferencesQueryHandler : IRequestHandler<GetTestWithRefe
             Tube3 = test.Tube3,
             SentOutsideLab = test.SentOutsideLab,
             OutsourcedLabName = test.OutsourcedLabName,
+            OutsourcedLabReferralEntityId = test.OutsourcedLabReferralEntityId,
+            OutsourcedLabNameResolved = resolvedLabName,
             OutsourcedCostPrice = test.OutsourcedCostPrice,
             CostPrice = test.CostPrice,
             PatientQuestion = test.PatientQuestion,

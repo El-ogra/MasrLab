@@ -13,6 +13,5 @@ public record AddReferralEntityCommand(
     string? City,
     decimal? Discount,
     decimal? Commission,
-    int? PriceListId,
-    decimal AccountBalance
+    int? PriceListId
 ) : IRequest<Unit>;

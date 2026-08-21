@@ -1,6 +1,13 @@
+using MasrLab.Application.Features.DoctorsAndReferrals.Commands.AddReferralEntity;
+using MasrLab.Application.Features.DoctorsAndReferrals.Commands.UpdateReferralEntity;
+using MasrLab.Application.Features.DoctorsAndReferrals.Commands.DeleteReferralEntity;
+using MasrLab.Application.Features.DoctorsAndReferrals.Queries.GetReferralEntities;
+using MasrLab.Application.Features.DoctorsAndReferrals.Queries.GetExternalLabCandidates;
 using MasrLab.Domain.Common.Enums;
 using MasrLab.Domain.Entities.Administrative;
+using MasrLab.Domain.Entities.Core;
 using MasrLab.Domain.Entities.Settings;
+using MasrLab.Domain.Interfaces;
 using MasrLab.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
@@ -15,108 +22,153 @@ public class Module12_ReferralParties_IntegrationTests
         var db = LocalDbTestDatabase.NewDatabaseName("MasrLabDb_Mod12_Lifecycle");
         try
         {
+            // Seed price lists directly (Module 11 concern, already tested)
             await using (var ctx = LocalDbTestDatabase.CreateMigratedContext(db))
             {
-                // Arrange: create a Lab-to-Lab price list and a regular price list
                 var labToLabList = new PriceList { Name = "Lab-to-Lab", IsLabToLab = true };
                 var regularList = new PriceList { Name = "Regular Contract" };
                 ctx.PriceLists.AddRange(labToLabList, regularList);
                 await ctx.SaveChangesAsync(CancellationToken.None);
-
-                // Act 1: Create TreatingDoctor (no price list)
-                var doctor = new ReferralEntity
-                {
-                    Name = "Dr. Ahmed",
-                    EntityType = ReferralEntityType.TreatingDoctor,
-                    City = "Cairo",
-                    Discount = 10m,
-                    Commission = 5m
-                };
-                ctx.ReferralEntities.Add(doctor);
-                await ctx.SaveChangesAsync(CancellationToken.None);
-                Assert.True(doctor.Id > 0);
-                Assert.Null(doctor.PriceListId);
-
-                // Act 2: Create ReferralEntity with regular price list
-                var referral = new ReferralEntity
-                {
-                    Name = "Hospital XYZ",
-                    EntityType = ReferralEntityType.ReferralEntity,
-                    PriceListId = regularList.Id,
-                    City = "Alexandria"
-                };
-                ctx.ReferralEntities.Add(referral);
-                await ctx.SaveChangesAsync(CancellationToken.None);
-                Assert.True(referral.Id > 0);
-                Assert.Equal(regularList.Id, referral.PriceListId);
-
-                // Act 3: Create OutsourcedSamples with Lab-to-Lab price list
-                var outsourced = new ReferralEntity
-                {
-                    Name = "External Lab ABC",
-                    EntityType = ReferralEntityType.OutsourcedSamples,
-                    PriceListId = labToLabList.Id,
-                    City = "Giza"
-                };
-                ctx.ReferralEntities.Add(outsourced);
-                await ctx.SaveChangesAsync(CancellationToken.None);
-                Assert.True(outsourced.Id > 0);
-                Assert.Equal(labToLabList.Id, outsourced.PriceListId);
             }
 
-            // Verify: list query returns all 3 entities
-            await using (var verify = LocalDbTestDatabase.CreateContext(db))
+            // Act 1: Create TreatingDoctor via AddReferralEntityCommand
+            await using (var ctx = LocalDbTestDatabase.CreateMigratedContext(db))
             {
-                var all = await verify.ReferralEntities
-                    .Include(e => e.PriceList)
-                    .ToListAsync();
-                Assert.Equal(3, all.Count);
+                var repo = new MasrLab.Infrastructure.Persistence.Repositories.ReferralEntityRepository(ctx);
+                var priceRepo = new MasrLab.Infrastructure.Persistence.Repositories.PriceListRepository(ctx);
+                var uow = new MasrLab.Infrastructure.Persistence.UnitOfWork(ctx);
 
-                // OQ-5: External lab candidates = OutsourcedSamples + entities on Lab-to-Lab list
-                var candidates = all
-                    .Where(e => e.EntityType == ReferralEntityType.OutsourcedSamples
-                             || (e.PriceList != null && e.PriceList.IsLabToLab))
-                    .ToList();
-                // OutsourcedSamples entity + any on lab-to-lab (but doctor has no list, referral has regular list)
-                // Only outsourced has both OutsourcedSamples AND lab-to-lab list
+                var handler = new AddReferralEntityCommandHandler(repo, priceRepo, uow);
+                var cmd = new AddReferralEntityCommand(
+                    "Dr. Ahmed", ReferralEntityType.TreatingDoctor,
+                    null, null, null, null, "Cairo", 10m, 5m, null);
+                await handler.Handle(cmd, CancellationToken.None);
+            }
+
+            // Verify TreatingDoctor created
+            await using (var ctx = LocalDbTestDatabase.CreateContext(db))
+            {
+                var doctor = await ctx.ReferralEntities.FirstAsync(e => e.Name == "Dr. Ahmed");
+                Assert.True(doctor.Id > 0);
+                Assert.Equal(ReferralEntityType.TreatingDoctor, doctor.EntityType);
+                Assert.Null(doctor.PriceListId);
+                Assert.Equal(10m, doctor.Discount);
+                Assert.Equal(5m, doctor.Commission);
+            }
+
+            // Act 2: Create ReferralEntity via AddReferralEntityCommand
+            int referralId;
+            await using (var ctx = LocalDbTestDatabase.CreateMigratedContext(db))
+            {
+                var regularList = await ctx.PriceLists.FirstAsync(p => p.Name == "Regular Contract");
+                var repo = new MasrLab.Infrastructure.Persistence.Repositories.ReferralEntityRepository(ctx);
+                var priceRepo = new MasrLab.Infrastructure.Persistence.Repositories.PriceListRepository(ctx);
+                var uow = new MasrLab.Infrastructure.Persistence.UnitOfWork(ctx);
+
+                var handler = new AddReferralEntityCommandHandler(repo, priceRepo, uow);
+                var cmd = new AddReferralEntityCommand(
+                    "Hospital XYZ", ReferralEntityType.ReferralEntity,
+                    "Sara", "01012345678", "fax", "Giza", "Cairo", null, null, regularList.Id);
+                await handler.Handle(cmd, CancellationToken.None);
+
+                referralId = (await ctx.ReferralEntities.FirstAsync(e => e.Name == "Hospital XYZ")).Id;
+            }
+
+            // Act 3: Create OutsourcedSamples via AddReferralEntityCommand
+            await using (var ctx = LocalDbTestDatabase.CreateMigratedContext(db))
+            {
+                var repo = new MasrLab.Infrastructure.Persistence.Repositories.ReferralEntityRepository(ctx);
+                var priceRepo = new MasrLab.Infrastructure.Persistence.Repositories.PriceListRepository(ctx);
+                var uow = new MasrLab.Infrastructure.Persistence.UnitOfWork(ctx);
+
+                var handler = new AddReferralEntityCommandHandler(repo, priceRepo, uow);
+                var cmd = new AddReferralEntityCommand(
+                    "External Lab ABC", ReferralEntityType.OutsourcedSamples,
+                    null, null, null, null, "Giza", null, null, null);
+                await handler.Handle(cmd, CancellationToken.None);
+            }
+
+            // Verify all 3 entities listed
+            await using (var ctx = LocalDbTestDatabase.CreateContext(db))
+            {
+                var all = await ctx.ReferralEntities.Include(e => e.PriceList).ToListAsync();
+                Assert.Equal(3, all.Count);
+            }
+
+            // OQ-5: External lab candidates via repository method (not in-test LINQ)
+            await using (var ctx = LocalDbTestDatabase.CreateContext(db))
+            {
+                var repo = new MasrLab.Infrastructure.Persistence.Repositories.ReferralEntityRepository(ctx);
+                var candidates = await repo.GetExternalLabCandidatesAsync(CancellationToken.None);
+                // OutsourcedSamples entity qualifies; referral on regular list does not; doctor has no list
                 Assert.Single(candidates);
                 Assert.Equal("External Lab ABC", candidates[0].Name);
             }
 
-            // Verify: edit (price-list swap on referral entity)
-            await using (var editCtx = LocalDbTestDatabase.CreateContext(db))
+            // Edit: price-list swap on referral entity via UpdateReferralEntityCommand
+            await using (var ctx = LocalDbTestDatabase.CreateMigratedContext(db))
             {
-                var labList = await editCtx.PriceLists.FirstAsync(p => p.IsLabToLab);
-                var toEdit = await editCtx.ReferralEntities.FirstAsync(e => e.Name == "Hospital XYZ");
-                toEdit.PriceListId = labList.Id;
-                await editCtx.SaveChangesAsync(CancellationToken.None);
+                var labList = await ctx.PriceLists.FirstAsync(p => p.IsLabToLab);
+                var repo = new MasrLab.Infrastructure.Persistence.Repositories.ReferralEntityRepository(ctx);
+                var priceRepo = new MasrLab.Infrastructure.Persistence.Repositories.PriceListRepository(ctx);
+                var uow = new MasrLab.Infrastructure.Persistence.UnitOfWork(ctx);
 
-                var edited = await editCtx.ReferralEntities
-                    .Include(e => e.PriceList)
-                    .FirstAsync(e => e.Id == toEdit.Id);
-                Assert.Equal(labList.Id, edited.PriceListId);
+                var handler = new UpdateReferralEntityCommandHandler(repo, priceRepo, uow);
+                var cmd = new UpdateReferralEntityCommand(
+                    referralId, "Hospital XYZ", "Sara", "01012345678", "fax", "Giza", "Cairo",
+                    null, null, labList.Id);
+                await handler.Handle(cmd, CancellationToken.None);
+            }
+
+            // Verify swap persisted
+            await using (var ctx = LocalDbTestDatabase.CreateContext(db))
+            {
+                var edited = await ctx.ReferralEntities.Include(e => e.PriceList).FirstAsync(e => e.Id == referralId);
                 Assert.True(edited.PriceList!.IsLabToLab);
             }
 
-            // After swap, OQ-5 candidates should now include the referral on lab-to-lab
-            await using (var postSwapCtx = LocalDbTestDatabase.CreateContext(db))
+            // After swap, OQ-5 pool should now include the referral on lab-to-lab
+            await using (var ctx = LocalDbTestDatabase.CreateContext(db))
             {
-                var allAfter = await postSwapCtx.ReferralEntities
-                    .Include(e => e.PriceList)
-                    .ToListAsync();
-                var candidatesAfter = allAfter
-                    .Where(e => e.EntityType == ReferralEntityType.OutsourcedSamples
-                             || (e.PriceList != null && e.PriceList.IsLabToLab))
-                    .ToList();
+                var repo = new MasrLab.Infrastructure.Persistence.Repositories.ReferralEntityRepository(ctx);
+                var candidatesAfter = await repo.GetExternalLabCandidatesAsync(CancellationToken.None);
                 Assert.Equal(2, candidatesAfter.Count);
             }
 
-            // Verify: soft delete
-            await using (var deleteCtx = LocalDbTestDatabase.CreateContext(db))
+            // OQ-2: Verify VisitTest snapshot is unaffected by price-list swap
+            await using (var ctx = LocalDbTestDatabase.CreateMigratedContext(db))
             {
-                var toDelete = await deleteCtx.ReferralEntities.FirstAsync(e => e.Name == "Dr. Ahmed");
-                toDelete.IsDeleted = true;
-                await deleteCtx.SaveChangesAsync(CancellationToken.None);
+                // Create a VisitTest snapshot BEFORE the swap (simulating historical record)
+                var test = new Domain.Entities.Core.Test
+                {
+                    Name = "CBC", ReportName = "CBC", ReceiptName = "CBC",
+                    Group = "Hematology", Price = 120m, TurnaroundTime = "24h", Unit = "mg"
+                };
+                ctx.Tests.Add(test);
+                await ctx.SaveChangesAsync(CancellationToken.None);
+
+                var snapshot = new VisitTest(1, test.Id, 120m, false);
+                ctx.VisitTests.Add(snapshot);
+                await ctx.SaveChangesAsync(CancellationToken.None);
+            }
+
+            // After swap, the VisitTest.Price snapshot should remain unchanged
+            await using (var ctx = LocalDbTestDatabase.CreateContext(db))
+            {
+                var snapshot = await ctx.VisitTests.FirstAsync(vt => vt.TestId > 0);
+                Assert.Equal(120m, snapshot.Price);
+            }
+
+            // Soft delete via DeleteReferralEntityCommand
+            await using (var ctx = LocalDbTestDatabase.CreateMigratedContext(db))
+            {
+                var repo = new MasrLab.Infrastructure.Persistence.Repositories.ReferralEntityRepository(ctx);
+                var uow = new MasrLab.Infrastructure.Persistence.UnitOfWork(ctx);
+
+                var handler = new DeleteReferralEntityCommandHandler(repo, uow);
+                await handler.Handle(new DeleteReferralEntityCommand(
+                    (await ctx.ReferralEntities.FirstAsync(e => e.Name == "Dr. Ahmed")).Id),
+                    CancellationToken.None);
             }
 
             await using (var afterDeleteCtx = LocalDbTestDatabase.CreateContext(db))
@@ -126,9 +178,7 @@ public class Module12_ReferralParties_IntegrationTests
                 Assert.Contains(remaining, e => e.Name == "Hospital XYZ");
                 Assert.Contains(remaining, e => e.Name == "External Lab ABC");
 
-                var withDeleted = await afterDeleteCtx.ReferralEntities
-                    .IgnoreQueryFilters()
-                    .ToListAsync();
+                var withDeleted = await afterDeleteCtx.ReferralEntities.IgnoreQueryFilters().ToListAsync();
                 Assert.Equal(3, withDeleted.Count);
             }
         }

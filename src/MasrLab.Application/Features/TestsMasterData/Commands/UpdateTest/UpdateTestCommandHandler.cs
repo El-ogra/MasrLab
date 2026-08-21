@@ -1,4 +1,5 @@
 using MasrLab.Application.Features.TestsMasterData.Commands.UpdateTest;
+using MasrLab.Domain.Common.Enums;
 using MasrLab.Domain.Entities.Core;
 using MasrLab.Domain.Exceptions;
 using MasrLab.Domain.Interfaces;
@@ -9,11 +10,13 @@ namespace MasrLab.Application.Features.TestsMasterData.Commands.UpdateTest;
 public class UpdateTestCommandHandler : IRequestHandler<UpdateTestCommand, Unit>
 {
     private readonly IRepository<Test> _testRepository;
+    private readonly IReferralEntityRepository _referralEntityRepository;
     private readonly IUnitOfWork _unitOfWork;
 
-    public UpdateTestCommandHandler(IRepository<Test> testRepository, IUnitOfWork unitOfWork)
+    public UpdateTestCommandHandler(IRepository<Test> testRepository, IReferralEntityRepository referralEntityRepository, IUnitOfWork unitOfWork)
     {
         _testRepository = testRepository;
+        _referralEntityRepository = referralEntityRepository;
         _unitOfWork = unitOfWork;
     }
 
@@ -22,6 +25,16 @@ public class UpdateTestCommandHandler : IRequestHandler<UpdateTestCommand, Unit>
         var test = await _testRepository.GetByIdAsync(request.Id, cancellationToken);
         if (test is null)
             throw new EntityNotFoundException(nameof(Test), request.Id);
+
+        if (request.SentOutsideLab && request.OutsourcedLabReferralEntityId.HasValue)
+        {
+            var labEntity = await _referralEntityRepository.GetByIdAsync(request.OutsourcedLabReferralEntityId.Value, cancellationToken);
+            var isValidLab = labEntity != null &&
+                (labEntity.EntityType == ReferralEntityType.OutsourcedSamples
+                || (labEntity.PriceList != null && labEntity.PriceList.IsLabToLab));
+            if (!isValidLab)
+                throw new BusinessRuleViolationException("The selected external lab is not valid.");
+        }
 
         test.Name = request.Name;
         test.ReportName = request.ReportName;

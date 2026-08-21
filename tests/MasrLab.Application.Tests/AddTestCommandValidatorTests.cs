@@ -21,11 +21,11 @@ public class AddTestCommandValidatorTests
     }
 
     [Fact]
-    public void Should_Have_Error_When_Price_Is_Zero()
+    public void Should_Be_Valid_When_Price_Is_Zero()
     {
         var command = CreateCommand(price: 0m);
         var result = _validator.Validate(command);
-        Assert.False(result.IsValid);
+        Assert.True(result.IsValid);
     }
 
     [Fact]

@@ -10,7 +10,7 @@ public class AddTestCommandValidator : AbstractValidator<AddTestCommand>
         RuleFor(x => x.ReportName).NotEmpty();
         RuleFor(x => x.ReceiptName).NotEmpty();
         RuleFor(x => x.Group).NotEmpty();
-        RuleFor(x => x.Price).GreaterThan(0);
+        RuleFor(x => x.Price).GreaterThanOrEqualTo(0);
         RuleFor(x => x.TurnaroundTime).NotEmpty();
         RuleFor(x => x.Unit).NotEmpty();
         RuleFor(x => x.TestTimeDays).GreaterThanOrEqualTo(0);

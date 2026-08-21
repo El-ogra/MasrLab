@@ -18,12 +18,12 @@ public class AddReferralEntityCommandValidator : AbstractValidator<AddReferralEn
 
         When(x => x.EntityType == ReferralEntityType.ReferralEntity, () =>
         {
-            RuleFor(x => x.PriceListId).GreaterThan(0);
+            RuleFor(x => x.PriceListId).NotNull().GreaterThan(0);
         });
 
         When(x => x.EntityType == ReferralEntityType.OutsourcedSamples, () =>
         {
-            RuleFor(x => x.PriceListId).GreaterThan(0);
+            // PriceListId is not validated here — the handler enforces the Lab-to-Lab lock server-side (D-02)
         });
     }
 }

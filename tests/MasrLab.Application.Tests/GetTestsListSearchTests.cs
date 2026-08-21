@@ -78,7 +78,7 @@ public class GetTestsListSearchTests
             .Setup(r => r.GetAllWithComponentsAsync(It.IsAny<CancellationToken>()))
             .ReturnsAsync(tests.ToList());
 
-        return new GetTestsListQueryHandler(repository.Object, new Mock<AutoMapper.IMapper>().Object);
+        return new GetTestsListQueryHandler(repository.Object, new Mock<IReferralEntityRepository>().Object, new Mock<AutoMapper.IMapper>().Object);
     }
 
     private static Test CreateTest(int id, string name, string group) => new()

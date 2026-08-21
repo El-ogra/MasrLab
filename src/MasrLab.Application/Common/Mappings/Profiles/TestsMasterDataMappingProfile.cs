@@ -11,7 +11,8 @@ public class TestsMasterDataMappingProfile : Profile
     {
         CreateMap<Test, TestDto>()
             .ForMember(dest => dest.IsCompound, opt => opt.Ignore())
-            .ForMember(dest => dest.Components, opt => opt.Ignore());
+            .ForMember(dest => dest.Components, opt => opt.Ignore())
+            .ForMember(dest => dest.OutsourcedLabNameResolved, opt => opt.Ignore());
         CreateMap<TestComponent, TestComponentDto>();
         CreateMap<ReferenceValue, ReferenceValueDto>();
         CreateMap<PriceListItem, PriceListItemDto>()

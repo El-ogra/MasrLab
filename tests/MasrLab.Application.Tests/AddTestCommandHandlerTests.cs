@@ -10,16 +10,18 @@ namespace MasrLab.Application.Tests;
 public class AddTestCommandHandlerTests
 {
     private readonly Mock<IRepository<Test>> _testRepo;
+    private readonly Mock<IReferralEntityRepository> _referralEntityRepo;
     private readonly Mock<IUnitOfWork> _unitOfWork;
 
     public AddTestCommandHandlerTests()
     {
         _testRepo = new Mock<IRepository<Test>>();
+        _referralEntityRepo = new Mock<IReferralEntityRepository>();
         _unitOfWork = new Mock<IUnitOfWork>();
     }
 
     private AddTestCommandHandler CreateHandler()
-        => new(_testRepo.Object, _unitOfWork.Object);
+        => new(_testRepo.Object, _referralEntityRepo.Object, _unitOfWork.Object);
 
     private AddTestCommand CreateCommand(
         string name = "CBC",
