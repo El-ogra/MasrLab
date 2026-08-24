@@ -24,7 +24,7 @@ public sealed class CultureAntibioticConfiguration : IEntityTypeConfiguration<Cu
             .HasForeignKey(e => e.CultureTestId)
             .OnDelete(DeleteBehavior.Restrict);
 
-        builder.HasOne<Antibiotic>()
+        builder.HasOne(e => e.Antibiotic)
             .WithMany()
             .HasForeignKey(e => e.AntibioticId)
             .OnDelete(DeleteBehavior.Restrict);

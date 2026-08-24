@@ -1,5 +1,6 @@
 using MasrLab.Application.Common.Interfaces;
 using MasrLab.Application.Common.Printing;
+using MasrLab.Application.Services;
 using MasrLab.Domain.Interfaces;
 using MasrLab.Infrastructure.Persistence;
 using MasrLab.Infrastructure.Persistence.Interceptors;
@@ -43,6 +44,9 @@ public static class DependencyInjection
             var context = provider.GetRequiredService<MasrLabDbContext>();
             return new UnitOfWork(context);
         });
+
+        // Application services
+        services.AddScoped<ICultureTemplateSeeder, CultureTemplateSeeder>();
 
         // Services
         services.AddScoped<IAuthenticationService, AuthenticationService>();

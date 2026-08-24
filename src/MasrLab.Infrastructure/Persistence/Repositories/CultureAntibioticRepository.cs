@@ -17,6 +17,7 @@ public sealed class CultureAntibioticRepository : GenericRepository<CultureAntib
     {
         return await _context.CultureAntibiotics
             .AsNoTracking()
+            .Include(entity => entity.Antibiotic)
             .Include(entity => entity.CommercialNames.Where(name => !name.IsDeleted))
             .Where(entity => entity.CultureTestId == cultureTestId)
             .OrderBy(entity => entity.Id)
@@ -28,6 +29,7 @@ public sealed class CultureAntibioticRepository : GenericRepository<CultureAntib
         CancellationToken cancellationToken = default)
     {
         return await _context.CultureAntibiotics
+            .Include(entity => entity.Antibiotic)
             .Include(entity => entity.CommercialNames.Where(name => !name.IsDeleted))
             .SingleOrDefaultAsync(entity => entity.Id == id, cancellationToken);
     }

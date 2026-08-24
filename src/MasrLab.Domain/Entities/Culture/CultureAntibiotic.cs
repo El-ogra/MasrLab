@@ -11,6 +11,7 @@ public class CultureAntibiotic : BaseEntity
     public bool Pregnant { get; set; }
     public bool Children { get; set; }
 
+    public Antibiotic? Antibiotic { get; set; }
     public ICollection<CultureAntibioticCommercialName> CommercialNames { get; set; } = new List<CultureAntibioticCommercialName>();
 
     private CultureAntibiotic()
@@ -39,4 +40,26 @@ public class CultureAntibiotic : BaseEntity
         bool pregnant = false,
         bool children = false)
         => new(cultureTestId, antibioticId, sensitivityText, pregnant, children);
+
+    public static CultureAntibiotic CreateForNewAntibiotic(
+        int cultureTestId,
+        Antibiotic antibiotic,
+        string? sensitivityText = null,
+        bool pregnant = false,
+        bool children = false)
+    {
+        if (cultureTestId <= 0)
+            throw new BusinessRuleViolationException("CultureAntibiotic requires a valid CultureTestId.");
+
+        ArgumentNullException.ThrowIfNull(antibiotic);
+        return new CultureAntibiotic
+        {
+            CultureTestId = cultureTestId,
+            Antibiotic = antibiotic,
+            AntibioticId = antibiotic.Id,
+            SensitivityText = sensitivityText,
+            Pregnant = pregnant,
+            Children = children
+        };
+    }
 }
