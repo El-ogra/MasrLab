@@ -21,6 +21,7 @@ public static class DependencyInjection
         services.AddTransient(typeof(IPipelineBehavior<,>), typeof(Common.Behaviors.AuditBehavior<,>));
         services.AddScoped<LabIdGenerator>();
         services.AddScoped<IVisitLabIdGenerator, VisitLabIdGenerator>();
+        services.AddScoped<Common.Interfaces.ICultureTemplateSeeder, NullCultureTemplateSeeder>();
 
         // Domain services
         services.AddScoped<IAccountingService, AccountingService>();

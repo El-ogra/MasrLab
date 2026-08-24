@@ -24,4 +24,15 @@ public class TestRepository : GenericRepository<Test>, ITestRepository
             .Include(t => t.TestComponents.Where(c => !c.IsDeleted))
             .FirstOrDefaultAsync(t => t.Id == id, cancellationToken);
     }
+
+    public async Task<IReadOnlyList<Test>> GetByGroupAsync(
+        string group,
+        CancellationToken cancellationToken = default)
+    {
+        return await _context.Tests
+            .Where(t => t.Group == group)
+            .Include(t => t.TestComponents.Where(c => !c.IsDeleted))
+            .OrderBy(t => t.ArrangeNo)
+            .ToListAsync(cancellationToken);
+    }
 }

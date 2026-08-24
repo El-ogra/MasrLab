@@ -6,4 +6,5 @@ public interface ITestRepository : IRepository<Test>
 {
     Task<IReadOnlyList<Test>> GetAllWithComponentsAsync(CancellationToken cancellationToken = default);
     Task<Test?> GetByIdWithComponentsAsync(int id, CancellationToken cancellationToken = default);
+    Task<IReadOnlyList<Test>> GetByGroupAsync(string group, CancellationToken cancellationToken = default);
 }
