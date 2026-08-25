@@ -15,6 +15,8 @@ public class EnterTestResultsBatchCommandHandler
     private readonly IPatientRepository _patientRepository;
     private readonly IResultValidationService _resultValidationService;
     private readonly IVisitCompletionEvaluator _completionEvaluator;
+    private readonly IDerivedResultCalculator _derivedResultCalculator;
+    private readonly IRepository<TestResult> _testResultRepository;
     private readonly IUnitOfWork _unitOfWork;
 
     public EnterTestResultsBatchCommandHandler(
@@ -22,12 +24,16 @@ public class EnterTestResultsBatchCommandHandler
         IPatientRepository patientRepository,
         IResultValidationService resultValidationService,
         IVisitCompletionEvaluator completionEvaluator,
+        IDerivedResultCalculator derivedResultCalculator,
+        IRepository<TestResult> testResultRepository,
         IUnitOfWork unitOfWork)
     {
         _visitRepository = visitRepository;
         _patientRepository = patientRepository;
         _resultValidationService = resultValidationService;
         _completionEvaluator = completionEvaluator;
+        _derivedResultCalculator = derivedResultCalculator;
+        _testResultRepository = testResultRepository;
         _unitOfWork = unitOfWork;
     }
 
@@ -77,7 +83,11 @@ public class EnterTestResultsBatchCommandHandler
                 testResult.SetAutomaticComment(validationResult.WarningComment);
 
             ApplyCommentPatch(testResult, item.CommentPatch);
+
+            await _testResultRepository.AddAsync(testResult, cancellationToken);
         }
+
+        AutoFillDerivedResults(visit, request.Items, request.EnteredByUserId);
 
         if (visit.Status == VisitStatus.Registered)
         {
@@ -102,5 +112,38 @@ public class EnterTestResultsBatchCommandHandler
             return;
 
         testResult.SetComment(patch.NewComment);
+    }
+
+    // OQ-M4-6: derived analytes (INR, ratios, ...) auto-compute from the sibling values
+    // entered in this batch, within one VisitTest. Missing inputs leave the slot blank.
+    private void AutoFillDerivedResults(
+        PatientVisit visit,
+        IReadOnlyList<BatchResultItemRequest> enteredItems,
+        int enteredByUserId)
+    {
+        var enteredByItemId = enteredItems.ToDictionary(item => item.VisitTestResultItemId, item => item.Value);
+
+        foreach (var visitTest in visit.VisitTests)
+        {
+            var siblingInputs = visitTest.ResultItems
+                .Where(ri => enteredByItemId.ContainsKey(ri.Id))
+                .Select(ri => new DerivedResultInput(ri.ComponentName, enteredByItemId[ri.Id]))
+                .ToList();
+
+            foreach (var resultItem in visitTest.ResultItems)
+            {
+                if (enteredByItemId.ContainsKey(resultItem.Id))
+                    continue;
+                if (!_derivedResultCalculator.IsDerivedTarget(resultItem.ComponentName))
+                    continue;
+
+                if (_derivedResultCalculator.TryCompute(resultItem.ComponentName, siblingInputs, out var computed))
+                {
+                    _testResultRepository.AddAsync(
+                        TestResult.Enter(resultItem.Id, computed, enteredByUserId),
+                        CancellationToken.None).GetAwaiter().GetResult();
+                }
+            }
+        }
     }
 }

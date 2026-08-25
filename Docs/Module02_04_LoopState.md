@@ -11,7 +11,7 @@
 - [X] Slice 3 — Settlement, edit/delete constraints, permissions (DONE)
 - [X] Slice 4 — Billing read models (DONE)
 - [X] Slice 5 — Worklist + per-test workflow flags (DONE)
-- [ ] Slice 6 — Flag override, derived analytes, edit-after-print permission (NOT STARTED)
+- [X] Slice 6 — Flag override, derived analytes, edit-after-print permission (DONE)
 - [ ] Slice 7 — Print-inclusion flags + reprint warning (NOT STARTED)
 - [ ] Slice 8 — Blank reports persisted (NOT STARTED)
 - [ ] Slice 9 — Consolidated reports (NOT STARTED)
@@ -19,9 +19,18 @@
 - [ ] Slice 11 — Print pipeline integration (NOT STARTED)
 
 ## Current Iteration
-- **Current Slice:** Slice 6
+- **Current Slice:** Slice 7
 - **Attempt Number:** 0
 - **Last Error:** None
+
+### Slice 6 Notes
+- TestResult: IsStatusOverridden + OverrideStatus(forcedStatus?, userId) — force sets flag, null clears (throws if nothing to clear). NOTE ResultStatus.High == 0 is the default for new results.
+- ResultEditChangeType extended: StatusOverride=4, DerivedOverride=5.
+- IDerivedResultCalculator (Domain/Services) + DerivedResultCalculator (Application/Services): INR = (PT/ControlPT)^ISI via siblings "PT","Control PT"/"CONTROLPT"/"CONTROLP","ISI"; generic "X/Y[ Ratio]" division rule covers AST/ALT. Missing input / divide-by-zero → blank. IsDerivedTarget used by EditTestResultCommandHandler to emit DerivedOverride history.
+- EnterTestResultsBatchCommandHandler now PERSISTS results (pre-existing latent bug: created TestResults were dropped — confirmed by old test comment) and auto-fills derived slots from batch-entered siblings per VisitTest. New deps: IDerivedResultCalculator + IRepository<TestResult>.
+- EditTestResultCommandHandler: post-print value edits require PermissionNames.ResultEdit (Results/EditPrinted) instead of unconditional throw; non-printed edits unchanged.
+- OverrideResultStatusCommand: gated by ResultEdit when PrintCount>0; writes StatusOverride history row.
+- Migration AddTestResultStatusOverrideFlag applied (20260825132940).
 
 ### Slice 5 Notes
 - VisitTest: IsFinished/FinishedByUserId/FinishedAt, IsVerified/..., IsPrinted/..., IsExportMarked; MarkFinished/MarkVerified/MarkPrinted idempotent with user validation; SetExportMark pure no-op. AccountType extended Individual/LabToLab/VIP/Free (values 3-6).

@@ -27,6 +27,7 @@ public class EditTestResultCommandHandlerTests
     private readonly Mock<IResultValidationService> _resultValidationService;
     private readonly Mock<IVisitCompletionEvaluator> _completionEvaluator;
     private readonly Mock<IRepository<TestResultEditHistory>> _historyRepository;
+    private readonly Mock<IPermissionRepository> _permissionRepository;
     private readonly Mock<IUnitOfWork> _unitOfWork;
 
     public EditTestResultCommandHandlerTests()
@@ -38,11 +39,18 @@ public class EditTestResultCommandHandlerTests
         _resultValidationService = new Mock<IResultValidationService>();
         _completionEvaluator = new Mock<IVisitCompletionEvaluator>();
         _historyRepository = new Mock<IRepository<TestResultEditHistory>>();
+        _permissionRepository = new Mock<IPermissionRepository>();
         _unitOfWork = new Mock<IUnitOfWork>();
     }
 
-    private EditTestResultCommandHandler CreateHandler()
-        => new(
+    private EditTestResultCommandHandler CreateHandler(bool resultEditGranted = false)
+    {
+        _permissionRepository
+            .Setup(r => r.GetByUserScreenOperationAsync(
+                It.IsAny<int>(), ScreenType.Results, PermissionOperation.EditPrinted, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new Domain.Entities.Administrative.Permission { Allowed = resultEditGranted });
+
+        return new(
             _testResultRepository.Object,
             _visitTestResultItemRepository.Object,
             _visitRepository.Object,
@@ -50,7 +58,10 @@ public class EditTestResultCommandHandlerTests
             _resultValidationService.Object,
             _completionEvaluator.Object,
             _historyRepository.Object,
+            _permissionRepository.Object,
+            new MasrLab.Application.Services.DerivedResultCalculator(),
             _unitOfWork.Object);
+    }
 
     private static PatientVisit CreateResultsEnteredVisit(int patientId = PatientId)
     {

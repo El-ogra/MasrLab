@@ -1,4 +1,5 @@
 using MediatR;
+using MasrLab.Application.Common.Constants;
 using MasrLab.Domain.Common.Enums;
 using MasrLab.Domain.Entities.Core;
 using MasrLab.Domain.Exceptions;
@@ -18,6 +19,8 @@ public class EditTestResultCommandHandler
     private readonly IResultValidationService _resultValidationService;
     private readonly IVisitCompletionEvaluator _completionEvaluator;
     private readonly IRepository<TestResultEditHistory> _historyRepository;
+    private readonly IPermissionRepository _permissionRepository;
+    private readonly IDerivedResultCalculator _derivedResultCalculator;
     private readonly IUnitOfWork _unitOfWork;
 
     public EditTestResultCommandHandler(
@@ -28,6 +31,8 @@ public class EditTestResultCommandHandler
         IResultValidationService resultValidationService,
         IVisitCompletionEvaluator completionEvaluator,
         IRepository<TestResultEditHistory> historyRepository,
+        IPermissionRepository permissionRepository,
+        IDerivedResultCalculator derivedResultCalculator,
         IUnitOfWork unitOfWork)
     {
         _testResultRepository = testResultRepository;
@@ -37,6 +42,8 @@ public class EditTestResultCommandHandler
         _resultValidationService = resultValidationService;
         _completionEvaluator = completionEvaluator;
         _historyRepository = historyRepository;
+        _permissionRepository = permissionRepository;
+        _derivedResultCalculator = derivedResultCalculator;
         _unitOfWork = unitOfWork;
     }
 
@@ -70,8 +77,15 @@ public class EditTestResultCommandHandler
         if (testResult.PrintCount > 0)
         {
             if (valueChanged)
-                throw new BusinessRuleViolationException(
-                    "Cannot edit value of a printed result. Use EditPrinted permission.");
+            {
+                // OQ-M4-15: post-print value edits are allowed ONLY with the ResultEdit
+                // capability (Results/EditPrinted); unprivileged edits still throw.
+                var grant = await _permissionRepository.GetByUserScreenOperationAsync(
+                    request.EditedByUserId, ScreenType.Results, PermissionOperation.EditPrinted, cancellationToken);
+                if (grant?.Allowed != true)
+                    throw new BusinessRuleViolationException(
+                        $"{PermissionNames.ResultEdit} permission is required to edit a printed result.");
+            }
         }
 
         var gender = patient.Gender == Gender.Male ? "male" : "female";
@@ -105,6 +119,9 @@ public class EditTestResultCommandHandler
         if (testResult.PrintCount > 0)
             testResult.MarkReprintRequired();
 
+        // OQ-M4-6: overriding an auto-computed derived analyte is flagged in the audit trail.
+        var isDerivedOverride = valueChanged && _derivedResultCalculator.IsDerivedTarget(resultItem.ComponentName);
+
         var history = new TestResultEditHistory
         {
             TestResultId = testResult.Id,
@@ -112,7 +129,8 @@ public class EditTestResultCommandHandler
             NewValue = valueChanged ? request.NewValue : null,
             OldComment = commentChanged ? oldComment : null,
             NewComment = commentChanged ? request.CommentPatch?.NewComment : null,
-            ChangeType = valueChanged && commentChanged ? ResultEditChangeType.ValueAndComment
+            ChangeType = isDerivedOverride ? ResultEditChangeType.DerivedOverride
+                : valueChanged && commentChanged ? ResultEditChangeType.ValueAndComment
                 : valueChanged ? ResultEditChangeType.ValueOnly
                 : ResultEditChangeType.CommentOnly,
             EditedByUserId = request.EditedByUserId,

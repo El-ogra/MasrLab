@@ -30,6 +30,7 @@ public static class DependencyInjection
         services.AddScoped<IPriceListResolverService, PriceListResolverService>();
         services.AddScoped<IPricingService, PricingService>();
         services.AddScoped<IReceiptCalculationService, ReceiptCalculationService>();
+        services.AddScoped<IDerivedResultCalculator, DerivedResultCalculator>();
         services.AddScoped<IReferralCommissionService, ReferralCommissionService>();
         services.AddScoped<IResultValidationService, ResultValidationService>();
         services.AddScoped<IReferenceValueMatcher, ReferenceValueMatcher>();

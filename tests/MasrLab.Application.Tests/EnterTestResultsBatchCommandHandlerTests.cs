@@ -1,6 +1,7 @@
 using FluentValidation;
 using MasrLab.Application.Features.ResultsEntry.Commands.EnterTestResultsBatch;
 using MasrLab.Application.Features.ResultsEntry.Common;
+using MasrLab.Application.Services;
 using MasrLab.Domain.Common.Enums;
 using MasrLab.Domain.Entities.Core;
 using MasrLab.Domain.Exceptions;
@@ -17,6 +18,7 @@ public class EnterTestResultsBatchCommandHandlerTests
     private readonly Mock<IPatientRepository> _patientRepository;
     private readonly Mock<IResultValidationService> _resultValidationService;
     private readonly Mock<IVisitCompletionEvaluator> _completionEvaluator;
+    private readonly Mock<IRepository<TestResult>> _testResultRepository;
     private readonly Mock<IUnitOfWork> _unitOfWork;
 
     public EnterTestResultsBatchCommandHandlerTests()
@@ -25,6 +27,7 @@ public class EnterTestResultsBatchCommandHandlerTests
         _patientRepository = new Mock<IPatientRepository>();
         _resultValidationService = new Mock<IResultValidationService>();
         _completionEvaluator = new Mock<IVisitCompletionEvaluator>();
+        _testResultRepository = new Mock<IRepository<TestResult>>();
         _unitOfWork = new Mock<IUnitOfWork>();
     }
 
@@ -34,6 +37,8 @@ public class EnterTestResultsBatchCommandHandlerTests
             _patientRepository.Object,
             _resultValidationService.Object,
             _completionEvaluator.Object,
+            new DerivedResultCalculator(),
+            _testResultRepository.Object,
             _unitOfWork.Object);
 
     private static Patient CreatePatient(

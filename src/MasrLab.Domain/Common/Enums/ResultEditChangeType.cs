@@ -5,5 +5,7 @@ public enum ResultEditChangeType
     ValueOnly = 0,
     CommentOnly = 1,
     ValueAndComment = 2,
-    ReferenceReapplied = 3
+    ReferenceReapplied = 3,
+    StatusOverride = 4,
+    DerivedOverride = 5
 }

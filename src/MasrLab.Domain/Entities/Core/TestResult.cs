@@ -25,6 +25,30 @@ public class TestResult : BaseEntity
     public string? Comment { get; private set; }
     public string? AutoCommentSnapshot { get; private set; }
     public bool ReprintRequired { get; private set; }
+    public bool IsStatusOverridden { get; private set; }
+
+    // OQ-M4-4: manual H/L override on top of the automatic M10 engine.
+    // A forced value flags the result; null clears the override so the engine re-derives it.
+    public void OverrideStatus(ResultStatus? forcedStatus, int userId)
+    {
+        if (userId <= 0)
+            throw new BusinessRuleViolationException("A valid user is required to override a status.");
+
+        if (forcedStatus is null)
+        {
+            if (!IsStatusOverridden)
+                throw new BusinessRuleViolationException("There is no status override to clear.");
+            IsStatusOverridden = false;
+            EditedByUserId = userId;
+            EditedAt = DateTime.UtcNow;
+            return;
+        }
+
+        Status = forcedStatus.Value;
+        IsStatusOverridden = true;
+        EditedByUserId = userId;
+        EditedAt = DateTime.UtcNow;
+    }
 
     public static TestResult Enter(int visitTestResultItemId, string value, int enteredByUserId)
     {
