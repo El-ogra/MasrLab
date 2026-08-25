@@ -18,8 +18,35 @@ namespace MasrLab.Application.Tests;
 
 public class PatientAndVisitHandlersTests
 {
-    private static RegisterPatientCommand RegisterCommand(string name = "Mona") => new(name, 30, 1, 2, AgeUnit.Months, Gender.Female, "01012345678", "Cairo", "123", "note", "LAB-1", 2, 3);
-    private static UpdatePatientDataCommand UpdateCommand(int id = 1) => new(id, "Updated", 40, 0, 0, AgeUnit.Years, Gender.Male, "01012345678", "Giza", "456", "changed", 4, 5);
+    private static RegisterPatientCommand RegisterCommand(string name = "Mona") => new(
+        name, 30, 1, 2, AgeUnit.Months, Gender.Female, "01012345678", "Cairo", "123", "note", "LAB-1", 2, 3,
+        HasDiabetes: true,
+        OnBloodPressureTreatment: true,
+        OnAntiviralTreatment: true,
+        OnAntibiotic: true,
+        BloodThinning: true,
+        HasLiverDisease: true,
+        HasAnemia: true,
+        HasLupus: true,
+        HasRenalFailure: true,
+        HasHypertension: true,
+        HasJointDisease: true,
+        RecentContrastOrUltrasound: true);
+
+    private static UpdatePatientDataCommand UpdateCommand(int id = 1) => new(
+        id, "Updated", 40, 0, 0, AgeUnit.Years, Gender.Male, "01012345678", "Giza", "456", "changed", 4, 5,
+        HasDiabetes: true,
+        OnBloodPressureTreatment: true,
+        OnAntiviralTreatment: true,
+        OnAntibiotic: true,
+        BloodThinning: true,
+        HasLiverDisease: true,
+        HasAnemia: true,
+        HasLupus: true,
+        HasRenalFailure: true,
+        HasHypertension: true,
+        HasJointDisease: true,
+        RecentContrastOrUltrasound: true);
 
     [Fact]
     public async Task RegisterPatient_persists_complete_patient()
@@ -28,6 +55,7 @@ public class PatientAndVisitHandlersTests
         patients.Setup(x => x.AddAsync(It.IsAny<Patient>(), It.IsAny<CancellationToken>())).Callback<Patient, CancellationToken>((p, _) => added = p);
         await new RegisterPatientCommandHandler(patients.Object, uow.Object, new LabIdGenerator(patients.Object)).Handle(RegisterCommand(), default);
         Assert.NotNull(added); Assert.Equal("Mona", added!.Name); Assert.Equal("LAB-1", added.LabId); Assert.Equal(2, added.DoctorId); Assert.Equal(3, added.ReferralEntityId); Assert.Equal(Gender.Female, added.Gender); Assert.Equal("Cairo", added.Address); Assert.Equal("123", added.NationalId); Assert.Equal("note", added.Notes);
+        Assert.True(added.HasDiabetes); Assert.True(added.OnBloodPressureTreatment); Assert.True(added.OnAntiviralTreatment); Assert.True(added.OnAntibiotic); Assert.True(added.BloodThinning); Assert.True(added.HasLiverDisease); Assert.True(added.HasAnemia); Assert.True(added.HasLupus); Assert.True(added.HasRenalFailure); Assert.True(added.HasHypertension); Assert.True(added.HasJointDisease); Assert.True(added.RecentContrastOrUltrasound);
         uow.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
     }
 
@@ -97,7 +125,8 @@ public class PatientAndVisitHandlersTests
     {
         var repository = new Mock<IPatientRepository>(); var patient = new Patient { Id = 1, Name = "Old" }; repository.Setup(x => x.GetByIdAsync(1, It.IsAny<CancellationToken>())).ReturnsAsync(patient);
         await new UpdatePatientDataCommandHandler(repository.Object, new Mock<IUnitOfWork>().Object).Handle(UpdateCommand(), default);
-        Assert.Equal("Updated", patient.Name); Assert.Equal("Giza", patient.Address); Assert.Equal("changed", patient.Notes); Assert.Equal("456", patient.NationalId); Assert.Equal(4, patient.DoctorId); Assert.Equal(5, patient.ReferralEntityId); Assert.Equal(Gender.Male, patient.Gender); repository.Verify(x => x.Update(patient), Times.Once);
+        Assert.Equal("Updated", patient.Name); Assert.Equal("Giza", patient.Address); Assert.Equal("changed", patient.Notes); Assert.Equal("456", patient.NationalId); Assert.Equal(4, patient.DoctorId); Assert.Equal(5, patient.ReferralEntityId); Assert.Equal(Gender.Male, patient.Gender);
+        Assert.True(patient.HasDiabetes); Assert.True(patient.OnBloodPressureTreatment); Assert.True(patient.OnAntiviralTreatment); Assert.True(patient.OnAntibiotic); Assert.True(patient.BloodThinning); Assert.True(patient.HasLiverDisease); Assert.True(patient.HasAnemia); Assert.True(patient.HasLupus); Assert.True(patient.HasRenalFailure); Assert.True(patient.HasHypertension); Assert.True(patient.HasJointDisease); Assert.True(patient.RecentContrastOrUltrasound); repository.Verify(x => x.Update(patient), Times.Once);
     }
 
     [Fact]

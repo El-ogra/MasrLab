@@ -23,7 +23,12 @@ public class Patient : BaseEntity
     public bool Pregnancy { get; set; }
     public bool BloodThinning { get; set; }
     public bool HasDiabetes { get; set; }
+    public bool OnBloodPressureTreatment { get; set; }
+    public bool OnAntiviralTreatment { get; set; }
+    public bool OnAntibiotic { get; set; }
+    public bool HasAnemia { get; set; }
     public bool HasHypertension { get; set; }
+    public bool RecentContrastOrUltrasound { get; set; }
     public bool HasLiverDisease { get; set; }
     public bool HasJointDisease { get; set; }
     public bool HasRenalFailure { get; set; }

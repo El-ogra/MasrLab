@@ -31,6 +31,18 @@ public class UpdatePatientDataCommandHandler : IRequestHandler<UpdatePatientData
         patient.Phone = request.Phone is not null ? new EgyptianPhone(request.Phone) : null;
         patient.DoctorId = request.DoctorId;
         patient.ReferralEntityId = request.ReferralEntityId;
+        patient.HasDiabetes = request.HasDiabetes;
+        patient.OnBloodPressureTreatment = request.OnBloodPressureTreatment;
+        patient.OnAntiviralTreatment = request.OnAntiviralTreatment;
+        patient.OnAntibiotic = request.OnAntibiotic;
+        patient.BloodThinning = request.BloodThinning;
+        patient.HasLiverDisease = request.HasLiverDisease;
+        patient.HasAnemia = request.HasAnemia;
+        patient.HasLupus = request.HasLupus;
+        patient.HasRenalFailure = request.HasRenalFailure;
+        patient.HasHypertension = request.HasHypertension;
+        patient.HasJointDisease = request.HasJointDisease;
+        patient.RecentContrastOrUltrasound = request.RecentContrastOrUltrasound;
 
         _patientRepository.Update(patient);
         await _unitOfWork.SaveChangesAsync(cancellationToken);

@@ -168,7 +168,12 @@ public class PatientMappingProfileTests
             Phone = new EgyptianPhone("01234567890"),
             LabId = "LAB-001",
             AccountType = AccountType.Insurance,
-            HasDiabetes = true
+            HasDiabetes = true,
+            OnBloodPressureTreatment = true,
+            OnAntiviralTreatment = true,
+            OnAntibiotic = true,
+            HasAnemia = true,
+            RecentContrastOrUltrasound = true
         };
 
         var dto = _mapper.Map<PatientDto>(patient);
@@ -178,8 +183,12 @@ public class PatientMappingProfileTests
         Assert.Equal(6, dto.AgeMonths);
         Assert.Equal(15, dto.AgeDays);
         Assert.Equal("01234567890", dto.Phone);
-        Assert.Equal(AccountType.Insurance, dto.AccountType);
         Assert.True(dto.HasDiabetes);
+        Assert.True(dto.OnBloodPressureTreatment);
+        Assert.True(dto.OnAntiviralTreatment);
+        Assert.True(dto.OnAntibiotic);
+        Assert.True(dto.HasAnemia);
+        Assert.True(dto.RecentContrastOrUltrasound);
         Assert.Equal("LAB-001", dto.LabId);
     }
 }

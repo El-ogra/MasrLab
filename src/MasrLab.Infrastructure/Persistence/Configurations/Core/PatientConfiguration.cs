@@ -45,7 +45,12 @@ public class PatientConfiguration : IEntityTypeConfiguration<Patient>
         builder.Property(e => e.Pregnancy).IsRequired();
         builder.Property(e => e.BloodThinning).IsRequired();
         builder.Property(e => e.HasDiabetes).IsRequired();
+        builder.Property(e => e.OnBloodPressureTreatment).IsRequired().HasDefaultValue(false);
+        builder.Property(e => e.OnAntiviralTreatment).IsRequired().HasDefaultValue(false);
+        builder.Property(e => e.OnAntibiotic).IsRequired().HasDefaultValue(false);
+        builder.Property(e => e.HasAnemia).IsRequired().HasDefaultValue(false);
         builder.Property(e => e.HasHypertension).IsRequired();
+        builder.Property(e => e.RecentContrastOrUltrasound).IsRequired().HasDefaultValue(false);
         builder.Property(e => e.HasLiverDisease).IsRequired();
         builder.Property(e => e.HasJointDisease).IsRequired();
         builder.Property(e => e.HasRenalFailure).IsRequired();
