@@ -3,19 +3,24 @@ using MasrLab.Domain.Entities.Core;
 using MasrLab.Domain.Exceptions;
 using MasrLab.Domain.Interfaces;
 
-namespace MasrLab.Application.Features.ResultsEntry.Commands.CreateBlankReport;
+namespace MasrLab.Application.Features.ResultsEntry.Commands.SaveBlankReport;
 
-// Stub replaced (OQ-M4-8): the handler now persists a real, re-printable BlankReport
-// against the visit. The old IssueReceipt side effect is gone — visit status untouched.
-public class CreateBlankReportCommandHandler : IRequestHandler<CreateBlankReportCommand, int>
+// OQ-M4-8: persists a blank, re-printable report against the patient visit.
+public sealed record SaveBlankReportCommand(
+    int PatientVisitId,
+    string? ReportTitle = null,
+    string? Comment = null,
+    string? PaginationNote = null) : IRequest<int>;
+
+public class SaveBlankReportCommandHandler : IRequestHandler<SaveBlankReportCommand, int>
 {
     private readonly IVisitRepository _visitRepository;
-    private readonly IRepository<BlankReport> _blankReportRepository;
+    private readonly IRepository<Domain.Entities.Core.BlankReport> _blankReportRepository;
     private readonly IUnitOfWork _unitOfWork;
 
-    public CreateBlankReportCommandHandler(
+    public SaveBlankReportCommandHandler(
         IVisitRepository visitRepository,
-        IRepository<BlankReport> blankReportRepository,
+        IRepository<Domain.Entities.Core.BlankReport> blankReportRepository,
         IUnitOfWork unitOfWork)
     {
         _visitRepository = visitRepository;
@@ -23,7 +28,7 @@ public class CreateBlankReportCommandHandler : IRequestHandler<CreateBlankReport
         _unitOfWork = unitOfWork;
     }
 
-    public async Task<int> Handle(CreateBlankReportCommand request, CancellationToken cancellationToken)
+    public async Task<int> Handle(SaveBlankReportCommand request, CancellationToken cancellationToken)
     {
         var visit = await _visitRepository.GetByIdWithTestsAsync(request.PatientVisitId, cancellationToken)
             ?? throw new EntityNotFoundException(nameof(PatientVisit), request.PatientVisitId);
@@ -31,12 +36,17 @@ public class CreateBlankReportCommandHandler : IRequestHandler<CreateBlankReport
         if (!visit.VisitTests.Any())
             throw new BusinessRuleViolationException("Cannot create a blank report for a visit with no tests.");
 
-        var report = BlankReport.Create(request.PatientVisitId, "تقرير فارغ", null, "يتبع في الصفحة التالية");
+        var report = Domain.Entities.Core.BlankReport.Create(
+            request.PatientVisitId,
+            request.ReportTitle ?? "تقرير فارغ",
+            request.Comment,
+            request.PaginationNote ?? "يتبع في الصفحة التالية");
+
         foreach (var visitTest in visit.VisitTests.OrderBy(vt => vt.Id))
         {
             report.AddRow(
                 ResolveRowTitle(visitTest),
-                string.Empty,
+                string.Empty,   // blank form — filled in by hand.
                 string.Empty,
                 string.Empty,
                 string.Empty);

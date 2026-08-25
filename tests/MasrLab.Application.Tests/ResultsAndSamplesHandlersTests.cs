@@ -34,9 +34,25 @@ public class ResultsAndSamplesHandlersTests
     [Fact]
     public async Task Report_handlers_update_open_visit_and_reject_missing_visit()
     {
-        var blankRepo = new Mock<IVisitRepository>(); var blankVisit = OpenVisit(); blankRepo.Setup(x => x.GetByIdAsync(1, It.IsAny<CancellationToken>())).ReturnsAsync(blankVisit);
-        await new CreateBlankReportCommandHandler(blankRepo.Object, new Mock<IUnitOfWork>().Object).Handle(new(1), default);
-        Assert.Equal(VisitStatus.ResultsEntered, blankVisit.Status);
+        // OQ-M4-8: the blank-report stub is gone. The visit status stays untouched and a
+        // real BlankReport aggregate is persisted instead.
+        var blankRepo = new Mock<IVisitRepository>();
+        var openVisit = OpenVisit();
+        openVisit.AddVisitTest(TestVisitTestHelpers.CreateVisitTest(openVisit.Id, 1, 10m, false));
+        blankRepo.Setup(x => x.GetByIdWithTestsAsync(1, It.IsAny<CancellationToken>())).ReturnsAsync(openVisit);
+        var savedReports = new List<Domain.Entities.Core.BlankReport>();
+        var blankReports = new Mock<IRepository<Domain.Entities.Core.BlankReport>>();
+        blankReports.Setup(x => x.AddAsync(It.IsAny<Domain.Entities.Core.BlankReport>(), It.IsAny<CancellationToken>()))
+            .Callback<Domain.Entities.Core.BlankReport, CancellationToken>((r, _) => { r.Id = 77; savedReports.Add(r); });
+
+        var reportId = await new CreateBlankReportCommandHandler(
+            blankRepo.Object, blankReports.Object, new Mock<IUnitOfWork>().Object).Handle(new(1), default);
+
+        Assert.Equal(VisitStatus.Registered, openVisit.Status); // no IssueReceipt side effect.
+        Assert.True(reportId > 0);
+        Assert.Single(savedReports);
+        Assert.Single(savedReports[0].Rows);
+
         var combinedRepo = new Mock<IVisitRepository>(); var combinedVisit = OpenVisit(); combinedVisit.AddVisitTest(TestVisitTestHelpers.CreateVisitTest(combinedVisit.Id, 1, 10m, false)); combinedRepo.Setup(x => x.GetByIdAsync(3, It.IsAny<CancellationToken>())).ReturnsAsync(combinedVisit);
         await new CreateCombinedReportCommandHandler(combinedRepo.Object, new Mock<IUnitOfWork>().Object).Handle(new(3, "1"), default);
         Assert.Equal(VisitStatus.ResultsEntered, combinedVisit.Status);

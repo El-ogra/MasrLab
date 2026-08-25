@@ -13,15 +13,23 @@
 - [X] Slice 5 — Worklist + per-test workflow flags (DONE)
 - [X] Slice 6 — Flag override, derived analytes, edit-after-print permission (DONE)
 - [X] Slice 7 — Print-inclusion flags + reprint warning (DONE)
-- [ ] Slice 8 — Blank reports persisted (NOT STARTED)
+- [X] Slice 8 — Blank reports persisted (DONE)
 - [ ] Slice 9 — Consolidated reports (NOT STARTED)
 - [ ] Slice 10 — Culture, microscopic & per-organism sensitivity (NOT STARTED)
 - [ ] Slice 11 — Print pipeline integration (NOT STARTED)
 
 ## Current Iteration
-- **Current Slice:** Slice 8
+- **Current Slice:** Slice 9
 - **Attempt Number:** 0
 - **Last Error:** None
+
+### Slice 8 Notes
+- BlankReport aggregate + BlankReportRow in Domain/Entities/Core; Rows via IReadOnlyList backed by _rows field; AddRow auto-assigns sequential DisplayOrder; MarkPrinted tracks PrintCount.
+- CreateBlankReportCommand now returns int (report id); handler persists a real report — IssueReceipt side effect removed (regression test asserts visit status stays Registered).
+- SaveBlankReportCommand(PatientVisitId, ReportTitle?, Comment?, PaginationNote?) shares row-title resolution: ReceiptNameSnapshot → TestNameSnapshot → "Test #id".
+- GetBlankReportQuery + IBlankReportReader/BlankReportReader joins patient header. DbSets added to MasrLabDbContext.
+- Migration AddBlankReportPersistence applied (20260825135249).
+- TestVisitTestHelpers.CreateVisitTest produces EMPTY snapshots — handlers must fall back defensively.
 
 ### Slice 7 Notes
 - VisitTestResultItem.IncludeInPrint = true default; TestResult.IncludeCommentInPrint = true default.
