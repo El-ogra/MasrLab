@@ -24,9 +24,12 @@ public class ReceiptConfiguration : IEntityTypeConfiguration<Receipt>
         builder.Property(e => e.IssueDate).IsRequired();
         builder.Property(e => e.ReceiveTime).IsRequired();
         builder.Property(e => e.Currency).HasMaxLength(10).IsRequired();
+        builder.Property(e => e.SettledAt);
+        builder.Property(e => e.SettledByUserId);
 
         builder.HasIndex(e => e.PatientVisitId);
         builder.HasIndex(e => e.IssueDate);
         builder.HasIndex(e => e.IsDeleted);
+        builder.HasIndex(e => e.SettledAt);
     }
 }

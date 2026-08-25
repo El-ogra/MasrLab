@@ -8,7 +8,7 @@
 ## Completed Slices
 - [X] Slice 1 — Visit payment transaction log (DONE)
 - [X] Slice 2 — Dual discount model + overpayment/change (DONE)
-- [ ] Slice 3 — Settlement, edit/delete constraints, permissions (NOT STARTED)
+- [X] Slice 3 — Settlement, edit/delete constraints, permissions (DONE)
 - [ ] Slice 4 — Billing read models (NOT STARTED)
 - [ ] Slice 5 — Worklist + per-test workflow flags (NOT STARTED)
 - [ ] Slice 6 — Flag override, derived analytes, edit-after-print permission (NOT STARTED)
@@ -19,7 +19,7 @@
 - [ ] Slice 11 — Print pipeline integration (NOT STARTED)
 
 ## Current Iteration
-- **Current Slice:** Slice 3
+- **Current Slice:** Slice 4
 - **Attempt Number:** 0
 - **Last Error:** None
 
@@ -43,9 +43,11 @@
 
 - [SUCCESS] Slice 2 completed successfully at Tue Aug 25 2026. Build succeeded. Migration AddReceiptDiscountPercent (20260825123446) created and applied. Tests: Domain 250 passed / Application 603 passed / Presentation 33 passed; Infrastructure tests skipped as instructed. Commit: "بعد تنفيذ الشريحة 2 من الموديولان الثاني والرابع".
 
-### Slice 3 Notes (from Slice 2 work)
-- Receipt now has: DiscountPercent, ApplyDiscounts(percent,value) with %-then-absolute precedence + floor-at-0, derived TotalAfterDiscount/PreviouslyPaid/PaidTotal/RemainingForLab/RemainingForPatient, ChangeDue synced to RemainingForPatient inside RecalculateFromTransactions.
-- RecordPayment no longer rejects overpayment (OQ-M2-9); AddPayment delegates to RecordPayment(amount, CreatedByUserId).
-- Slice 3 will need: SettledAt/SettledByUserId on Receipt, Settle(userId), mutator guard matrix post-settlement, EditVisitTransaction/DeleteVisitTransaction handlers (24h window via injected clock), PermissionNames constants (BillingAdmin, ResultEdit), DefaultPermissionSeeder update.
-- Check IPermissionRepository.GetByUserScreenOperationAsync signature and ScreenType enum values before implementing Slice 3 permission checks.
-- IDateTimeService exists at src/MasrLab.Application/Common/Interfaces/IDateTimeService.cs — use it for the 24h window.
+- [SUCCESS] Slice 3 completed successfully at Tue Aug 25 2026. Build succeeded. Migration AddReceiptSettlement (20260825125104) created and applied. Tests: Domain 262 passed / Application 610 passed / Presentation 33 passed; Infrastructure tests skipped as instructed (ReceiptSettlementIntegrationTests.cs created). Commit: "بعد تنفيذ الشريحة 3 من الموديولان الثاني والرابع".
+
+### Slice 3/4 Notes
+- Receipt now has SettledAt/SettledByUserId/IsSettled, idempotent Settle(userId), EnsureNotSettled on ALL mutators, EditTransaction/DeleteTransaction (24h via handler-provided clock; edits correct amount in place + stamp EditDate + append yellow Adjustment row; deletes soft-delete + yellow row; both normalize payment status; only Payment/Refund rows editable/deletable).
+- PermissionNames (Application/Common/Constants): BillingAdmin = [(Receipts,Edit),(Receipts,Delete),(Accounts,Edit),(Accounts,Delete)]; ResultEdit = [(Results,EditPrinted)] — used by Slice 6.
+- DefaultPermissionSeeder.SeedAsync(context, ct) — idempotent, grants admins only; wired for startup call (Presentation wiring out of scope).
+- IPermissionRepository.GetByUserScreenOperationAsync(userId, ScreenType, PermissionOperation, ct) → Permission?.Allowed.
+- Slice 4: GetVisitAccountQuery + VisitAccountDto + VisitAccountReader (pattern of ReceiptPrintDataReader; interface goes in Application/Common/Interfaces). No migration.

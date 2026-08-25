@@ -53,8 +53,15 @@ public class VisitPaymentTransaction : BaseEntity
         _ => "Yellow"
     };
 
-    internal void MarkEdited(DateTime editDateUtc)
+    internal void CorrectAmount(decimal newAmount, DateTime editDateUtc)
     {
+        Amount = newAmount;
+        EditDate = editDateUtc;
+    }
+
+    internal void MarkDeleted(DateTime editDateUtc)
+    {
+        IsDeleted = true;
         EditDate = editDateUtc;
     }
 }
