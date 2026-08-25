@@ -24,8 +24,27 @@ public class Receipt : BaseEntity
     public string Currency { get; set; } = "EGP";
     public ICollection<ExtraServiceItem> ExtraServiceItems { get; set; } = new List<ExtraServiceItem>();
     public ICollection<VisitTest> VisitTests { get; set; } = new List<VisitTest>();
+    public ICollection<VisitPaymentTransaction> Transactions { get; private set; } = new List<VisitPaymentTransaction>();
 
     private decimal GrossTotal => VisitTests.Sum(vt => vt.Price) + ExtraServiceItems.Sum(e => e.Amount);
+
+    // PaidNow is a maintained snapshot: for receipts with transaction rows it is derived as
+    // Σ Payments − Σ Refunds; legacy rows without transactions keep their stored value.
+    private void RecalculatePaidNowFromTransactions()
+    {
+        if (Transactions.Count == 0)
+            return;
+        var paid = Transactions.Where(t => t.Type == VisitTransactionType.Payment).Sum(t => t.Amount);
+        var refunded = Transactions.Where(t => t.Type == VisitTransactionType.Refund).Sum(t => t.Amount);
+        PaidNow = paid - refunded;
+    }
+
+    private VisitPaymentTransaction AppendTransaction(VisitTransactionType type, decimal amount, int userId)
+    {
+        var transaction = VisitPaymentTransaction.Create(Id, type, amount, userId);
+        Transactions.Add(transaction);
+        return transaction;
+    }
 
     private void RecalculateTotal()
     {
@@ -109,6 +128,12 @@ public class Receipt : BaseEntity
 
     public void AddPayment(decimal amount)
     {
+        RecordPayment(amount, CreatedByUserId);
+        AddDomainEvent(new ReceiptPaymentAdded(Id, amount));
+    }
+
+    public void RecordPayment(decimal amount, int userId)
+    {
         if (Status == ReceiptStatus.Paid)
             throw new BusinessRuleViolationException("Receipt is already fully paid.");
         if (Status != ReceiptStatus.Issued && Status != ReceiptStatus.PartiallyPaid)
@@ -118,10 +143,45 @@ public class Receipt : BaseEntity
         if (PaidNow + amount > Total)
             throw new BusinessRuleViolationException("Total payment cannot exceed receipt total.");
 
-        PaidNow += amount;
-        Remaining = Total - PaidNow;
-        if (Remaining < 0) Remaining = 0;
+        var transaction = AppendTransaction(VisitTransactionType.Payment, amount, userId);
+        RecalculatePaidNowFromTransactions();
+        RecalculateTotal();
         Status = Remaining == 0 ? ReceiptStatus.Paid : ReceiptStatus.PartiallyPaid;
-        AddDomainEvent(new ReceiptPaymentAdded(Id, amount));
+        AddDomainEvent(new VisitPaymentRecorded(Id, transaction.Id, amount, userId));
+    }
+
+    public void RecordRefund(decimal amount, int userId)
+    {
+        if (Status == ReceiptStatus.Draft)
+            throw new BusinessRuleViolationException("Refund requires an issued receipt.");
+        if (amount <= 0)
+            throw new BusinessRuleViolationException("Refund amount must be greater than zero.");
+        if (amount > PaidNow)
+            throw new BusinessRuleViolationException("Refund cannot exceed the paid amount.");
+
+        var transaction = AppendTransaction(VisitTransactionType.Refund, amount, userId);
+        var wasPaid = Status == ReceiptStatus.Paid;
+        RecalculatePaidNowFromTransactions();
+        RecalculateTotal();
+        if (wasPaid && Remaining > 0)
+            Status = ReceiptStatus.PartiallyPaid;
+        AddDomainEvent(new VisitRefundRecorded(Id, transaction.Id, amount, userId));
+    }
+
+    // OQ-M2-7: an extra charge appears as its own blue grid row AND feeds
+    // ExtraServiceItems/GrossTotal exactly as today — it never becomes a payment row.
+    public void RecordExtraCharge(string description, decimal amount, int userId)
+    {
+        if (Status == ReceiptStatus.Draft)
+            throw new BusinessRuleViolationException("Extra charge requires an issued receipt.");
+        if (amount <= 0)
+            throw new BusinessRuleViolationException("Extra service amount cannot be negative.");
+        if (string.IsNullOrWhiteSpace(description))
+            throw new BusinessRuleViolationException("Extra service description cannot be empty.");
+
+        var transaction = AppendTransaction(VisitTransactionType.ExtraCharge, amount, userId);
+        ExtraServiceItems.Add(new ExtraServiceItem { ReceiptId = Id, Description = description, Amount = amount });
+        RecalculateTotal();
+        AddDomainEvent(new VisitExtraChargeRecorded(Id, transaction.Id, amount, userId));
     }
 }

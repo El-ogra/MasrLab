@@ -55,6 +55,7 @@ public class MasrLabDbContext : DbContext
     public DbSet<OutsourcedSample> OutsourcedSamples => Set<OutsourcedSample>();
     public DbSet<ExtraServiceItem> ExtraServiceItems => Set<ExtraServiceItem>();
     public DbSet<ExternalLab> ExternalLabs => Set<ExternalLab>();
+    public DbSet<VisitPaymentTransaction> VisitPaymentTransactions => Set<VisitPaymentTransaction>();
 
     // Administrative
     public DbSet<User> Users => Set<User>();

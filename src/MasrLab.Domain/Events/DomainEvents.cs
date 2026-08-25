@@ -45,6 +45,12 @@ public record ReceiptPaymentAdded(int ReceiptId, decimal Amount) : DomainEvent;
 
 public record DiscountApplied(int ReceiptId, decimal DiscountValue) : DomainEvent;
 
+public record VisitPaymentRecorded(int ReceiptId, int TransactionId, decimal Amount, int UserId) : DomainEvent;
+
+public record VisitRefundRecorded(int ReceiptId, int TransactionId, decimal Amount, int UserId) : DomainEvent;
+
+public record VisitExtraChargeRecorded(int ReceiptId, int TransactionId, decimal Amount, int UserId) : DomainEvent;
+
 public record OutsourcedSampleSent(int OutsourcedSampleId, int VisitTestId, int ExternalLabId, decimal CostPrice) : DomainEvent;
 
 public record OutsourcedResultReceived(int OutsourcedSampleId, DateTime ReceivedAt) : DomainEvent;
