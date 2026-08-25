@@ -20,9 +20,17 @@ public sealed record ClinicalReportPrintDto : IPrintPayload
     public DateTime VisitDate { get; init; }
     public IReadOnlyList<ClinicalResultLineDto> Results { get; init; } = [];
     public string? CultureSummary { get; init; }
+
+    // M4-BR-09 header enrichment (additive — Slice 11).
+    public string PatientBarcode { get; init; } = string.Empty;
+    public string AgeSex { get; init; } = string.Empty;
+    public string ReferredBy { get; init; } = string.Empty;
+    public DateTime RequestedAt { get; init; }
+    public DateTime? PrintedAtUtc { get; init; }
+    public string DoctorSignatureLine { get; init; } = string.Empty;
 }
 
-public sealed record ClinicalResultLineDto(string TestName, string Value, string Unit, string ReferenceRange);
+public sealed record ClinicalResultLineDto(string TestName, string Value, string Unit, string ReferenceRange, string Flag = "");
 
 public interface IEnvelopePrintDataReader
 {

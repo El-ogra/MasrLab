@@ -52,7 +52,8 @@ public sealed class EnvelopePrintDataReader(MasrLabDbContext context) : IEnvelop
                                   vt.ReportNameSnapshot ?? vt.TestNameSnapshot,
                                   result == null ? "" : result.Value,
                                   result == null ? resultItem.ComponentUnit : result.Unit,
-                                  result == null ? "" : result.ReferenceRange)).ToListAsync(ct);
+                                  result == null ? "" : result.ReferenceRange,
+                                  "")).ToListAsync(ct);
         var organisms = await (from culture in context.Cultures.AsNoTracking()
                                join resultItem in context.VisitTestResultItems.AsNoTracking() on culture.VisitTestResultItemId equals resultItem.Id
                                join vt in context.VisitTests.AsNoTracking() on resultItem.VisitTestId equals vt.Id

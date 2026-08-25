@@ -104,6 +104,7 @@ public static class DependencyInjection
         services.AddScoped<IBlankReportReader, BlankReportReader>();
         services.AddScoped<IClinicalReportReader, ClinicalReportReader>();
         services.AddScoped<IMicrobiologyReportReader, MicrobiologyReportReader>();
+        services.AddScoped<IVisitReportPrintReader, VisitReportPrintReader>();
         services.AddScoped<IEnvelopePrintDataReader, EnvelopePrintDataReader>();
         services.AddScoped<IOperationalReportDataReader, OperationalReportPrintDataReader>();
 
