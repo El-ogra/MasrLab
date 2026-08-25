@@ -14,6 +14,7 @@ public class Receipt : BaseEntity
     public ReceiptStatus Status { get; private set; } = ReceiptStatus.Draft;
     public decimal Total { get; private set; }
     public decimal Discount { get; private set; }
+    public decimal DiscountPercent { get; private set; }
     public decimal PaidPrevious { get; set; }
     public decimal PaidNow { get; private set; }
     public decimal Remaining { get; private set; }
@@ -30,14 +31,23 @@ public class Receipt : BaseEntity
 
     // PaidNow is a maintained snapshot: for receipts with transaction rows it is derived as
     // Σ Payments − Σ Refunds; legacy rows without transactions keep their stored value.
-    private void RecalculatePaidNowFromTransactions()
+    private void RecalculateFromTransactions()
     {
         if (Transactions.Count == 0)
             return;
         var paid = Transactions.Where(t => t.Type == VisitTransactionType.Payment).Sum(t => t.Amount);
         var refunded = Transactions.Where(t => t.Type == VisitTransactionType.Refund).Sum(t => t.Amount);
         PaidNow = paid - refunded;
+        RecalculateTotal();
+        ChangeDue = RemainingForPatient; // OQ-M2-9: overpayment flows into change due — never an automatic refund.
     }
+
+    // M2-BR-05 figures panel. All values are computed, never stored.
+    public decimal TotalAfterDiscount => Total;
+    public decimal PreviouslyPaid => PaidPrevious;
+    public decimal PaidTotal => PaidPrevious + PaidNow;
+    public decimal RemainingForLab => Math.Max(0, Total - PaidTotal);
+    public decimal RemainingForPatient => Math.Max(0, PaidTotal - Total);
 
     private VisitPaymentTransaction AppendTransaction(VisitTransactionType type, decimal amount, int userId)
     {
@@ -111,8 +121,31 @@ public class Receipt : BaseEntity
         if (discountAmount > GrossTotal)
             throw new BusinessRuleViolationException("Discount cannot exceed receipt total.");
         Discount = discountAmount;
+        DiscountPercent = 0;
         RecalculateTotal();
         AddDomainEvent(new DiscountApplied(Id, discountAmount));
+    }
+
+    // OQ-M2-3: both discount modes are enterable; the absolute value takes precedence in
+    // display, and the computation applies % to the gross total first, then subtracts the
+    // absolute remainder. The effective total floors at zero.
+    public void ApplyDiscounts(decimal? percent, decimal? value)
+    {
+        if (Status == ReceiptStatus.Paid)
+            throw new BusinessRuleViolationException("Discount cannot be applied after the receipt is fully paid.");
+        if (percent is < 0 || percent > 100)
+            throw new BusinessRuleViolationException("Discount percent must be between 0 and 100.");
+        if (value is < 0)
+            throw new BusinessRuleViolationException("Discount cannot be negative.");
+        if (percent is null && value is null)
+            return;
+
+        DiscountPercent = percent ?? 0;
+        var percentAmount = Math.Round(GrossTotal * DiscountPercent / 100m, 2, MidpointRounding.AwayFromZero);
+        // % applies first, then the absolute remainder subtracts; RecalculateTotal floors Total at zero.
+        Discount = percentAmount + (value ?? 0);
+        RecalculateTotal();
+        AddDomainEvent(new DiscountApplied(Id, Discount));
     }
 
     public void Issue()
@@ -140,12 +173,11 @@ public class Receipt : BaseEntity
             throw new BusinessRuleViolationException("Receipt must be issued before accepting payment.");
         if (amount <= 0)
             throw new BusinessRuleViolationException("Payment amount must be greater than zero.");
-        if (PaidNow + amount > Total)
-            throw new BusinessRuleViolationException("Total payment cannot exceed receipt total.");
+        // OQ-M2-9: overpayment is accepted and flows into RemainingForPatient/ChangeDue.
+        // No automatic refund is emitted — returning money is an explicit manual refund.
 
         var transaction = AppendTransaction(VisitTransactionType.Payment, amount, userId);
-        RecalculatePaidNowFromTransactions();
-        RecalculateTotal();
+        RecalculateFromTransactions();
         Status = Remaining == 0 ? ReceiptStatus.Paid : ReceiptStatus.PartiallyPaid;
         AddDomainEvent(new VisitPaymentRecorded(Id, transaction.Id, amount, userId));
     }
@@ -161,8 +193,7 @@ public class Receipt : BaseEntity
 
         var transaction = AppendTransaction(VisitTransactionType.Refund, amount, userId);
         var wasPaid = Status == ReceiptStatus.Paid;
-        RecalculatePaidNowFromTransactions();
-        RecalculateTotal();
+        RecalculateFromTransactions();
         if (wasPaid && Remaining > 0)
             Status = ReceiptStatus.PartiallyPaid;
         AddDomainEvent(new VisitRefundRecorded(Id, transaction.Id, amount, userId));

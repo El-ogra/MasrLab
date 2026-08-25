@@ -18,6 +18,9 @@ public sealed class RegisterPatientIntakeCommandValidator : AbstractValidator<Re
             .WithMessage("Age must be greater than zero.");
         RuleFor(x => x.Phone).MaximumLength(20);
         RuleFor(x => x.Notes).MaximumLength(1000);
+        RuleFor(x => x.PaidPrevious)
+            .GreaterThanOrEqualTo(0)
+            .WithMessage("PaidPrevious cannot be negative.");
         RuleFor(x => x.Source)
             .Must(source => source is "Direct" or "LegacyGroup" or "SelectionGroup" or "CommercialPackage")
             .WithMessage("Unknown source.");

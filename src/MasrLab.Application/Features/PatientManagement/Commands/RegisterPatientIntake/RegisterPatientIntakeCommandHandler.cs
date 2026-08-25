@@ -1,6 +1,7 @@
 using MasrLab.Application.Features.VisitComposer.Commands.AddTestsToVisit;
 using MasrLab.Application.Common.Interfaces;
 using MasrLab.Application.Features.PatientVisits.Commands.CreatePatientVisit;
+using MasrLab.Application.Features.PatientVisits.Commands.IssueReceipt;
 using MasrLab.Application.Features.PatientVisits.Queries.GetVisitTestCount;
 using MasrLab.Application.Features.PatientManagement.Commands.RegisterPatient;
 using MasrLab.Domain.Interfaces;
@@ -113,12 +114,40 @@ public sealed class RegisterPatientIntakeCommandHandler : IRequestHandler<Regist
             new GetVisitTestCountQuery(visitId),
             cancellationToken);
 
+        // OQ-M2-2: the registration-screen "المدفوع سابقا" and the account-window payment
+        // field are ONE entry point — the advance payment pipes into the receipt's first
+        // (and only) initial payment transaction.
+        var receiptId = await IssueInitialReceiptAsync(request, visitId, attachedTestCount, cancellationToken);
+
         return new RegisterPatientIntakeResult(
             true,
             patientId,
             visitId,
             attachedTestCount,
-            registration.PotentialDuplicates);
+            registration.PotentialDuplicates,
+            receiptId);
+    }
+
+    private async Task<int?> IssueInitialReceiptAsync(
+        RegisterPatientIntakeCommand request,
+        int visitId,
+        int attachedTestCount,
+        CancellationToken cancellationToken)
+    {
+        if (request.PaidPrevious <= 0 || attachedTestCount == 0)
+            return null;
+
+        var userId = _currentUserService.UserId
+            ?? throw new InvalidOperationException("Current user is not authenticated.");
+
+        return await _sender.Send(
+            new IssueReceiptCommand(
+                visitId,
+                Discount: 0,
+                PaidNow: request.PaidPrevious,
+                ReceivedByUserId: userId,
+                CashAccountId: null),
+            cancellationToken);
     }
 
     private static bool ShouldAttachTests(RegisterPatientIntakeCommand request)

@@ -15,6 +15,7 @@ public class ReceiptConfiguration : IEntityTypeConfiguration<Receipt>
         builder.Property(e => e.PatientVisitId).IsRequired();
         builder.Property(e => e.Total).HasColumnType("decimal(18,2)").IsRequired();
         builder.Property(e => e.Discount).HasColumnType("decimal(18,2)").IsRequired();
+        builder.Property(e => e.DiscountPercent).HasColumnType("decimal(5,2)");
         builder.Property(e => e.PaidPrevious).HasColumnType("decimal(18,2)").IsRequired();
         builder.Property(e => e.PaidNow).HasColumnType("decimal(18,2)").IsRequired();
         builder.Property(e => e.Remaining).HasColumnType("decimal(18,2)").IsRequired();

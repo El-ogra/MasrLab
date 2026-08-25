@@ -104,11 +104,15 @@ public class Module02Slice1TransactionLogTests
     }
 
     [Fact]
-    public void RecordPayment_WhenOverpaysRemaining_ShouldThrowUntilSlice2Relaxation()
+    public void RecordPayment_WhenOverpaysRemaining_ShouldAcceptPerOQ_M2_9()
     {
+        // Relaxed in Slice 2 (binding OQ-M2-9): overpayment flows into RemainingForPatient.
         var receipt = CreateIssuedReceipt(100m);
 
-        Assert.Throws<BusinessRuleViolationException>(() => receipt.RecordPayment(120m, 7));
+        receipt.RecordPayment(120m, 7);
+
+        Assert.Equal(120m, receipt.PaidNow);
+        Assert.Equal(20m, receipt.RemainingForPatient);
     }
 
     [Fact]

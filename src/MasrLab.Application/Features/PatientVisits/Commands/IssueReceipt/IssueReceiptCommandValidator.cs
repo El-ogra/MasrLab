@@ -14,6 +14,10 @@ public class IssueReceiptCommandValidator : AbstractValidator<IssueReceiptComman
             .GreaterThanOrEqualTo(0)
             .WithMessage("Discount cannot be negative.");
 
+        RuleFor(x => x.DiscountPercent)
+            .InclusiveBetween(0, 100)
+            .WithMessage("DiscountPercent must be between 0 and 100.");
+
         RuleFor(x => x.PaidNow)
             .GreaterThanOrEqualTo(0)
             .WithMessage("PaidNow cannot be negative.");

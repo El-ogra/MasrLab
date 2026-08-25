@@ -7,5 +7,6 @@ public record IssueReceiptCommand(
     decimal Discount,
     decimal PaidNow,
     int ReceivedByUserId,
-    int? CashAccountId
+    int? CashAccountId,
+    decimal DiscountPercent = 0
 ) : IRequest<int>;

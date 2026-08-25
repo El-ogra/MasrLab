@@ -54,9 +54,10 @@ public class IssueReceiptCommandHandler : IRequestHandler<IssueReceiptCommand, i
             throw new BusinessRuleViolationException(
                 "Cannot issue a receipt for a visit with no tests.");
 
-        // 4. Cross-check with PricingService
+        // 4. Cross-check with PricingService (% applies to the subtotal first, then the absolute value)
         var subtotal = _pricingService.CalculateSubtotal(visit);
-        var total = _pricingService.CalculateTotal(visit, 0m, request.Discount);
+        var percentAmount = Math.Round(subtotal * request.DiscountPercent / 100m, 2, MidpointRounding.AwayFromZero);
+        var total = _pricingService.CalculateTotal(visit, 0m, percentAmount + request.Discount);
 
         // 5. Create the receipt
         var receipt = new Receipt
@@ -71,21 +72,21 @@ public class IssueReceiptCommandHandler : IRequestHandler<IssueReceiptCommand, i
             receipt.AddVisitTest(visitTest);
         }
 
-        // 7. Apply discount if provided
-        if (request.Discount > 0)
-        {
-            receipt.ApplyDiscount(request.Discount);
-        }
+        // 7. Apply the dual discount model (OQ-M2-3) if provided
+        receipt.ApplyDiscounts(
+            request.DiscountPercent > 0 ? request.DiscountPercent : null,
+            request.Discount > 0 ? request.Discount : null);
 
         // 8. Issue the receipt (sets Status to Issued)
         receipt.Issue();
 
-        // 9. Apply immediate payment after issuing
+        // 9. Apply immediate payment after issuing (OQ-M2-9: overpayment is accepted)
         if (request.PaidNow > 0)
         {
             receipt.AddPayment(request.PaidNow);
-            receipt.ChangeDue = _receiptCalculationService.CalculateChangeDue(
-                request.PaidNow, receipt.Total);
+            receipt.ChangeDue = Math.Max(
+                0m,
+                _receiptCalculationService.CalculateChangeDue(request.PaidNow, receipt.Total));
         }
 
         await _receiptRepository.AddAsync(receipt, cancellationToken);

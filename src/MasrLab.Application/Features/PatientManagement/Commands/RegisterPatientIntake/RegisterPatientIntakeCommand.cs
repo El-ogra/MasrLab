@@ -41,7 +41,8 @@ public sealed record RegisterPatientIntakeCommand(
     int? TestGroupId = null,
     int? CommercialPackageId = null,
     string? DirectTestIds = null,
-    bool ConfirmLargeExpansion = false
+    bool ConfirmLargeExpansion = false,
+    decimal PaidPrevious = 0
 ) : IRequest<RegisterPatientIntakeResult>;
 
 public sealed record RegisterPatientIntakeResult(
@@ -49,7 +50,8 @@ public sealed record RegisterPatientIntakeResult(
     int? PatientId,
     int? PatientVisitId,
     int AttachedTestCount,
-    IReadOnlyList<DuplicatePatientDto> PotentialDuplicates)
+    IReadOnlyList<DuplicatePatientDto> PotentialDuplicates,
+    int? ReceiptId = null)
 {
     public bool HasPotentialDuplicates => PotentialDuplicates.Count > 0;
 }

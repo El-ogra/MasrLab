@@ -11,10 +11,13 @@ public sealed record ReceiptPrintDto : IPrintPayload
     public IReadOnlyList<ReceiptPrintLineDto> Lines { get; init; } = [];
     public decimal GrossTotal { get; init; }
     public decimal Discount { get; init; }
+    public decimal DiscountPercent { get; init; }
     public decimal Total { get; init; }
     public decimal PaidPrevious { get; init; }
     public decimal PaidNow { get; init; }
     public decimal Remaining { get; init; }
+    public decimal RemainingForLab { get; init; }
+    public decimal RemainingForPatient { get; init; }
     public string Currency { get; init; } = "EGP";
 }
 

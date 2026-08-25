@@ -230,14 +230,18 @@ public class ReceiptPaymentAndDiscountTests
     }
 
     [Fact]
-    public void AddPayment_WhenExceedsRemaining_ShouldThrowBusinessRuleViolation()
+    public void AddPayment_WhenExceedsRemaining_ShouldAcceptAsOverpaymentPerOQ_M2_9()
     {
+        // Binding OQ-M2-9 changed this contract in Module 2 Slice 2: overpayment is no
+        // longer rejected — it flows into RemainingForPatient/ChangeDue with no auto-refund.
         var receipt = CreateReceipt(100m);
         receipt.AddPayment(60m);
 
-        var ex = Assert.Throws<BusinessRuleViolationException>(() => receipt.AddPayment(50m));
+        receipt.AddPayment(50m);
 
-        Assert.Equal("Total payment cannot exceed receipt total.", ex.Message);
+        Assert.Equal(110m, receipt.PaidNow);
+        Assert.Equal(0m, receipt.Remaining);
+        Assert.Equal(10m, receipt.RemainingForPatient);
     }
 
     [Fact]

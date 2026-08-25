@@ -16,7 +16,8 @@ public sealed class ReceiptPrintDataReader : IReceiptPrintDataReader
             .Select(receipt => new
             {
                 receipt.Id, receipt.PatientVisitId, receipt.IssueDate, receipt.Discount,
-                receipt.Total, receipt.PaidPrevious, receipt.PaidNow, receipt.Remaining, receipt.Currency
+                receipt.DiscountPercent, receipt.Total, receipt.PaidPrevious, receipt.PaidNow,
+                receipt.Remaining, receipt.Currency
             })
             .SingleOrDefaultAsync(ct);
 
@@ -61,10 +62,13 @@ public sealed class ReceiptPrintDataReader : IReceiptPrintDataReader
             Lines = lines,
             GrossTotal = lines.Sum(line => line.Amount),
             Discount = receipt.Discount,
+            DiscountPercent = receipt.DiscountPercent,
             Total = receipt.Total,
             PaidPrevious = receipt.PaidPrevious,
             PaidNow = receipt.PaidNow,
             Remaining = receipt.Remaining,
+            RemainingForLab = Math.Max(0, receipt.Total - receipt.PaidPrevious - receipt.PaidNow),
+            RemainingForPatient = Math.Max(0, receipt.PaidPrevious + receipt.PaidNow - receipt.Total),
             Currency = receipt.Currency
         };
     }
