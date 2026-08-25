@@ -146,6 +146,40 @@ public class CreatePatientVisitCommandHandlerTests
     }
 
     [Fact]
+    public async Task Handle_WithSpecimenInputs_PersistsAllSpecimenFlags()
+    {
+        SetupPatient();
+        SetupCurrentUser();
+        SetupLabIdGenerator();
+
+        PatientVisit? captured = null;
+        _visitRepository
+            .Setup(r => r.AddAsync(It.IsAny<PatientVisit>(), It.IsAny<CancellationToken>()))
+            .Callback<PatientVisit, CancellationToken>((v, _) => captured = v);
+
+        await CreateHandler().Handle(
+            new CreatePatientVisitCommand(
+                PatientId: 1,
+                DoctorId: null,
+                ReferralEntityId: null,
+                TakenOutsideLab: true,
+                SpecimenUrine: true,
+                SpecimenStool: true,
+                SpecimenBlood: true,
+                SpecimenSemen: true,
+                SpecimenCsf: true),
+            CancellationToken.None);
+
+        Assert.NotNull(captured);
+        Assert.True(captured.TakenOutsideLab);
+        Assert.True(captured.SpecimenUrine);
+        Assert.True(captured.SpecimenStool);
+        Assert.True(captured.SpecimenBlood);
+        Assert.True(captured.SpecimenSemen);
+        Assert.True(captured.SpecimenCsf);
+    }
+
+    [Fact]
     public async Task Handle_WhenDuplicateVisitLabIdException_RetriesWithNewLabId()
     {
         SetupPatient();

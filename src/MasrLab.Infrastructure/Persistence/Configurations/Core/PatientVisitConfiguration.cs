@@ -18,6 +18,11 @@ public class PatientVisitConfiguration : IEntityTypeConfiguration<PatientVisit>
         builder.Property(e => e.RegisteredByUserId).IsRequired();
         builder.Property(e => e.LabId).HasMaxLength(100).IsRequired();
         builder.Property(e => e.TakenOutsideLab).IsRequired();
+        builder.Property(e => e.SpecimenUrine).IsRequired().HasDefaultValue(false);
+        builder.Property(e => e.SpecimenStool).IsRequired().HasDefaultValue(false);
+        builder.Property(e => e.SpecimenBlood).IsRequired().HasDefaultValue(false);
+        builder.Property(e => e.SpecimenSemen).IsRequired().HasDefaultValue(false);
+        builder.Property(e => e.SpecimenCsf).IsRequired().HasDefaultValue(false);
         builder.Property(e => e.PromisedDeliveryAt).HasColumnType("datetime2").IsRequired(false);
 
         builder.HasIndex(e => e.PatientId);

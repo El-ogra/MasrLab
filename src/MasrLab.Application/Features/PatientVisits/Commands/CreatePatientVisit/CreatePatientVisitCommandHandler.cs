@@ -50,6 +50,13 @@ public class CreatePatientVisitCommandHandler : IRequestHandler<CreatePatientVis
             doctorId,
             request.ReferralEntityId);
 
+        visit.TakenOutsideLab = request.TakenOutsideLab;
+        visit.SpecimenUrine = request.SpecimenUrine;
+        visit.SpecimenStool = request.SpecimenStool;
+        visit.SpecimenBlood = request.SpecimenBlood;
+        visit.SpecimenSemen = request.SpecimenSemen;
+        visit.SpecimenCsf = request.SpecimenCsf;
+
         await _visitRepository.AddAsync(visit, cancellationToken);
 
         for (var attempt = 0; ; attempt++)

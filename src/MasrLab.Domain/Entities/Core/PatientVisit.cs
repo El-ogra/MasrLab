@@ -16,6 +16,11 @@ public class PatientVisit : BaseEntity
     public int? DoctorId { get; set; }
     public int? ReferralEntityId { get; set; }
     public bool TakenOutsideLab { get; set; }
+    public bool SpecimenUrine { get; set; }
+    public bool SpecimenStool { get; set; }
+    public bool SpecimenBlood { get; set; }
+    public bool SpecimenSemen { get; set; }
+    public bool SpecimenCsf { get; set; }
     public DateTime? PromisedDeliveryAt { get; private set; }
 
     public ICollection<VisitTest> VisitTests { get; set; } = new List<VisitTest>();
