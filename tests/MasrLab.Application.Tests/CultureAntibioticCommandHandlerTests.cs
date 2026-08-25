@@ -80,7 +80,7 @@ public sealed class CultureAntibioticCommandHandlerTests
     {
         var testRepository = TestRepositoryWithCulture();
         var antibiotics = new Mock<IAntibioticRepository>();
-        antibiotics.Setup(x => x.GetAllAsync(It.IsAny<CancellationToken>())).ReturnsAsync(Array.Empty<Antibiotic>());
+        antibiotics.Setup(x => x.GetBySymbolAsync("AMX", It.IsAny<CancellationToken>())).ReturnsAsync((Antibiotic?)null);
         Antibiotic? created = null;
         antibiotics.Setup(x => x.AddAsync(It.IsAny<Antibiotic>(), It.IsAny<CancellationToken>()))
             .Callback<Antibiotic, CancellationToken>((entity, _) => { entity.Id = 30; created = entity; });
@@ -96,7 +96,8 @@ public sealed class CultureAntibioticCommandHandlerTests
         antibiotics.Verify(x => x.AddAsync(It.IsAny<Antibiotic>(), It.IsAny<CancellationToken>()), Times.Once);
 
         antibiotics.Reset();
-        antibiotics.Setup(x => x.GetAllAsync(It.IsAny<CancellationToken>())).ReturnsAsync(new[] { new Antibiotic { Id = 31, Name = "AMX", ScientificName = "Amoxicillin" } });
+        antibiotics.Setup(x => x.GetBySymbolAsync("AMX", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new Antibiotic { Id = 31, Name = "AMX", ScientificName = "Amoxicillin" });
         assignments.Setup(x => x.ExistsBySymbolOrScientificNameAsync(12, "AMX", "Amoxicillin", It.IsAny<CancellationToken>())).ReturnsAsync(false);
         handler = new AddManualAntibioticToCultureTestCommandHandler(
             testRepository.Object, antibiotics.Object, assignments.Object,
@@ -146,11 +147,15 @@ public sealed class CultureAntibioticCommandHandlerTests
     {
         var assignment = CultureAntibiotic.Create(12, 7);
         assignment.Id = 20;
+        var commercialName = new CultureAntibioticCommercialName { Id = 21, CultureAntibioticId = 20, Name = "Amoxil" };
+        assignment.CommercialNames.Add(commercialName);
         var assignments = new Mock<ICultureAntibioticRepository>();
         assignments.Setup(x => x.GetWithCommercialNamesAsync(20, It.IsAny<CancellationToken>())).ReturnsAsync(assignment);
-        var handler = new DeleteCultureAntibioticCommandHandler(assignments.Object, new Mock<IUnitOfWork>().Object);
+        var commercialNames = new Mock<IRepository<CultureAntibioticCommercialName>>();
+        var handler = new DeleteCultureAntibioticCommandHandler(assignments.Object, commercialNames.Object, new Mock<IUnitOfWork>().Object);
         await handler.Handle(new(20), default);
         assignments.Verify(x => x.Delete(assignment), Times.Once);
+        commercialNames.Verify(x => x.Delete(commercialName), Times.Once);
     }
 
     private static Mock<IRepository<Test>> TestRepositoryWithCulture()

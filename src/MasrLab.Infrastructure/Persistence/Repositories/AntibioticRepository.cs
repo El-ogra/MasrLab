@@ -10,6 +10,16 @@ public class AntibioticRepository : GenericRepository<Antibiotic>, IAntibioticRe
     {
     }
 
+    public async Task<Antibiotic?> GetBySymbolAsync(string symbol, CancellationToken cancellationToken = default)
+    {
+        var normalizedSymbol = symbol.Trim();
+        var normalizedUpper = normalizedSymbol.ToUpper();
+
+        return await _context.Antibiotics
+            .AsNoTracking()
+            .FirstOrDefaultAsync(a => a.Name.Trim().ToUpper() == normalizedUpper, cancellationToken);
+    }
+
     public async Task<IReadOnlyList<Antibiotic>> SearchByNameAsync(string searchTerm, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(searchTerm))

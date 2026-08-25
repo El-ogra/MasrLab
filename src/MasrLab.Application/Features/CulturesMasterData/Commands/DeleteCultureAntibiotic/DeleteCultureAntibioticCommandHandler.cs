@@ -8,13 +8,16 @@ namespace MasrLab.Application.Features.CulturesMasterData.Commands.DeleteCulture
 public sealed class DeleteCultureAntibioticCommandHandler : IRequestHandler<DeleteCultureAntibioticCommand, Unit>
 {
     private readonly ICultureAntibioticRepository _assignmentRepository;
+    private readonly IRepository<CultureAntibioticCommercialName> _commercialNameRepository;
     private readonly IUnitOfWork _unitOfWork;
 
     public DeleteCultureAntibioticCommandHandler(
         ICultureAntibioticRepository assignmentRepository,
+        IRepository<CultureAntibioticCommercialName> commercialNameRepository,
         IUnitOfWork unitOfWork)
     {
         _assignmentRepository = assignmentRepository;
+        _commercialNameRepository = commercialNameRepository;
         _unitOfWork = unitOfWork;
     }
 
@@ -24,6 +27,11 @@ public sealed class DeleteCultureAntibioticCommandHandler : IRequestHandler<Dele
             ?? throw new EntityNotFoundException(nameof(CultureAntibiotic), request.Id);
 
         _assignmentRepository.Delete(assignment);
+        foreach (var commercialName in assignment.CommercialNames)
+        {
+            _commercialNameRepository.Delete(commercialName);
+        }
+
         await _unitOfWork.SaveChangesAsync(cancellationToken);
         return Unit.Value;
     }

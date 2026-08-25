@@ -42,9 +42,7 @@ public sealed class AddManualAntibioticToCultureTestCommandHandler : IRequestHan
                 request.CultureTestId, symbol, scientificName, cancellationToken))
             throw new BusinessRuleViolationException("An antibiotic with this symbol or scientific name is already assigned to this culture.");
 
-        var antibiotics = await _antibioticRepository.GetAllAsync(cancellationToken);
-        var antibiotic = antibiotics.FirstOrDefault(item =>
-            string.Equals(item.Name.Trim(), symbol, StringComparison.OrdinalIgnoreCase));
+        var antibiotic = await _antibioticRepository.GetBySymbolAsync(symbol, cancellationToken);
         if (antibiotic is null)
         {
             antibiotic = new Antibiotic { Name = symbol, ScientificName = scientificName };

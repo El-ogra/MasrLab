@@ -1,5 +1,9 @@
+using MasrLab.Application.Features.CulturesMasterData.Commands.DeleteCultureAntibiotic;
 using MasrLab.Domain.Common;
 using MasrLab.Domain.Common.Enums;
+using MasrLab.Infrastructure.Persistence;
+using MasrLab.Infrastructure.Persistence.Interceptors;
+using MasrLab.Infrastructure.Persistence.Repositories;
 using MasrLab.Domain.Entities.Core;
 using MasrLab.Domain.Entities.Culture;
 using Microsoft.EntityFrameworkCore;
@@ -14,6 +18,7 @@ public class CultureAntibioticSoftDeleteFilterTests
         await using var database = await LocalDbTestDatabase.CreateMigratedDatabaseAsync("Slice13_2SoftDelete");
 
         int assignmentId;
+        int commercialNameId;
         await using (var setup = database.CreateContext())
         {
             var culture = CreateCultureTest();
@@ -27,16 +32,25 @@ public class CultureAntibioticSoftDeleteFilterTests
             await setup.SaveChangesAsync(CancellationToken.None);
 
             var assignment = CultureAntibiotic.Create(culture.Id, antibiotic.Id);
+            assignment.CommercialNames.Add(new CultureAntibioticCommercialName
+            {
+                Name = "Cipro",
+                Print = true
+            });
             setup.CultureAntibiotics.Add(assignment);
             await setup.SaveChangesAsync(CancellationToken.None);
             assignmentId = assignment.Id;
+            commercialNameId = assignment.CommercialNames.Single().Id;
         }
 
-        await using (var deleteContext = database.CreateContext())
+        await using (var deleteContext = CreateSoftDeleteContext(database.DatabaseName))
         {
-            var assignment = await deleteContext.CultureAntibiotics.SingleAsync(entity => entity.Id == assignmentId);
-            assignment.IsDeleted = true;
-            await deleteContext.SaveChangesAsync(CancellationToken.None);
+            var handler = new DeleteCultureAntibioticCommandHandler(
+                new CultureAntibioticRepository(deleteContext),
+                new GenericRepository<CultureAntibioticCommercialName>(deleteContext),
+                new UnitOfWork(deleteContext));
+
+            await handler.Handle(new DeleteCultureAntibioticCommand(assignmentId), CancellationToken.None);
         }
 
         await using var verificationContext = database.CreateContext();
@@ -46,6 +60,22 @@ public class CultureAntibioticSoftDeleteFilterTests
             .IgnoreQueryFilters()
             .SingleAsync(entity => entity.Id == assignmentId);
         Assert.True(historicalAssignment.IsDeleted);
+
+        Assert.Null(await verificationContext.Set<CultureAntibioticCommercialName>()
+            .SingleOrDefaultAsync(entity => entity.Id == commercialNameId));
+        var historicalCommercialName = await verificationContext.Set<CultureAntibioticCommercialName>()
+            .IgnoreQueryFilters()
+            .SingleAsync(entity => entity.Id == commercialNameId);
+        Assert.True(historicalCommercialName.IsDeleted);
+    }
+
+    private static MasrLabDbContext CreateSoftDeleteContext(string databaseName)
+    {
+        var options = new DbContextOptionsBuilder<MasrLabDbContext>()
+            .UseSqlServer(LocalDbTestDatabase.CreateConnectionString(databaseName))
+            .AddInterceptors(new SoftDeleteInterceptor())
+            .Options;
+        return new MasrLabDbContext(options);
     }
 
     private static Test CreateCultureTest() => new()

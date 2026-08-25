@@ -242,6 +242,7 @@ public sealed class Module13_CultureAntibiotics_EndToEndIntegrationTests
             {
                 var handler = new DeleteCultureAntibioticCommandHandler(
                     new CultureAntibioticRepository(context),
+                    new GenericRepository<CultureAntibioticCommercialName>(context),
                     new UnitOfWork(context));
                 await handler.Handle(new DeleteCultureAntibioticCommand(manualAssignmentId), CancellationToken.None);
             }
