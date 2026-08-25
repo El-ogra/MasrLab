@@ -9,7 +9,7 @@
 - [X] Slice 1 — Visit payment transaction log (DONE)
 - [X] Slice 2 — Dual discount model + overpayment/change (DONE)
 - [X] Slice 3 — Settlement, edit/delete constraints, permissions (DONE)
-- [ ] Slice 4 — Billing read models (NOT STARTED)
+- [X] Slice 4 — Billing read models (DONE)
 - [ ] Slice 5 — Worklist + per-test workflow flags (NOT STARTED)
 - [ ] Slice 6 — Flag override, derived analytes, edit-after-print permission (NOT STARTED)
 - [ ] Slice 7 — Print-inclusion flags + reprint warning (NOT STARTED)
@@ -19,7 +19,7 @@
 - [ ] Slice 11 — Print pipeline integration (NOT STARTED)
 
 ## Current Iteration
-- **Current Slice:** Slice 4
+- **Current Slice:** Slice 5
 - **Attempt Number:** 0
 - **Last Error:** None
 
@@ -45,9 +45,16 @@
 
 - [SUCCESS] Slice 3 completed successfully at Tue Aug 25 2026. Build succeeded. Migration AddReceiptSettlement (20260825125104) created and applied. Tests: Domain 262 passed / Application 610 passed / Presentation 33 passed; Infrastructure tests skipped as instructed (ReceiptSettlementIntegrationTests.cs created). Commit: "بعد تنفيذ الشريحة 3 من الموديولان الثاني والرابع".
 
-### Slice 3/4 Notes
-- Receipt now has SettledAt/SettledByUserId/IsSettled, idempotent Settle(userId), EnsureNotSettled on ALL mutators, EditTransaction/DeleteTransaction (24h via handler-provided clock; edits correct amount in place + stamp EditDate + append yellow Adjustment row; deletes soft-delete + yellow row; both normalize payment status; only Payment/Refund rows editable/deletable).
-- PermissionNames (Application/Common/Constants): BillingAdmin = [(Receipts,Edit),(Receipts,Delete),(Accounts,Edit),(Accounts,Delete)]; ResultEdit = [(Results,EditPrinted)] — used by Slice 6.
-- DefaultPermissionSeeder.SeedAsync(context, ct) — idempotent, grants admins only; wired for startup call (Presentation wiring out of scope).
-- IPermissionRepository.GetByUserScreenOperationAsync(userId, ScreenType, PermissionOperation, ct) → Permission?.Allowed.
-- Slice 4: GetVisitAccountQuery + VisitAccountDto + VisitAccountReader (pattern of ReceiptPrintDataReader; interface goes in Application/Common/Interfaces). No migration.
+- [SUCCESS] Slice 4 completed successfully at Tue Aug 25 2026. Build succeeded. No migration required (read-only over Slices 1–3 tables). Tests: Domain 262 passed / Application 619 passed / Presentation 33 passed; Infrastructure tests skipped as instructed (VisitAccountReaderIntegrationTests.cs created). Commit: "بعد تنفيذ الشريحة 4 من الموديولان الثاني والرابع".
+
+### Slice 4 Notes
+- VisitAccountDto.Create(...) = single shaping source (figures + OQ-M2-6 color mapping + IsDeleted-flagged rows) used by reader and tests.
+- VisitAccountReader registered in DI; loads latest live receipt per visit, sums test+extra totals, IgnoreQueryFilters ONLY on transactions so soft-deleted audit rows stay visible.
+- GetVisitAccountQuery handler throws KeyNotFoundException when visit has no account.
+
+### Slice 5 Notes
+- Files: VisitTest.cs (+IsFinished/FinishedByUserId/FinishedAt/IsVerified/VerifiedByUserId/VerifiedAt/IsPrinted/PrintedByUserId/PrintedAt/IsExportMarked + MarkFinished/MarkVerified/MarkPrinted), AccountType enum extend (currently Cash,Insurance,Contract — add Individual,LabToLab,VIP,Free), VisitTestConfiguration columns, GetResultWorklist query (IVisitRepository.GetByDateRangeWithTestsAsync exists), SetVisitTestWorkflowFlagsCommand.
+- MarkPrinted must THROW unless IsVerified (OQ-M2... rather OQ-M4-2). Export NO-OP flag (OQ-M4-3).
+- Worklist DTO rows: Abbreviation, Result-or-"See Report", Status, Finish, Verify, Print, Export (M4-BR-05).
+- PatientVisit has VisitTests collection; Patient has AccountType property (check Patient entity when implementing worklist filter).
+- Migration AddVisitTestWorkflowFlags required and must be applied.
