@@ -127,6 +127,9 @@ public class Module11_Independence_IntegrationTests
                 var provider = services.BuildServiceProvider();
                 var mediator = provider.GetRequiredService<IMediator>();
 
+                var currentUserService = (CurrentUserService)provider.GetRequiredService<ICurrentUserService>();
+                currentUserService.SetCurrentUser(1, "integration-test", "Admin");
+
                 var visitId = await act.PatientVisits.Select(v => v.Id).SingleAsync();
 
                 await mediator.Send(

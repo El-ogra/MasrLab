@@ -14,28 +14,28 @@ public class CultureAntibioticSchemaMigrationTests
         await using var context = database.CreateContext();
 
         Assert.True(await ScalarAsync<int>(context,
-            "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME IN ('CultureAntibiotics', 'CultureAntibioticCommercialNames')") == 2);
+            "SELECT COUNT(*) AS [Value] FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME IN ('CultureAntibiotics', 'CultureAntibioticCommercialNames')") == 2);
 
         Assert.Equal(5, await ScalarAsync<int>(context, """
-            SELECT COUNT(*)
+            SELECT COUNT(*) AS [Value]
             FROM INFORMATION_SCHEMA.COLUMNS
             WHERE TABLE_NAME = 'CultureAntibiotics'
               AND COLUMN_NAME IN ('CultureTestId', 'AntibioticId', 'SensitivityText', 'Pregnant', 'Children')
             """));
         Assert.Equal(3, await ScalarAsync<int>(context, """
-            SELECT COUNT(*)
+            SELECT COUNT(*) AS [Value]
             FROM INFORMATION_SCHEMA.COLUMNS
             WHERE TABLE_NAME = 'CultureAntibioticCommercialNames'
               AND COLUMN_NAME IN ('CultureAntibioticId', 'Name', 'Print')
             """));
 
         Assert.Equal(2, await ScalarAsync<int>(context, """
-            SELECT COUNT(*)
+            SELECT COUNT(*) AS [Value]
             FROM sys.foreign_keys
             WHERE parent_object_id = OBJECT_ID(N'dbo.CultureAntibiotics')
             """));
         Assert.Equal(1, await ScalarAsync<int>(context, """
-            SELECT COUNT(*)
+            SELECT COUNT(*) AS [Value]
             FROM sys.foreign_keys
             WHERE parent_object_id = OBJECT_ID(N'dbo.CultureAntibioticCommercialNames')
             """));

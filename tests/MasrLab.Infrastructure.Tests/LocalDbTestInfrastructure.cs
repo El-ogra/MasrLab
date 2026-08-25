@@ -1,4 +1,5 @@
 using MasrLab.Infrastructure.Persistence;
+using MasrLab.Infrastructure.Persistence.Interceptors;
 using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 
@@ -63,6 +64,7 @@ public static class LocalDbTestDatabase
     {
         var options = new DbContextOptionsBuilder<MasrLabDbContext>()
             .UseSqlServer(CreateConnectionString(databaseName))
+            .AddInterceptors(new SoftDeleteInterceptor())
             .Options;
         return new MasrLabDbContext(options);
     }

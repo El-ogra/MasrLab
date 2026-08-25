@@ -53,8 +53,7 @@ public class PatientRepository : GenericRepository<Patient>, IPatientRepository
     public async Task<int?> GetMaxLabIdSuffixAsync(string datePrefix, CancellationToken cancellationToken = default)
     {
         var labIds = await _context.Patients
-            .AsNoTracking()
-            .Where(p => p.LabId.StartsWith(datePrefix))
+            .FromSqlRaw("SELECT * FROM Patients WITH (UPDLOCK, HOLDLOCK) WHERE LabId LIKE @p0 + '%'", datePrefix)
             .Select(p => p.LabId)
             .ToListAsync(cancellationToken);
 

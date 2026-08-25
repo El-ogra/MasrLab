@@ -138,6 +138,14 @@ public class Module12_ReferralParties_IntegrationTests
             // OQ-2: Verify VisitTest snapshot is unaffected by price-list swap
             await using (var ctx = LocalDbTestDatabase.CreateMigratedContext(db))
             {
+                var patient = new Patient { Name = "Snapshot Patient", Gender = Gender.Male };
+                ctx.Patients.Add(patient);
+                await ctx.SaveChangesAsync(CancellationToken.None);
+
+                var visit = PatientVisit.Create(patient.Id, 1, "20260825-0001", null, null);
+                ctx.PatientVisits.Add(visit);
+                await ctx.SaveChangesAsync(CancellationToken.None);
+
                 // Create a VisitTest snapshot BEFORE the swap (simulating historical record)
                 var test = new Domain.Entities.Core.Test
                 {
@@ -147,7 +155,7 @@ public class Module12_ReferralParties_IntegrationTests
                 ctx.Tests.Add(test);
                 await ctx.SaveChangesAsync(CancellationToken.None);
 
-                var snapshot = new VisitTest(1, test.Id, 120m, false);
+                var snapshot = new VisitTest(visit.Id, test.Id, 120m, false);
                 ctx.VisitTests.Add(snapshot);
                 await ctx.SaveChangesAsync(CancellationToken.None);
             }
