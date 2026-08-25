@@ -1,3 +1,4 @@
+using MasrLab.Application.Common.Interfaces;
 using MasrLab.Application.Features.PatientManagement.Commands.UpdatePatientData;
 using MasrLab.Domain.Entities.Core;
 using MasrLab.Domain.Exceptions;
@@ -11,15 +12,23 @@ public class UpdatePatientDataCommandHandler : IRequestHandler<UpdatePatientData
 {
     private readonly IPatientRepository _patientRepository;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly ICurrentUserService _currentUserService;
 
-    public UpdatePatientDataCommandHandler(IPatientRepository patientRepository, IUnitOfWork unitOfWork)
+    public UpdatePatientDataCommandHandler(
+        IPatientRepository patientRepository,
+        IUnitOfWork unitOfWork,
+        ICurrentUserService currentUserService)
     {
         _patientRepository = patientRepository;
         _unitOfWork = unitOfWork;
+        _currentUserService = currentUserService;
     }
 
     public async Task<Unit> Handle(UpdatePatientDataCommand request, CancellationToken cancellationToken)
     {
+        _ = _currentUserService.UserId
+            ?? throw new InvalidOperationException("Current user is not authenticated.");
+
         var patient = await _patientRepository.GetByIdAsync(request.Id, cancellationToken);
         if (patient is null)
             throw new EntityNotFoundException(nameof(Patient), request.Id);

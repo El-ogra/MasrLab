@@ -1,4 +1,5 @@
 using MasrLab.Application.Features.PatientManagement.Commands.RegisterPatient;
+using MasrLab.Application.Common.Interfaces;
 using MasrLab.Application.Features.PatientManagement.Commands.RegisterPatientIntake;
 using MasrLab.Application.Features.PatientManagement.Queries.FindDuplicatePatients;
 using MasrLab.Application.Features.PatientVisits.Commands.CreatePatientVisit;
@@ -14,6 +15,12 @@ public class RegisterPatientIntakeCommandHandlerTests
 {
     private readonly Mock<ISender> _sender = new();
     private readonly Mock<IUnitOfWork> _unitOfWork = new();
+    private readonly Mock<ICurrentUserService> _currentUserService = new();
+
+    public RegisterPatientIntakeCommandHandlerTests()
+    {
+        _currentUserService.SetupGet(service => service.UserId).Returns(1);
+    }
 
     private RegisterPatientIntakeCommandHandler CreateHandler()
     {
@@ -24,7 +31,10 @@ public class RegisterPatientIntakeCommandHandlerTests
             .Returns((Func<CancellationToken, Task<RegisterPatientIntakeResult>> operation, CancellationToken ct)
                 => operation(ct));
 
-        return new RegisterPatientIntakeCommandHandler(_sender.Object, _unitOfWork.Object);
+        return new RegisterPatientIntakeCommandHandler(
+            _sender.Object,
+            _unitOfWork.Object,
+            _currentUserService.Object);
     }
 
     private static RegisterPatientIntakeCommand CreateCommand(
@@ -91,6 +101,20 @@ public class RegisterPatientIntakeCommandHandlerTests
         Assert.Equal(0, result.AttachedTestCount);
         _sender.Verify(sender => sender.Send(
             It.IsAny<AddTestsToVisitCommand>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task Intake_RejectsUnauthenticatedRequestBeforeOpeningTransaction()
+    {
+        _currentUserService.SetupGet(service => service.UserId).Returns((int?)null);
+
+        await Assert.ThrowsAsync<InvalidOperationException>(()
+            => CreateHandler().Handle(CreateCommand(), CancellationToken.None));
+
+        _unitOfWork.Verify(unitOfWork => unitOfWork.ExecuteInTransactionAsync(
+            It.IsAny<Func<CancellationToken, Task<RegisterPatientIntakeResult>>>(),
+            It.IsAny<CancellationToken>()), Times.Never);
+        _sender.VerifyNoOtherCalls();
     }
 
     [Fact]

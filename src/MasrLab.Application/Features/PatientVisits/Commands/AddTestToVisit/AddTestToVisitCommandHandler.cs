@@ -1,4 +1,5 @@
 using MasrLab.Domain.Entities.Core;
+using MasrLab.Application.Common.Interfaces;
 using MasrLab.Domain.Exceptions;
 using MasrLab.Domain.Interfaces;
 using MasrLab.Domain.Services;
@@ -15,6 +16,7 @@ public class AddTestToVisitCommandHandler : IRequestHandler<AddTestToVisitComman
     private readonly IVisitTestSnapshotter _snapshotter;
     private readonly IRepository<Sample> _sampleRepository;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly ICurrentUserService _currentUserService;
 
     public AddTestToVisitCommandHandler(
         IVisitRepository visitRepository,
@@ -23,7 +25,8 @@ public class AddTestToVisitCommandHandler : IRequestHandler<AddTestToVisitComman
         ITestRepository testRepository,
         IVisitTestSnapshotter snapshotter,
         IRepository<Sample> sampleRepository,
-        IUnitOfWork unitOfWork)
+        IUnitOfWork unitOfWork,
+        ICurrentUserService currentUserService)
     {
         _visitRepository = visitRepository;
         _priceListRepository = priceListRepository;
@@ -32,10 +35,14 @@ public class AddTestToVisitCommandHandler : IRequestHandler<AddTestToVisitComman
         _snapshotter = snapshotter;
         _sampleRepository = sampleRepository;
         _unitOfWork = unitOfWork;
+        _currentUserService = currentUserService;
     }
 
     public async Task<Unit> Handle(AddTestToVisitCommand request, CancellationToken cancellationToken)
     {
+        _ = _currentUserService.UserId
+            ?? throw new InvalidOperationException("Current user is not authenticated.");
+
         var visit = await _visitRepository.GetByIdAsync(request.PatientVisitId, cancellationToken);
         if (visit is null)
             throw new EntityNotFoundException(nameof(PatientVisit), request.PatientVisitId);

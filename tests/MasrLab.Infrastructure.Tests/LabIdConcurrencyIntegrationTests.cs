@@ -1,4 +1,5 @@
 using MasrLab.Application.Common.Helpers;
+using MasrLab.Application.Common.Interfaces;
 using MasrLab.Application.Features.PatientManagement.Commands.RegisterPatient;
 using MasrLab.Domain.Common.Enums;
 using MasrLab.Domain.Exceptions;
@@ -11,6 +12,13 @@ namespace MasrLab.Infrastructure.Tests;
 [Collection("LocalDb")]
 public class LabIdConcurrencyIntegrationTests
 {
+    private sealed class TestCurrentUserService : ICurrentUserService
+    {
+        public int? UserId => 1;
+        public string? Username => "integration-test";
+        public string? Role => "LabTechnician";
+    }
+
     private const int ConcurrentRegistrations = 12;
     private const string InitialLabId = "20260101-0001";
 
@@ -36,7 +44,8 @@ public class LabIdConcurrencyIntegrationTests
                 var repository = new PatientRepository(context);
                 var unitOfWork = new UnitOfWork(context);
                 var generator = new LabIdGenerator(repository);
-                var handler = new RegisterPatientCommandHandler(repository, unitOfWork, generator);
+                var currentUserService = new TestCurrentUserService();
+                var handler = new RegisterPatientCommandHandler(repository, unitOfWork, generator, currentUserService);
 
                 try
                 {

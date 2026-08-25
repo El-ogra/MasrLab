@@ -1,4 +1,5 @@
 using MasrLab.Application.Features.PatientVisits.Commands.AddTestToVisit;
+using MasrLab.Application.Common.Interfaces;
 using MasrLab.Application.Services;
 using MasrLab.Domain.Common.Enums;
 using MasrLab.Domain.Entities.Core;
@@ -19,6 +20,7 @@ public class AddTestToVisitCommandHandlerTests
     private readonly IVisitTestSnapshotter _snapshotter;
     private readonly Mock<IRepository<Sample>> _sampleRepository;
     private readonly Mock<IUnitOfWork> _unitOfWork;
+    private readonly Mock<ICurrentUserService> _currentUserService;
 
     public AddTestToVisitCommandHandlerTests()
     {
@@ -29,6 +31,8 @@ public class AddTestToVisitCommandHandlerTests
         _snapshotter = new VisitTestSnapshotter();
         _sampleRepository = new Mock<IRepository<Sample>>();
         _unitOfWork = new Mock<IUnitOfWork>();
+        _currentUserService = new Mock<ICurrentUserService>();
+        _currentUserService.SetupGet(x => x.UserId).Returns(1);
     }
 
     private AddTestToVisitCommandHandler CreateHandler()
@@ -39,7 +43,8 @@ public class AddTestToVisitCommandHandlerTests
             _testRepository.Object,
             _snapshotter,
             _sampleRepository.Object,
-            _unitOfWork.Object);
+            _unitOfWork.Object,
+            _currentUserService.Object);
 
     private PatientVisit SetupVisit(int visitId = 1, VisitStatus status = VisitStatus.Registered)
     {

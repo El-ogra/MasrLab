@@ -1,4 +1,5 @@
 using MasrLab.Application.Features.VisitComposer.Commands.AddTestsToVisit;
+using MasrLab.Application.Common.Interfaces;
 using MasrLab.Application.Features.PatientVisits.Commands.CreatePatientVisit;
 using MasrLab.Application.Features.PatientVisits.Queries.GetVisitTestCount;
 using MasrLab.Application.Features.PatientManagement.Commands.RegisterPatient;
@@ -11,17 +12,25 @@ public sealed class RegisterPatientIntakeCommandHandler : IRequestHandler<Regist
 {
     private readonly ISender _sender;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly ICurrentUserService _currentUserService;
 
-    public RegisterPatientIntakeCommandHandler(ISender sender, IUnitOfWork unitOfWork)
+    public RegisterPatientIntakeCommandHandler(
+        ISender sender,
+        IUnitOfWork unitOfWork,
+        ICurrentUserService currentUserService)
     {
         _sender = sender;
         _unitOfWork = unitOfWork;
+        _currentUserService = currentUserService;
     }
 
     public Task<RegisterPatientIntakeResult> Handle(
         RegisterPatientIntakeCommand request,
         CancellationToken cancellationToken)
     {
+        _ = _currentUserService.UserId
+            ?? throw new InvalidOperationException("Current user is not authenticated.");
+
         return _unitOfWork.ExecuteInTransactionAsync(
             ct => ExecuteAsync(request, ct),
             cancellationToken);

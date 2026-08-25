@@ -1,4 +1,5 @@
 using MasrLab.Application.Features.VisitComposer.Commands.AddTestsToVisit;
+using MasrLab.Application.Common.Interfaces;
 using MasrLab.Application.Services;
 using MasrLab.Domain.Common.Enums;
 using MasrLab.Domain.Entities.Core;
@@ -22,6 +23,7 @@ public class Slice8SelectionGroupPricingTests
     private readonly Mock<IPriceListRepository> _priceListRepo;
     private readonly IVisitTestSnapshotter _snapshotter;
     private readonly Mock<IUnitOfWork> _unitOfWork;
+    private readonly Mock<ICurrentUserService> _currentUserService;
 
     public Slice8SelectionGroupPricingTests()
     {
@@ -35,6 +37,8 @@ public class Slice8SelectionGroupPricingTests
         _priceListRepo = new Mock<IPriceListRepository>();
         _snapshotter = new VisitTestSnapshotter();
         _unitOfWork = new Mock<IUnitOfWork>();
+        _currentUserService = new Mock<ICurrentUserService>();
+        _currentUserService.SetupGet(x => x.UserId).Returns(1);
     }
 
     private AddTestsToVisitCommandHandler CreateHandler()
@@ -48,7 +52,8 @@ public class Slice8SelectionGroupPricingTests
             _priceListResolver.Object,
             _priceListRepo.Object,
             _snapshotter,
-            _unitOfWork.Object);
+            _unitOfWork.Object,
+            _currentUserService.Object);
 
     private PatientVisit CreateVisit(int visitId = 1)
     {

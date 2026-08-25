@@ -1,4 +1,5 @@
 using MasrLab.Application.Features.PatientVisits.Commands.AddTestToVisit;
+using MasrLab.Application.Common.Interfaces;
 using MasrLab.Application.Features.VisitComposer.Commands.AddTestsToVisit;
 using MasrLab.Application.Services;
 using MasrLab.Domain.Common.Enums;
@@ -63,11 +64,14 @@ public class BothPathEquivalenceTests
             .ReturnsAsync(price);
 
         var sampleRepo = new Mock<IRepository<Sample>>();
+        var currentUserService = new Mock<ICurrentUserService>();
+        currentUserService.SetupGet(x => x.UserId).Returns(1);
         var legacyUow = new Mock<IUnitOfWork>();
 
         var legacyHandler = new AddTestToVisitCommandHandler(
             legacyVisitRepo.Object, priceListRepo.Object, priceResolver.Object,
-            legacyTestRepo.Object, _realSnapshotter, sampleRepo.Object, legacyUow.Object);
+            legacyTestRepo.Object, _realSnapshotter, sampleRepo.Object, legacyUow.Object,
+            currentUserService.Object);
 
         await legacyHandler.Handle(
             new AddTestToVisitCommand(visitId, new[] { testId }, null, false),
@@ -103,7 +107,7 @@ public class BothPathEquivalenceTests
             new Mock<ICommercialPackageRepository>().Object,
             new Mock<IRepository<VisitCommercialPackage>>().Object,
             composerPriceResolver.Object, composerPriceListRepo.Object,
-            _realSnapshotter, composerUow.Object);
+            _realSnapshotter, composerUow.Object, currentUserService.Object);
 
         await composerHandler.Handle(
             new AddTestsToVisitCommand(visitId, "Direct", null, null, testId.ToString(), false),

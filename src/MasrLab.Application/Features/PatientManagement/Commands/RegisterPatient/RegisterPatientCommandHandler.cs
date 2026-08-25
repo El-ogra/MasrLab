@@ -1,4 +1,5 @@
 using MasrLab.Application.Common.Helpers;
+using MasrLab.Application.Common.Interfaces;
 using MasrLab.Application.Features.PatientManagement.Commands.RegisterPatient;
 using MasrLab.Application.Features.PatientManagement.Queries.FindDuplicatePatients;
 using MasrLab.Domain.Common.Enums;
@@ -18,19 +19,25 @@ public class RegisterPatientCommandHandler : IRequestHandler<RegisterPatientComm
     private readonly IPatientRepository _patientRepository;
     private readonly IUnitOfWork _unitOfWork;
     private readonly LabIdGenerator _labIdGenerator;
+    private readonly ICurrentUserService _currentUserService;
 
     public RegisterPatientCommandHandler(
         IPatientRepository patientRepository,
         IUnitOfWork unitOfWork,
-        LabIdGenerator labIdGenerator)
+        LabIdGenerator labIdGenerator,
+        ICurrentUserService currentUserService)
     {
         _patientRepository = patientRepository;
         _unitOfWork = unitOfWork;
         _labIdGenerator = labIdGenerator;
+        _currentUserService = currentUserService;
     }
 
     public async Task<RegisterPatientResult> Handle(RegisterPatientCommand request, CancellationToken cancellationToken)
     {
+        _ = _currentUserService.UserId
+            ?? throw new InvalidOperationException("Current user is not authenticated.");
+
         var patient = Patient.Register(request.Name, request.LabId, request.DoctorId, request.ReferralEntityId);
 
         var duplicatePatients = await _patientRepository.FindProbableDuplicatesAsync(

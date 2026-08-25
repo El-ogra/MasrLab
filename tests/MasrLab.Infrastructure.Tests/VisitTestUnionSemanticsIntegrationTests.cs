@@ -1,4 +1,5 @@
 using MasrLab.Application.Features.PatientVisits.Queries.GetVisitTestCount;
+using MasrLab.Application.Common.Interfaces;
 using MasrLab.Application.Features.VisitComposer.Commands.AddTestsToVisit;
 using MasrLab.Application.Services;
 using MasrLab.Domain.Entities.Core;
@@ -10,6 +11,13 @@ namespace MasrLab.Infrastructure.Tests;
 
 public class VisitTestUnionSemanticsIntegrationTests
 {
+    private sealed class TestCurrentUserService : ICurrentUserService
+    {
+        public int? UserId => 1;
+        public string? Username => "integration-test";
+        public string? Role => "LabTechnician";
+    }
+
     [LocalDbFact]
     public async Task ReaddingOverlappingSelectionGroup_PersistsUnionWithoutDuplicates_AndCountMatches()
     {
@@ -47,7 +55,8 @@ public class VisitTestUnionSemanticsIntegrationTests
             new PriceListResolverService(new PriceListItemRepository(handlerContext)),
             new PriceListRepository(handlerContext),
             new VisitTestSnapshotter(),
-            new UnitOfWork(handlerContext));
+            new UnitOfWork(handlerContext),
+            new TestCurrentUserService());
 
         var request = new AddTestsToVisitCommand(
             visit.Id, "SelectionGroup", group.Id, null, null, false);
@@ -63,7 +72,9 @@ public class VisitTestUnionSemanticsIntegrationTests
 
         Assert.Equal(new[] { test1.Id, test2.Id }, persistedTestIds);
 
-        var count = await new GetVisitTestCountQueryHandler(new VisitRepository(verifyContext))
+        var count = await new GetVisitTestCountQueryHandler(
+                new VisitRepository(verifyContext),
+                new TestCurrentUserService())
             .Handle(new GetVisitTestCountQuery(visit.Id), CancellationToken.None);
         Assert.Equal(2, count);
     }

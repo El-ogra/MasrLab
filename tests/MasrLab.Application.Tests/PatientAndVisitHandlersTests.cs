@@ -1,5 +1,6 @@
 using AutoMapper;
 using MasrLab.Application.Common.DTOs;
+using MasrLab.Application.Common.Interfaces;
 using MasrLab.Application.Common.Helpers;
 using MasrLab.Application.Features.PatientManagement.Commands.RegisterPatient;
 using MasrLab.Application.Features.PatientManagement.Commands.UpdatePatientAccount;
@@ -19,6 +20,13 @@ namespace MasrLab.Application.Tests;
 
 public class PatientAndVisitHandlersTests
 {
+    private static Mock<ICurrentUserService> AuthenticatedUser()
+    {
+        var service = new Mock<ICurrentUserService>();
+        service.SetupGet(x => x.UserId).Returns(1);
+        return service;
+    }
+
     private static RegisterPatientCommand RegisterCommand(string name = "Mona") => new(
         name, 30, 1, 2, AgeUnit.Months, Gender.Female, "01012345678", "Cairo", "123", "note", "LAB-1", 2, 3,
         HasDiabetes: true,
@@ -55,7 +63,7 @@ public class PatientAndVisitHandlersTests
         var patients = new Mock<IPatientRepository>(); var uow = new Mock<IUnitOfWork>(); Patient? added = null;
         patients.Setup(x => x.FindProbableDuplicatesAsync(It.IsAny<string>(), It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<CancellationToken>())).ReturnsAsync(Array.Empty<Patient>());
         patients.Setup(x => x.AddAsync(It.IsAny<Patient>(), It.IsAny<CancellationToken>())).Callback<Patient, CancellationToken>((p, _) => added = p);
-        await new RegisterPatientCommandHandler(patients.Object, uow.Object, new LabIdGenerator(patients.Object)).Handle(RegisterCommand(), default);
+        await new RegisterPatientCommandHandler(patients.Object, uow.Object, new LabIdGenerator(patients.Object), AuthenticatedUser().Object).Handle(RegisterCommand(), default);
         Assert.NotNull(added); Assert.Equal("Mona", added!.Name); Assert.Equal("LAB-1", added.LabId); Assert.Equal(2, added.DoctorId); Assert.Equal(3, added.ReferralEntityId); Assert.Equal(Gender.Female, added.Gender); Assert.Equal("Cairo", added.Address); Assert.Equal("123", added.NationalId); Assert.Equal("note", added.Notes);
         Assert.True(added.HasDiabetes); Assert.True(added.OnBloodPressureTreatment); Assert.True(added.OnAntiviralTreatment); Assert.True(added.OnAntibiotic); Assert.True(added.BloodThinning); Assert.True(added.HasLiverDisease); Assert.True(added.HasAnemia); Assert.True(added.HasLupus); Assert.True(added.HasRenalFailure); Assert.True(added.HasHypertension); Assert.True(added.HasJointDisease); Assert.True(added.RecentContrastOrUltrasound);
         uow.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
@@ -69,7 +77,7 @@ public class PatientAndVisitHandlersTests
         duplicate.Phone = new MasrLab.Domain.ValueObjects.EgyptianPhone("01012345678");
         patients.Setup(x => x.FindProbableDuplicatesAsync("Mona", "123", "01012345678", It.IsAny<CancellationToken>()))
             .ReturnsAsync(new[] { duplicate });
-        var handler = new RegisterPatientCommandHandler(patients.Object, new Mock<IUnitOfWork>().Object, new LabIdGenerator(patients.Object));
+        var handler = new RegisterPatientCommandHandler(patients.Object, new Mock<IUnitOfWork>().Object, new LabIdGenerator(patients.Object), AuthenticatedUser().Object);
 
         var result = await handler.Handle(RegisterCommand(), default);
 
@@ -90,7 +98,11 @@ public class PatientAndVisitHandlersTests
         patients.Setup(x => x.FindProbableDuplicatesAsync("Mona", "123", "01012345678", It.IsAny<CancellationToken>()))
             .ReturnsAsync(new[] { duplicate });
         patients.Setup(x => x.AddAsync(It.IsAny<Patient>(), It.IsAny<CancellationToken>()));
-        var handler = new RegisterPatientCommandHandler(patients.Object, uow.Object, new LabIdGenerator(patients.Object));
+        var handler = new RegisterPatientCommandHandler(
+            patients.Object,
+            uow.Object,
+            new LabIdGenerator(patients.Object),
+            AuthenticatedUser().Object);
 
         var result = await handler.Handle(RegisterCommand() with { ConfirmDuplicate = true }, default);
 
@@ -104,7 +116,7 @@ public class PatientAndVisitHandlersTests
     public async Task RegisterPatient_rejects_empty_name_before_persisting()
     {
         var patients = new Mock<IPatientRepository>();
-        var handler = new RegisterPatientCommandHandler(patients.Object, new Mock<IUnitOfWork>().Object, new LabIdGenerator(patients.Object));
+        var handler = new RegisterPatientCommandHandler(patients.Object, new Mock<IUnitOfWork>().Object, new LabIdGenerator(patients.Object), AuthenticatedUser().Object);
         await Assert.ThrowsAsync<BusinessRuleViolationException>(() => handler.Handle(RegisterCommand(" "), default));
         patients.Verify(x => x.AddAsync(It.IsAny<Patient>(), It.IsAny<CancellationToken>()), Times.Never);
     }
@@ -165,7 +177,7 @@ public class PatientAndVisitHandlersTests
     public async Task UpdatePatientData_changes_profile_and_demographic_fields()
     {
         var repository = new Mock<IPatientRepository>(); var patient = new Patient { Id = 1, Name = "Old" }; repository.Setup(x => x.GetByIdAsync(1, It.IsAny<CancellationToken>())).ReturnsAsync(patient);
-        await new UpdatePatientDataCommandHandler(repository.Object, new Mock<IUnitOfWork>().Object).Handle(UpdateCommand(), default);
+        await new UpdatePatientDataCommandHandler(repository.Object, new Mock<IUnitOfWork>().Object, AuthenticatedUser().Object).Handle(UpdateCommand(), default);
         Assert.Equal("Updated", patient.Name); Assert.Equal("Giza", patient.Address); Assert.Equal("changed", patient.Notes); Assert.Equal("456", patient.NationalId); Assert.Equal(4, patient.DoctorId); Assert.Equal(5, patient.ReferralEntityId); Assert.Equal(Gender.Male, patient.Gender);
         Assert.True(patient.HasDiabetes); Assert.True(patient.OnBloodPressureTreatment); Assert.True(patient.OnAntiviralTreatment); Assert.True(patient.OnAntibiotic); Assert.True(patient.BloodThinning); Assert.True(patient.HasLiverDisease); Assert.True(patient.HasAnemia); Assert.True(patient.HasLupus); Assert.True(patient.HasRenalFailure); Assert.True(patient.HasHypertension); Assert.True(patient.HasJointDisease); Assert.True(patient.RecentContrastOrUltrasound); repository.Verify(x => x.Update(patient), Times.Once);
     }
@@ -174,7 +186,7 @@ public class PatientAndVisitHandlersTests
     public async Task UpdatePatientData_throws_for_missing_patient()
     {
         var repository = new Mock<IPatientRepository>(); repository.Setup(x => x.GetByIdAsync(1, It.IsAny<CancellationToken>())).ReturnsAsync((Patient?)null);
-        await Assert.ThrowsAsync<EntityNotFoundException>(() => new UpdatePatientDataCommandHandler(repository.Object, new Mock<IUnitOfWork>().Object).Handle(UpdateCommand(), default));
+        await Assert.ThrowsAsync<EntityNotFoundException>(() => new UpdatePatientDataCommandHandler(repository.Object, new Mock<IUnitOfWork>().Object, AuthenticatedUser().Object).Handle(UpdateCommand(), default));
     }
 
     [Fact]
