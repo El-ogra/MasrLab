@@ -99,6 +99,7 @@ public static class DependencyInjection
         services.AddScoped<ITestComponentChoiceRepository, TestComponentChoiceRepository>();
         services.AddScoped<IReceiptPrintDataReader, ReceiptPrintDataReader>();
         services.AddScoped<IVisitAccountReader, VisitAccountReader>();
+        services.AddScoped<IWorklistReader, WorklistReader>();
         services.AddScoped<IEnvelopePrintDataReader, EnvelopePrintDataReader>();
         services.AddScoped<IOperationalReportDataReader, OperationalReportPrintDataReader>();
 

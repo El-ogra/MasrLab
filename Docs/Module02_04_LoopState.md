@@ -10,7 +10,7 @@
 - [X] Slice 2 — Dual discount model + overpayment/change (DONE)
 - [X] Slice 3 — Settlement, edit/delete constraints, permissions (DONE)
 - [X] Slice 4 — Billing read models (DONE)
-- [ ] Slice 5 — Worklist + per-test workflow flags (NOT STARTED)
+- [X] Slice 5 — Worklist + per-test workflow flags (DONE)
 - [ ] Slice 6 — Flag override, derived analytes, edit-after-print permission (NOT STARTED)
 - [ ] Slice 7 — Print-inclusion flags + reprint warning (NOT STARTED)
 - [ ] Slice 8 — Blank reports persisted (NOT STARTED)
@@ -19,9 +19,16 @@
 - [ ] Slice 11 — Print pipeline integration (NOT STARTED)
 
 ## Current Iteration
-- **Current Slice:** Slice 5
+- **Current Slice:** Slice 6
 - **Attempt Number:** 0
 - **Last Error:** None
+
+### Slice 5 Notes
+- VisitTest: IsFinished/FinishedByUserId/FinishedAt, IsVerified/..., IsPrinted/..., IsExportMarked; MarkFinished/MarkVerified/MarkPrinted idempotent with user validation; SetExportMark pure no-op. AccountType extended Individual/LabToLab/VIP/Free (values 3-6).
+- Worklist via IWorklistReader (Infrastructure Readers/WorklistReader.cs) — DEVIATION from plan's "compose GetByDateRangeWithTestsAsync in handler": reader pattern used for efficiency (server-side join to Patient.AccountType + TestResults aggregation); semantics identical.
+- SetVisitTestWorkflowFlagsCommand applies Finish→Verify→Print→Export in order through domain methods.
+- Migration AddVisitTestWorkflowFlags applied (20260825130939).
+- Patient.Age is MasrLab.Domain.ValueObjects.Age(years, months, days); Test has TestCode+SeeReport used for worklist Abbreviation/Result-or-SeeReport columns.
 
 ### Slice 1 Analysis Cache
 - `Receipt` aggregate: auto-total via GrossTotal (VisitTests.Price + ExtraServiceItems), ApplyDiscount/AddPayment/AddExtraServiceItem guarded by EnsureDraft; AddPayment rejects overpayment (`PaidNow + amount > Total`) — relaxed only in Slice 2.
