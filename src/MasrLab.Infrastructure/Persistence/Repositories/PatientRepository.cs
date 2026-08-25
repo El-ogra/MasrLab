@@ -17,6 +17,26 @@ public class PatientRepository : GenericRepository<Patient>, IPatientRepository
             .ToListAsync(cancellationToken);
     }
 
+    public async Task<IReadOnlyList<Patient>> FindProbableDuplicatesAsync(
+        string name,
+        string? nationalId,
+        string? phone,
+        CancellationToken cancellationToken = default)
+    {
+        var normalizedName = name.Trim();
+        var normalizedNationalId = string.IsNullOrWhiteSpace(nationalId) ? null : nationalId.Trim();
+        var normalizedPhone = string.IsNullOrWhiteSpace(phone) ? null : phone.Trim();
+        var hasIdentityMatch = normalizedNationalId is not null || normalizedPhone is not null;
+
+        return await _context.Patients
+            .AsNoTracking()
+            .Where(p => p.Name == normalizedName &&
+                        (!hasIdentityMatch ||
+                         (normalizedNationalId != null && p.NationalId == normalizedNationalId) ||
+                         (normalizedPhone != null && p.Phone != null && p.Phone.Value == normalizedPhone)))
+            .ToListAsync(cancellationToken);
+    }
+
     public async Task<Patient?> GetByLabIdAsync(string labId, CancellationToken cancellationToken = default)
     {
         return await _context.Patients

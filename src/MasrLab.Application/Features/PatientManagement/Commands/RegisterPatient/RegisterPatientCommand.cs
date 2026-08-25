@@ -1,5 +1,6 @@
-using MediatR;
+using MasrLab.Application.Features.PatientManagement.Queries.FindDuplicatePatients;
 using MasrLab.Domain.Common.Enums;
+using MediatR;
 
 namespace MasrLab.Application.Features.PatientManagement.Commands.RegisterPatient;
 
@@ -28,5 +29,6 @@ public record RegisterPatientCommand(
     bool HasRenalFailure = false,
     bool HasHypertension = false,
     bool HasJointDisease = false,
-    bool RecentContrastOrUltrasound = false
-) : IRequest<Unit>;
+    bool RecentContrastOrUltrasound = false,
+    bool ConfirmDuplicate = false
+) : IRequest<RegisterPatientResult>;

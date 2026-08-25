@@ -1,5 +1,6 @@
 using MasrLab.Application.Common.Helpers;
 using MasrLab.Application.Features.PatientManagement.Commands.RegisterPatient;
+using MasrLab.Application.Features.PatientManagement.Queries.FindDuplicatePatients;
 using MasrLab.Domain.Common.Enums;
 using MasrLab.Domain.Entities.Core;
 using MasrLab.Domain.Exceptions;
@@ -9,7 +10,7 @@ using MediatR;
 
 namespace MasrLab.Application.Features.PatientManagement.Commands.RegisterPatient;
 
-public class RegisterPatientCommandHandler : IRequestHandler<RegisterPatientCommand, Unit>
+public class RegisterPatientCommandHandler : IRequestHandler<RegisterPatientCommand, RegisterPatientResult>
 {
     private const int MaxLabIdRetries = 5;
     private const int RetryBaseDelayMilliseconds = 50;
@@ -28,9 +29,29 @@ public class RegisterPatientCommandHandler : IRequestHandler<RegisterPatientComm
         _labIdGenerator = labIdGenerator;
     }
 
-    public async Task<Unit> Handle(RegisterPatientCommand request, CancellationToken cancellationToken)
+    public async Task<RegisterPatientResult> Handle(RegisterPatientCommand request, CancellationToken cancellationToken)
     {
         var patient = Patient.Register(request.Name, request.LabId, request.DoctorId, request.ReferralEntityId);
+
+        var duplicatePatients = await _patientRepository.FindProbableDuplicatesAsync(
+            request.Name,
+            request.NationalId,
+            request.Phone,
+            cancellationToken);
+
+        var potentialDuplicates = duplicatePatients
+            .Select(patient => new DuplicatePatientDto(
+                patient.Id,
+                patient.Name,
+                patient.LabId,
+                patient.NationalId,
+                patient.Phone?.Value))
+            .ToList();
+
+        if (potentialDuplicates.Count > 0 && !request.ConfirmDuplicate)
+        {
+            return new RegisterPatientResult(false, potentialDuplicates);
+        }
 
         patient.Age = new Age(request.AgeYears, request.AgeMonths, request.AgeDays, request.AgeUnit);
         patient.Gender = request.Gender;
@@ -57,7 +78,7 @@ public class RegisterPatientCommandHandler : IRequestHandler<RegisterPatientComm
             try
             {
                 await _unitOfWork.SaveChangesAsync(cancellationToken);
-                return Unit.Value;
+                return new RegisterPatientResult(true, potentialDuplicates);
             }
             catch (DuplicateLabIdException) when (attempt < MaxLabIdRetries - 1)
             {

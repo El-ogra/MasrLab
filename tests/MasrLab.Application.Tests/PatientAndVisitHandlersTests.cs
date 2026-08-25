@@ -4,6 +4,7 @@ using MasrLab.Application.Common.Helpers;
 using MasrLab.Application.Features.PatientManagement.Commands.RegisterPatient;
 using MasrLab.Application.Features.PatientManagement.Commands.UpdatePatientAccount;
 using MasrLab.Application.Features.PatientManagement.Commands.UpdatePatientData;
+using MasrLab.Application.Features.PatientManagement.Queries.FindDuplicatePatients;
 using MasrLab.Application.Features.PatientManagement.Queries.GenerateLabId;
 using MasrLab.Application.Features.PatientManagement.Queries.GetPatientById;
 using MasrLab.Application.Features.PatientSearch.Queries.GetPatientVisitHistory;
@@ -52,10 +53,50 @@ public class PatientAndVisitHandlersTests
     public async Task RegisterPatient_persists_complete_patient()
     {
         var patients = new Mock<IPatientRepository>(); var uow = new Mock<IUnitOfWork>(); Patient? added = null;
+        patients.Setup(x => x.FindProbableDuplicatesAsync(It.IsAny<string>(), It.IsAny<string?>(), It.IsAny<string?>(), It.IsAny<CancellationToken>())).ReturnsAsync(Array.Empty<Patient>());
         patients.Setup(x => x.AddAsync(It.IsAny<Patient>(), It.IsAny<CancellationToken>())).Callback<Patient, CancellationToken>((p, _) => added = p);
         await new RegisterPatientCommandHandler(patients.Object, uow.Object, new LabIdGenerator(patients.Object)).Handle(RegisterCommand(), default);
         Assert.NotNull(added); Assert.Equal("Mona", added!.Name); Assert.Equal("LAB-1", added.LabId); Assert.Equal(2, added.DoctorId); Assert.Equal(3, added.ReferralEntityId); Assert.Equal(Gender.Female, added.Gender); Assert.Equal("Cairo", added.Address); Assert.Equal("123", added.NationalId); Assert.Equal("note", added.Notes);
         Assert.True(added.HasDiabetes); Assert.True(added.OnBloodPressureTreatment); Assert.True(added.OnAntiviralTreatment); Assert.True(added.OnAntibiotic); Assert.True(added.BloodThinning); Assert.True(added.HasLiverDisease); Assert.True(added.HasAnemia); Assert.True(added.HasLupus); Assert.True(added.HasRenalFailure); Assert.True(added.HasHypertension); Assert.True(added.HasJointDisease); Assert.True(added.RecentContrastOrUltrasound);
+        uow.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task RegisterPatient_warns_about_probable_duplicate_without_persisting()
+    {
+        var patients = new Mock<IPatientRepository>();
+        var duplicate = new Patient { Id = 9, Name = "Mona", LabId = "LAB-OLD", NationalId = "123" };
+        duplicate.Phone = new MasrLab.Domain.ValueObjects.EgyptianPhone("01012345678");
+        patients.Setup(x => x.FindProbableDuplicatesAsync("Mona", "123", "01012345678", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new[] { duplicate });
+        var handler = new RegisterPatientCommandHandler(patients.Object, new Mock<IUnitOfWork>().Object, new LabIdGenerator(patients.Object));
+
+        var result = await handler.Handle(RegisterCommand(), default);
+
+        Assert.False(result.IsRegistered);
+        Assert.True(result.HasPotentialDuplicates);
+        var match = Assert.Single(result.PotentialDuplicates);
+        Assert.Equal(9, match.Id);
+        Assert.Equal("LAB-OLD", match.LabId);
+        patients.Verify(x => x.AddAsync(It.IsAny<Patient>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task RegisterPatient_registers_when_probable_duplicate_is_confirmed()
+    {
+        var patients = new Mock<IPatientRepository>();
+        var uow = new Mock<IUnitOfWork>();
+        var duplicate = new Patient { Id = 9, Name = "Mona", LabId = "LAB-OLD", NationalId = "123" };
+        patients.Setup(x => x.FindProbableDuplicatesAsync("Mona", "123", "01012345678", It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new[] { duplicate });
+        patients.Setup(x => x.AddAsync(It.IsAny<Patient>(), It.IsAny<CancellationToken>()));
+        var handler = new RegisterPatientCommandHandler(patients.Object, uow.Object, new LabIdGenerator(patients.Object));
+
+        var result = await handler.Handle(RegisterCommand() with { ConfirmDuplicate = true }, default);
+
+        Assert.True(result.IsRegistered);
+        Assert.True(result.HasPotentialDuplicates);
+        patients.Verify(x => x.AddAsync(It.IsAny<Patient>(), It.IsAny<CancellationToken>()), Times.Once);
         uow.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
     }
 

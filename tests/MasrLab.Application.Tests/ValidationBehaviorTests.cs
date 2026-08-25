@@ -1,6 +1,7 @@
 using FluentValidation;
 using MasrLab.Application.Common.Behaviors;
 using MasrLab.Application.Features.PatientManagement.Commands.RegisterPatient;
+using MasrLab.Application.Features.PatientManagement.Queries.FindDuplicatePatients;
 using MasrLab.Domain.Common.Enums;
 using MediatR;
 
@@ -12,22 +13,22 @@ public class ValidationBehaviorTests
     public async Task Handle_ShouldPassThrough_WhenNoValidators()
     {
         var validators = new List<IValidator<RegisterPatientCommand>>();
-        var behavior = new ValidationBehavior<RegisterPatientCommand, Unit>(validators);
+        var behavior = new ValidationBehavior<RegisterPatientCommand, RegisterPatientResult>(validators);
 
         var command = new RegisterPatientCommand(
             "Ahmed", 30, 0, 0, AgeUnit.Years, Gender.Male, null, null, null, null,
             "LAB-001", 1, 1);
 
         var called = false;
-        RequestHandlerDelegate<Unit> next = ct =>
+        RequestHandlerDelegate<RegisterPatientResult> next = ct =>
         {
             called = true;
-            return Task.FromResult(Unit.Value);
+            return Task.FromResult(new RegisterPatientResult(true, Array.Empty<DuplicatePatientDto>()));
         };
         var result = await behavior.Handle(command, next, CancellationToken.None);
 
         Assert.True(called);
-        Assert.Equal(Unit.Value, result);
+        Assert.True(result.IsRegistered);
     }
 
     [Fact]
@@ -37,13 +38,14 @@ public class ValidationBehaviorTests
             new FluentValidation.Results.ValidationFailure("Name", "Name is required"));
 
         var validators = new List<IValidator<RegisterPatientCommand>> { validator };
-        var behavior = new ValidationBehavior<RegisterPatientCommand, Unit>(validators);
+        var behavior = new ValidationBehavior<RegisterPatientCommand, RegisterPatientResult>(validators);
 
         var command = new RegisterPatientCommand(
             "", 30, 0, 0, AgeUnit.Years, Gender.Male, null, null, null, null,
             "LAB-001", 1, 1);
 
-        RequestHandlerDelegate<Unit> next = ct => Task.FromResult(Unit.Value);
+        RequestHandlerDelegate<RegisterPatientResult> next = ct =>
+            Task.FromResult(new RegisterPatientResult(true, Array.Empty<DuplicatePatientDto>()));
 
         await Assert.ThrowsAsync<ValidationException>(
             () => behavior.Handle(command, next, CancellationToken.None));
@@ -54,17 +56,17 @@ public class ValidationBehaviorTests
     {
         var validator = new MockValidator();
         var validators = new List<IValidator<RegisterPatientCommand>> { validator };
-        var behavior = new ValidationBehavior<RegisterPatientCommand, Unit>(validators);
+        var behavior = new ValidationBehavior<RegisterPatientCommand, RegisterPatientResult>(validators);
 
         var command = new RegisterPatientCommand(
             "Ahmed", 30, 0, 0, AgeUnit.Years, Gender.Male, null, null, null, null,
             "LAB-001", 1, 1);
 
         var nextCalled = false;
-        RequestHandlerDelegate<Unit> next = ct =>
+        RequestHandlerDelegate<RegisterPatientResult> next = ct =>
         {
             nextCalled = true;
-            return Task.FromResult(Unit.Value);
+            return Task.FromResult(new RegisterPatientResult(true, Array.Empty<DuplicatePatientDto>()));
         };
 
         await behavior.Handle(command, next, CancellationToken.None);
