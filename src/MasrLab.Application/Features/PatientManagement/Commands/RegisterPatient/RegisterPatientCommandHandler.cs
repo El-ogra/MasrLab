@@ -38,20 +38,6 @@ public class RegisterPatientCommandHandler : IRequestHandler<RegisterPatientComm
         patient.Address = request.Address;
         patient.NationalId = request.NationalId;
         patient.Notes = request.Notes;
-        patient.AccountType = request.AccountType;
-        patient.DrugAllergy = request.DrugAllergy;
-        patient.Pregnancy = request.Pregnancy;
-        patient.BloodThinning = request.BloodThinning;
-        patient.HasDiabetes = request.HasDiabetes;
-        patient.HasHypertension = request.HasHypertension;
-        patient.HasLiverDisease = request.HasLiverDisease;
-        patient.HasJointDisease = request.HasJointDisease;
-        patient.HasRenalFailure = request.HasRenalFailure;
-        patient.HasLupus = request.HasLupus;
-        patient.HasHeartDisease = request.HasHeartDisease;
-        patient.HasThyroidDisorder = request.HasThyroidDisorder;
-        patient.ChronicDiseases = request.ChronicDiseases;
-
         await _patientRepository.AddAsync(patient, cancellationToken);
 
         for (var attempt = 0; ; attempt++)

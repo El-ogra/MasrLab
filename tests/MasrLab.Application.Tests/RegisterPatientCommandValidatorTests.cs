@@ -7,15 +7,30 @@ public class RegisterPatientCommandValidatorTests
 {
     private readonly RegisterPatientCommandValidator _validator = new();
 
+    private static RegisterPatientCommand ValidCommand(
+        string name = "Ahmed",
+        int ageYears = 30,
+        Gender gender = Gender.Male,
+        string? notes = null) => new(
+            name,
+            ageYears,
+            0,
+            0,
+            AgeUnit.Years,
+            gender,
+            null,
+            null,
+            null,
+            notes,
+            "LAB-001",
+            1,
+            1);
+
     [Fact]
     public void Should_Have_Error_When_Name_Is_Empty()
     {
-        var command = new RegisterPatientCommand(
-            "", 30, 0, 0, AgeUnit.Years, Gender.Male, null, null, null, null,
-            "LAB-001", 1, 1, AccountType.Cash, null, false, false,
-            false, false, false, false, false, false, false, false, null);
+        var result = _validator.Validate(ValidCommand(name: ""));
 
-        var result = _validator.Validate(command);
         Assert.False(result.IsValid);
         Assert.Contains(result.Errors, e => e.PropertyName == "Name");
     }
@@ -23,25 +38,46 @@ public class RegisterPatientCommandValidatorTests
     [Fact]
     public void Should_Have_Error_When_LabId_Is_Empty()
     {
-        var command = new RegisterPatientCommand(
-            "Ahmed", 30, 0, 0, AgeUnit.Years, Gender.Male, null, null, null, null,
-            "", 1, 1, AccountType.Cash, null, false, false,
-            false, false, false, false, false, false, false, false, null);
+        var command = ValidCommand() with { LabId = "" };
 
         var result = _validator.Validate(command);
+
         Assert.False(result.IsValid);
         Assert.Contains(result.Errors, e => e.PropertyName == "LabId");
     }
 
     [Fact]
+    public void Should_Have_Error_When_Gender_Is_Invalid()
+    {
+        var result = _validator.Validate(ValidCommand(gender: (Gender)999));
+
+        Assert.False(result.IsValid);
+        Assert.Contains(result.Errors, e => e.PropertyName == "Gender");
+    }
+
+    [Fact]
+    public void Should_Have_Error_When_Age_Is_Empty()
+    {
+        var result = _validator.Validate(ValidCommand(ageYears: 0));
+
+        Assert.False(result.IsValid);
+        Assert.Contains(result.Errors, e => e.PropertyName == "");
+    }
+
+    [Fact]
+    public void Should_Have_Error_When_Notes_Exceed_Maximum_Length()
+    {
+        var result = _validator.Validate(ValidCommand(notes: new string('n', 1001)));
+
+        Assert.False(result.IsValid);
+        Assert.Contains(result.Errors, e => e.PropertyName == "Notes");
+    }
+
+    [Fact]
     public void Should_Be_Valid_With_All_Required_Fields()
     {
-        var command = new RegisterPatientCommand(
-            "Ahmed", 30, 0, 0, AgeUnit.Years, Gender.Male, null, null, null, null,
-            "LAB-001", 1, 1, AccountType.Cash, null, false, false,
-            false, false, false, false, false, false, false, false, null);
+        var result = _validator.Validate(ValidCommand(notes: "intake note"));
 
-        var result = _validator.Validate(command);
         Assert.True(result.IsValid);
     }
 }

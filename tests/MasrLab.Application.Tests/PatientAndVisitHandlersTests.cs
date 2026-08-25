@@ -18,8 +18,8 @@ namespace MasrLab.Application.Tests;
 
 public class PatientAndVisitHandlersTests
 {
-    private static RegisterPatientCommand RegisterCommand(string name = "Mona") => new(name, 30, 1, 2, AgeUnit.Months, Gender.Female, "01012345678", "Cairo", "123", "note", "LAB-1", 2, 3, AccountType.Cash, "none", false, false, true, false, false, false, false, false, false, false, "diabetes");
-    private static UpdatePatientDataCommand UpdateCommand(int id = 1) => new(id, "Updated", 40, 0, 0, AgeUnit.Years, Gender.Male, "01012345678", "Giza", "456", "changed", 4, 5, null, false, false, false, true, false, false, false, false, false, false, null);
+    private static RegisterPatientCommand RegisterCommand(string name = "Mona") => new(name, 30, 1, 2, AgeUnit.Months, Gender.Female, "01012345678", "Cairo", "123", "note", "LAB-1", 2, 3);
+    private static UpdatePatientDataCommand UpdateCommand(int id = 1) => new(id, "Updated", 40, 0, 0, AgeUnit.Years, Gender.Male, "01012345678", "Giza", "456", "changed", 4, 5);
 
     [Fact]
     public async Task RegisterPatient_persists_complete_patient()
@@ -27,7 +27,7 @@ public class PatientAndVisitHandlersTests
         var patients = new Mock<IPatientRepository>(); var uow = new Mock<IUnitOfWork>(); Patient? added = null;
         patients.Setup(x => x.AddAsync(It.IsAny<Patient>(), It.IsAny<CancellationToken>())).Callback<Patient, CancellationToken>((p, _) => added = p);
         await new RegisterPatientCommandHandler(patients.Object, uow.Object, new LabIdGenerator(patients.Object)).Handle(RegisterCommand(), default);
-        Assert.NotNull(added); Assert.Equal("Mona", added!.Name); Assert.Equal("LAB-1", added.LabId); Assert.Equal(2, added.DoctorId); Assert.True(added.HasDiabetes);
+        Assert.NotNull(added); Assert.Equal("Mona", added!.Name); Assert.Equal("LAB-1", added.LabId); Assert.Equal(2, added.DoctorId); Assert.Equal(3, added.ReferralEntityId); Assert.Equal(Gender.Female, added.Gender); Assert.Equal("Cairo", added.Address); Assert.Equal("123", added.NationalId); Assert.Equal("note", added.Notes);
         uow.Verify(x => x.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Once);
     }
 
@@ -93,11 +93,11 @@ public class PatientAndVisitHandlersTests
     }
 
     [Fact]
-    public async Task UpdatePatientData_changes_profile_and_clinical_fields()
+    public async Task UpdatePatientData_changes_profile_and_demographic_fields()
     {
         var repository = new Mock<IPatientRepository>(); var patient = new Patient { Id = 1, Name = "Old" }; repository.Setup(x => x.GetByIdAsync(1, It.IsAny<CancellationToken>())).ReturnsAsync(patient);
         await new UpdatePatientDataCommandHandler(repository.Object, new Mock<IUnitOfWork>().Object).Handle(UpdateCommand(), default);
-        Assert.Equal("Updated", patient.Name); Assert.Equal("Giza", patient.Address); Assert.Equal(4, patient.DoctorId); Assert.True(patient.HasHypertension); repository.Verify(x => x.Update(patient), Times.Once);
+        Assert.Equal("Updated", patient.Name); Assert.Equal("Giza", patient.Address); Assert.Equal("changed", patient.Notes); Assert.Equal("456", patient.NationalId); Assert.Equal(4, patient.DoctorId); Assert.Equal(5, patient.ReferralEntityId); Assert.Equal(Gender.Male, patient.Gender); repository.Verify(x => x.Update(patient), Times.Once);
     }
 
     [Fact]

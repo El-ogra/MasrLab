@@ -16,8 +16,7 @@ public class ValidationBehaviorTests
 
         var command = new RegisterPatientCommand(
             "Ahmed", 30, 0, 0, AgeUnit.Years, Gender.Male, null, null, null, null,
-            "LAB-001", 1, 1, AccountType.Cash, null, false, false,
-            false, false, false, false, false, false, false, false, null);
+            "LAB-001", 1, 1);
 
         var called = false;
         RequestHandlerDelegate<Unit> next = ct =>
@@ -42,8 +41,7 @@ public class ValidationBehaviorTests
 
         var command = new RegisterPatientCommand(
             "", 30, 0, 0, AgeUnit.Years, Gender.Male, null, null, null, null,
-            "LAB-001", 1, 1, AccountType.Cash, null, false, false,
-            false, false, false, false, false, false, false, false, null);
+            "LAB-001", 1, 1);
 
         RequestHandlerDelegate<Unit> next = ct => Task.FromResult(Unit.Value);
 
@@ -60,8 +58,7 @@ public class ValidationBehaviorTests
 
         var command = new RegisterPatientCommand(
             "Ahmed", 30, 0, 0, AgeUnit.Years, Gender.Male, null, null, null, null,
-            "LAB-001", 1, 1, AccountType.Cash, null, false, false,
-            false, false, false, false, false, false, false, false, null);
+            "LAB-001", 1, 1);
 
         var nextCalled = false;
         RequestHandlerDelegate<Unit> next = ct =>

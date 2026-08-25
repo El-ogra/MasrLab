@@ -16,18 +16,5 @@ public record RegisterPatientCommand(
     string? Notes,
     string LabId,
     int? DoctorId,
-    int? ReferralEntityId,
-    AccountType AccountType,
-    string? DrugAllergy,
-    bool Pregnancy,
-    bool BloodThinning,
-    bool HasDiabetes,
-    bool HasHypertension,
-    bool HasLiverDisease,
-    bool HasJointDisease,
-    bool HasRenalFailure,
-    bool HasLupus,
-    bool HasHeartDisease,
-    bool HasThyroidDisorder,
-    string? ChronicDiseases
+    int? ReferralEntityId
 ) : IRequest<Unit>;
