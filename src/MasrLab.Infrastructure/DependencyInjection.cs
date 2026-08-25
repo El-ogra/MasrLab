@@ -100,6 +100,7 @@ public static class DependencyInjection
         services.AddScoped<IReceiptPrintDataReader, ReceiptPrintDataReader>();
         services.AddScoped<IVisitAccountReader, VisitAccountReader>();
         services.AddScoped<IWorklistReader, WorklistReader>();
+        services.AddScoped<IReprintWarningReader, ReprintWarningReader>();
         services.AddScoped<IEnvelopePrintDataReader, EnvelopePrintDataReader>();
         services.AddScoped<IOperationalReportDataReader, OperationalReportPrintDataReader>();
 

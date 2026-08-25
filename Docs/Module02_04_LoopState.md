@@ -12,16 +12,23 @@
 - [X] Slice 4 — Billing read models (DONE)
 - [X] Slice 5 — Worklist + per-test workflow flags (DONE)
 - [X] Slice 6 — Flag override, derived analytes, edit-after-print permission (DONE)
-- [ ] Slice 7 — Print-inclusion flags + reprint warning (NOT STARTED)
+- [X] Slice 7 — Print-inclusion flags + reprint warning (DONE)
 - [ ] Slice 8 — Blank reports persisted (NOT STARTED)
 - [ ] Slice 9 — Consolidated reports (NOT STARTED)
 - [ ] Slice 10 — Culture, microscopic & per-organism sensitivity (NOT STARTED)
 - [ ] Slice 11 — Print pipeline integration (NOT STARTED)
 
 ## Current Iteration
-- **Current Slice:** Slice 7
+- **Current Slice:** Slice 8
 - **Attempt Number:** 0
 - **Last Error:** None
+
+### Slice 7 Notes
+- VisitTestResultItem.IncludeInPrint = true default; TestResult.IncludeCommentInPrint = true default.
+- SetPrintInclusionCommand(VisitTestId, Rows[RowPrintInclusion(item, include)], CommentBlocks?[CommentPrintInclusion(resultId, include)]) — full-state sync with foreign-row rejection.
+- GetReprintWarningQuery + IReprintWarningReader/ReprintWarningReader: latest PrintedAt/PrintedByUserId over results of visit test; ReprintWarningDto.BuildMessage = exact binding OQ-M4-7 text.
+- Migration AddPrintInclusionFlags applied (20260825133956).
+- Slice 11's PrintVisitReportCommand will carry the SuppressReprintWarning flag ("without msg." checkbox).
 
 ### Slice 6 Notes
 - TestResult: IsStatusOverridden + OverrideStatus(forcedStatus?, userId) — force sets flag, null clears (throws if nothing to clear). NOTE ResultStatus.High == 0 is the default for new results.

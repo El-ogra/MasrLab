@@ -13,4 +13,7 @@ public class VisitTestResultItem : BaseEntity
     public string ComponentUnit { get; set; } = string.Empty;
     public int DisplayOrder { get; set; }
     public ResultEntryKind ResultEntryKind { get; set; }
+
+    // OQ-M4-5: unchecked rows are excluded from every rendered report.
+    public bool IncludeInPrint { get; set; } = true;
 }

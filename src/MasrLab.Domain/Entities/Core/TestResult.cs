@@ -27,6 +27,9 @@ public class TestResult : BaseEntity
     public bool ReprintRequired { get; private set; }
     public bool IsStatusOverridden { get; private set; }
 
+    // OQ-M4-5: the comment block prints only when included.
+    public bool IncludeCommentInPrint { get; set; } = true;
+
     // OQ-M4-4: manual H/L override on top of the automatic M10 engine.
     // A forced value flags the result; null clears the override so the engine re-derives it.
     public void OverrideStatus(ResultStatus? forcedStatus, int userId)
