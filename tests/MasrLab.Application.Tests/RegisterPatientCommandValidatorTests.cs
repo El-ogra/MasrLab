@@ -27,6 +27,22 @@ public class RegisterPatientCommandValidatorTests
             1);
 
     [Fact]
+    public void Should_Reject_registration_when_name_gender_or_age_is_missing_and_accept_complete_identity()
+    {
+        var incompleteCommands = new[]
+        {
+            ValidCommand(name: ""),
+            ValidCommand(ageYears: 0),
+            ValidCommand(gender: (Gender)999)
+        };
+
+        foreach (var command in incompleteCommands)
+            Assert.False(_validator.Validate(command).IsValid);
+
+        Assert.True(_validator.Validate(ValidCommand()).IsValid);
+    }
+
+    [Fact]
     public void Should_Have_Error_When_Name_Is_Empty()
     {
         var result = _validator.Validate(ValidCommand(name: ""));

@@ -39,7 +39,8 @@ public class RegisterPatientIntakeCommandHandlerTests
 
     private static RegisterPatientIntakeCommand CreateCommand(
         string? directTestIds = null,
-        bool confirmLargeExpansion = false)
+        bool confirmLargeExpansion = false,
+        bool confirmDuplicate = true)
         => new(
             Name: "Patient One",
             AgeYears: 35,
@@ -55,7 +56,7 @@ public class RegisterPatientIntakeCommandHandlerTests
             DoctorId: 7,
             ReferralEntityId: 8,
             HasDiabetes: true,
-            ConfirmDuplicate: true,
+            ConfirmDuplicate: confirmDuplicate,
             TakenOutsideLab: true,
             SpecimenUrine: true,
             SpecimenStool: true,
@@ -115,6 +116,33 @@ public class RegisterPatientIntakeCommandHandlerTests
             It.IsAny<Func<CancellationToken, Task<RegisterPatientIntakeResult>>>(),
             It.IsAny<CancellationToken>()), Times.Never);
         _sender.VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task Intake_DuplicateConfirmationRejected_DoesNotCreateVisit()
+    {
+        _sender
+            .Setup(sender => sender.Send(
+                It.IsAny<RegisterPatientCommand>(),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new RegisterPatientResult(
+                false,
+                Array.Empty<DuplicatePatientDto>(),
+                null));
+
+        var result = await CreateHandler().Handle(
+            CreateCommand(confirmDuplicate: false),
+            CancellationToken.None);
+
+        Assert.False(result.IsRegistered);
+        Assert.Null(result.PatientVisitId);
+        _sender.Verify(sender => sender.Send(
+            It.Is<RegisterPatientCommand>(command => !command.ConfirmDuplicate),
+            It.IsAny<CancellationToken>()), Times.Once);
+        _sender.Verify(sender => sender.Send(
+            It.IsAny<CreatePatientVisitCommand>(), It.IsAny<CancellationToken>()), Times.Never);
+        _sender.Verify(sender => sender.Send(
+            It.IsAny<AddTestsToVisitCommand>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
     [Fact]
