@@ -15,13 +15,21 @@
 - [X] Slice 7 — Print-inclusion flags + reprint warning (DONE)
 - [X] Slice 8 — Blank reports persisted (DONE)
 - [X] Slice 9 — Consolidated reports (DONE)
-- [ ] Slice 10 — Culture, microscopic & per-organism sensitivity (NOT STARTED)
+- [X] Slice 10 — Culture, microscopic & per-organism sensitivity (DONE)
 - [ ] Slice 11 — Print pipeline integration (NOT STARTED)
 
 ## Current Iteration
-- **Current Slice:** Slice 10
+- **Current Slice:** Slice 11
 - **Attempt Number:** 0
 - **Last Error:** None
+
+### Slice 10 Notes (incl. contract changes)
+- OrganismSlot enum (A/B/C); Sensitivity.OrganismSlot (default A = legacy backfill via column default) + InhibitionZoneOverride (OQ-M4-12, >100 chars rejected).
+- Culture.RecordSensitivity(slot, antibioticId, level): guard order no-organism → slot-specific → status; CONTRACT CHANGE: WithSensitivity now open for further rows (per-organism tables require it — OQ-M4-13); duplicates per slot+antibiotic forbidden. Legacy 2-arg overload delegates to slot A.
+- MicroscopicFinding entity + MicroscopicFindingRow enum (Reaction..Direct2); Bacteria row system-derived — Create/SetValue reject user edits (OQ-M4-11); DeriveBacteriaRow() joins recorded organisms.
+- EnterCultureResultCommand extended additively (+SampleType closes real gap, +MicroscopicFindings) and derives Bacteria row post-record.
+- RecordSensitivityCommand / SaveMicroscopicFindingsCommand / GetMicrobiologyReportQuery + IMicrobiologyReportReader/MicrobiologyReportReader (M13 zone fallback, commercial names, per-organism blocks).
+- Migration AddPerOrganismSensitivityAndMicroscopic applied (20260825142944); backfill = column default slot A.
 
 ### Slice 9 Notes
 - ConsolidatedReport aggregate: AddItem rejects duplicates; MoveUp/MoveDown swap + keep DisplayOrder dense (1..n); RemoveItem renumbers; PrintGroupSubtitles toggle (M4-BR-12); MarkPrinted metadata. ConsolidatedReportItem.Create rejects only negative reportId (in-memory Id=0 pre-persistence).

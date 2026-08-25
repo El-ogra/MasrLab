@@ -1,6 +1,9 @@
 using MediatR;
+using MasrLab.Domain.Common.Enums;
 
 namespace MasrLab.Application.Features.Cultures.Commands.EnterCultureResult;
+
+public record MicroscopicFindingInput(MicroscopicFindingRow RowKey, string Value);
 
 public record EnterCultureResultCommand(
     int CultureId,
@@ -8,5 +11,7 @@ public record EnterCultureResultCommand(
     string? OrganismB,
     string? OrganismC,
     string CultureCondition,
-    int ColonyCount
+    int ColonyCount,
+    string? SampleType = null,
+    IReadOnlyList<MicroscopicFindingInput>? MicroscopicFindings = null
 ) : IRequest<Unit>;

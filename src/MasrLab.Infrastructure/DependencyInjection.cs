@@ -103,6 +103,7 @@ public static class DependencyInjection
         services.AddScoped<IReprintWarningReader, ReprintWarningReader>();
         services.AddScoped<IBlankReportReader, BlankReportReader>();
         services.AddScoped<IClinicalReportReader, ClinicalReportReader>();
+        services.AddScoped<IMicrobiologyReportReader, MicrobiologyReportReader>();
         services.AddScoped<IEnvelopePrintDataReader, EnvelopePrintDataReader>();
         services.AddScoped<IOperationalReportDataReader, OperationalReportPrintDataReader>();
 

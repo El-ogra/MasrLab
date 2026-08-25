@@ -126,16 +126,24 @@ public class NewStateMachineTests
     }
 
     [Fact]
-    public void Culture_RecordSensitivity_WhenAlreadyWithSensitivity_ShouldThrowBusinessRuleViolation()
+    public void Culture_RecordSensitivity_AfterWithSensitivity_AllowsBuildingPerOrganismTables()
     {
+        // OQ-M4-13 changed this contract: further sensitivity rows are allowed after
+        // WithSensitivity so each organism slot can build its own table; only exact
+        // duplicates (same slot + antibiotic) are forbidden.
         var culture = new Culture { Id = 1, VisitTestResultItemId = 42 };
-        culture.Record(100, "E.coli", null, null);
+        culture.Record(100, "E.coli", "Klebsiella", null);
         culture.RecordSensitivity(3, SensitivityLevel.HighlySensitive);
 
-        var ex = Assert.Throws<BusinessRuleViolationException>(
-            () => culture.RecordSensitivity(4, SensitivityLevel.Moderate));
+        culture.RecordSensitivity(4, SensitivityLevel.Moderate);
 
-        Assert.Equal("Culture must be recorded before recording sensitivity.", ex.Message);
+        Assert.Equal(CultureStatus.WithSensitivity, culture.Status);
+        Assert.Equal(2, culture.Sensitivities.Count);
+        Assert.Throws<BusinessRuleViolationException>(
+            () => culture.RecordSensitivity(3, SensitivityLevel.Low));
+        // OQ-M4-13 independence: antibiotic 3 classifiable again under organism B.
+        culture.RecordSensitivity(Domain.Common.Enums.OrganismSlot.B, 3, SensitivityLevel.Resistant);
+        Assert.Equal(3, culture.Sensitivities.Count);
     }
 
     [Fact]

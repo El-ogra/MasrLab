@@ -28,6 +28,19 @@ public class EnterCultureResultCommandHandler : IRequestHandler<EnterCultureResu
             request.OrganismB,
             request.OrganismC);
 
+        // Real gap closed: sample type was never persisted before this slice.
+        if (request.SampleType is not null)
+            culture.SetSampleType(request.SampleType);
+
+        if (request.MicroscopicFindings is not null)
+        {
+            foreach (var finding in request.MicroscopicFindings)
+                culture.SetMicroscopicFinding(finding.RowKey, finding.Value);
+        }
+
+        // OQ-M4-11: the greyed-out Bacteria row derives from the recorded organisms.
+        culture.DeriveBacteriaRow();
+
         await _unitOfWork.SaveChangesAsync(cancellationToken);
 
         return Unit.Value;

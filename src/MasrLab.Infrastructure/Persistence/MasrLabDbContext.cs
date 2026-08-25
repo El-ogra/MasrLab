@@ -48,6 +48,7 @@ public class MasrLabDbContext : DbContext
     public DbSet<Organism> Organisms => Set<Organism>();
     public DbSet<Antibiotic> Antibiotics => Set<Antibiotic>();
     public DbSet<Sensitivity> Sensitivities => Set<Sensitivity>();
+    public DbSet<MicroscopicFinding> MicroscopicFindings => Set<MicroscopicFinding>();
     public DbSet<CulturePrintReceipt> CulturePrintReceipts => Set<CulturePrintReceipt>();
     public DbSet<CultureAntibiotic> CultureAntibiotics => Set<CultureAntibiotic>();
     public DbSet<CultureAntibioticCommercialName> CultureAntibioticCommercialNames => Set<CultureAntibioticCommercialName>();
