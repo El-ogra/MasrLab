@@ -14,14 +14,21 @@
 - [X] Slice 6 — Flag override, derived analytes, edit-after-print permission (DONE)
 - [X] Slice 7 — Print-inclusion flags + reprint warning (DONE)
 - [X] Slice 8 — Blank reports persisted (DONE)
-- [ ] Slice 9 — Consolidated reports (NOT STARTED)
+- [X] Slice 9 — Consolidated reports (DONE)
 - [ ] Slice 10 — Culture, microscopic & per-organism sensitivity (NOT STARTED)
 - [ ] Slice 11 — Print pipeline integration (NOT STARTED)
 
 ## Current Iteration
-- **Current Slice:** Slice 9
+- **Current Slice:** Slice 10
 - **Attempt Number:** 0
 - **Last Error:** None
+
+### Slice 9 Notes
+- ConsolidatedReport aggregate: AddItem rejects duplicates; MoveUp/MoveDown swap + keep DisplayOrder dense (1..n); RemoveItem renumbers; PrintGroupSubtitles toggle (M4-BR-12); MarkPrinted metadata. ConsolidatedReportItem.Create rejects only negative reportId (in-memory Id=0 pre-persistence).
+- CreateCombinedReportCommand now returns int; handler parses TestIds CSV (ParseTestIds static), validates ownership, persists composition — EnterAllResults side effect removed.
+- SaveConsolidatedReportCommand + ReorderConsolidatedReportItemCommand handlers added.
+- GetConsolidatedReportQuery → IClinicalReportReader/ClinicalReportReader: ordered lines, group subtitle rows (Flag=="SUBTITLE"), OQ-M4-14 placeholder "لم يُدخل بعد" for un-entered tests, respects Slice 7 IncludeInPrint flags.
+- Migration AddConsolidatedReportPersistence applied (20260825140727) with unique index (reportId, visitTestId).
 
 ### Slice 8 Notes
 - BlankReport aggregate + BlankReportRow in Domain/Entities/Core; Rows via IReadOnlyList backed by _rows field; AddRow auto-assigns sequential DisplayOrder; MarkPrinted tracks PrintCount.

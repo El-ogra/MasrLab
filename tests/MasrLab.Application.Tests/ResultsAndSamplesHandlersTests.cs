@@ -53,11 +53,33 @@ public class ResultsAndSamplesHandlersTests
         Assert.Single(savedReports);
         Assert.Single(savedReports[0].Rows);
 
-        var combinedRepo = new Mock<IVisitRepository>(); var combinedVisit = OpenVisit(); combinedVisit.AddVisitTest(TestVisitTestHelpers.CreateVisitTest(combinedVisit.Id, 1, 10m, false)); combinedRepo.Setup(x => x.GetByIdAsync(3, It.IsAny<CancellationToken>())).ReturnsAsync(combinedVisit);
-        await new CreateCombinedReportCommandHandler(combinedRepo.Object, new Mock<IUnitOfWork>().Object).Handle(new(3, "1"), default);
-        Assert.Equal(VisitStatus.ResultsEntered, combinedVisit.Status);
-        combinedRepo.Setup(x => x.GetByIdAsync(4, It.IsAny<CancellationToken>())).ReturnsAsync((PatientVisit?)null);
-        await Assert.ThrowsAsync<EntityNotFoundException>(() => new CreateCombinedReportCommandHandler(combinedRepo.Object, new Mock<IUnitOfWork>().Object).Handle(new(4, "1"), default));
+        // OQ-M4-14 / M4-BR-11: the combined-report stub persists a real composition and
+        // leaves the visit status untouched.
+        var savedConsolidated = new List<Domain.Entities.Core.ConsolidatedReport>();
+        var consolidatedReports = new Mock<IRepository<Domain.Entities.Core.ConsolidatedReport>>();
+        consolidatedReports
+            .Setup(x => x.AddAsync(It.IsAny<Domain.Entities.Core.ConsolidatedReport>(), It.IsAny<CancellationToken>()))
+            .Callback<Domain.Entities.Core.ConsolidatedReport, CancellationToken>((r, _) => { r.Id = 55; savedConsolidated.Add(r); });
+
+        var combinedVisit = OpenVisit();
+        typeof(PatientVisit).GetProperty(nameof(PatientVisit.Id))!.SetValue(combinedVisit, 3);
+        var visitTest = TestVisitTestHelpers.CreateVisitTest(3, 1, 10m, false);
+        typeof(Domain.Common.BaseEntity).GetProperty(nameof(Domain.Common.BaseEntity.Id))!.SetValue(visitTest, 9);
+        combinedVisit.AddVisitTest(visitTest);
+        var combinedRepo = new Mock<IVisitRepository>();
+        combinedRepo.Setup(x => x.GetByIdWithTestsAsync(3, It.IsAny<CancellationToken>())).ReturnsAsync(combinedVisit);
+
+        var consolidatedId = await new CreateCombinedReportCommandHandler(
+            combinedRepo.Object, consolidatedReports.Object, new Mock<IUnitOfWork>().Object)
+            .Handle(new CreateCombinedReportCommand(3, "9"), default);
+
+        Assert.Equal(55, consolidatedId);
+        Assert.Single(savedConsolidated);
+        Assert.Single(savedConsolidated[0].Items);
+        Assert.Equal(VisitStatus.Registered, combinedVisit.Status); // no EnterAllResults side effect.
+
+        combinedRepo.Setup(x => x.GetByIdWithTestsAsync(4, It.IsAny<CancellationToken>())).ReturnsAsync((PatientVisit?)null);
+        await Assert.ThrowsAsync<EntityNotFoundException>(() => new CreateCombinedReportCommandHandler(combinedRepo.Object, consolidatedReports.Object, new Mock<IUnitOfWork>().Object).Handle(new(4, "1"), default));
     }
 
     [Fact]

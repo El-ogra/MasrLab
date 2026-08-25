@@ -31,6 +31,8 @@ public class MasrLabDbContext : DbContext
     public DbSet<TestResultEditHistory> TestResultEditHistories => Set<TestResultEditHistory>();
     public DbSet<BlankReport> BlankReports => Set<BlankReport>();
     public DbSet<BlankReportRow> BlankReportRows => Set<BlankReportRow>();
+    public DbSet<ConsolidatedReport> ConsolidatedReports => Set<ConsolidatedReport>();
+    public DbSet<ConsolidatedReportItem> ConsolidatedReportItems => Set<ConsolidatedReportItem>();
     public DbSet<TestComponentChoice> TestComponentChoices => Set<TestComponentChoice>();
     public DbSet<Sample> Samples => Set<Sample>();
     public DbSet<SampleCollection> SampleCollections => Set<SampleCollection>();
