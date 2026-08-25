@@ -57,19 +57,19 @@ public class AddTestsToVisitCommandHandler : IRequestHandler<AddTestsToVisitComm
             throw new BusinessRuleViolationException(
                 $"Expansion produces {testIdsToProcess.Count} tests. Set ConfirmLargeExpansion=true to proceed.");
 
-        var existingTestIds = visit.VisitTests.Select(vt => vt.TestId).ToHashSet();
-        var seenTestIds = new HashSet<int>();
-        var duplicateTestIds = new List<int>();
+        var existingTestIds = visit.VisitTests
+            .Where(vt => !vt.IsDeleted)
+            .Select(vt => vt.TestId)
+            .ToHashSet();
+        testIdsToProcess = testIdsToProcess
+            .Where(testId => !existingTestIds.Contains(testId))
+            .Distinct()
+            .ToList();
 
-        foreach (var testId in testIdsToProcess)
-        {
-            if (existingTestIds.Contains(testId) || !seenTestIds.Add(testId))
-                duplicateTestIds.Add(testId);
-        }
-
-        if (duplicateTestIds.Count > 0)
-            throw new BusinessRuleViolationException(
-                $"Duplicate tests cannot be added: {string.Join(", ", duplicateTestIds.Distinct())}");
+        // Attachment is an idempotent union: already-attached and repeated IDs are
+        // silently ignored, while the source remains add-only.
+        if (testIdsToProcess.Count == 0)
+            return Unit.Value;
 
         var allTests = await _testRepository.GetAllWithComponentsAsync(cancellationToken);
         var testMap = allTests.Where(t => testIdsToProcess.Contains(t.Id)).ToDictionary(t => t.Id);

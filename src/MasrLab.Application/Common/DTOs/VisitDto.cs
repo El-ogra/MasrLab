@@ -13,4 +13,5 @@ public record VisitDto
     public int? DoctorId { get; init; }
     public int? ReferralEntityId { get; init; }
     public bool TakenOutsideLab { get; init; }
+    public int AttachedTestCount { get; init; }
 }

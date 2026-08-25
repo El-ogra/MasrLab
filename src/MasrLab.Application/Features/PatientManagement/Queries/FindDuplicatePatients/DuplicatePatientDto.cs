@@ -9,7 +9,8 @@ public sealed record DuplicatePatientDto(
 
 public sealed record RegisterPatientResult(
     bool IsRegistered,
-    IReadOnlyList<DuplicatePatientDto> PotentialDuplicates)
+    IReadOnlyList<DuplicatePatientDto> PotentialDuplicates,
+    int? PatientId = null)
 {
     public bool HasPotentialDuplicates => PotentialDuplicates.Count > 0;
 }

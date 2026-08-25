@@ -8,6 +8,9 @@ public class VisitMappingProfile : Profile
 {
     public VisitMappingProfile()
     {
-        CreateMap<PatientVisit, VisitDto>();
+        CreateMap<PatientVisit, VisitDto>()
+            .ForMember(
+                destination => destination.AttachedTestCount,
+                options => options.MapFrom(source => source.VisitTests.Count(test => !test.IsDeleted)));
     }
 }

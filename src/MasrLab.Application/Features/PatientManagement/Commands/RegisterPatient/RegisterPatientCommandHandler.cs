@@ -78,7 +78,7 @@ public class RegisterPatientCommandHandler : IRequestHandler<RegisterPatientComm
             try
             {
                 await _unitOfWork.SaveChangesAsync(cancellationToken);
-                return new RegisterPatientResult(true, potentialDuplicates);
+                return new RegisterPatientResult(true, potentialDuplicates, patient.Id);
             }
             catch (DuplicateLabIdException) when (attempt < MaxLabIdRetries - 1)
             {

@@ -64,6 +64,17 @@ public class PatientVisit : BaseEntity
         AddDomainEvent(new VisitTestAdded(Id, visitTest.TestId, visitTest.Price, visitTest.IsOutsourced));
     }
 
+    public void ClearAllTests()
+    {
+        if (Id != 0 || Status != VisitStatus.Registered)
+            throw new BusinessRuleViolationException("All tests can only be cleared during first-time visit creation.");
+
+        VisitTests.Clear();
+        Samples.Clear();
+        CommercialPackages.Clear();
+        PromisedDeliveryAt = null;
+    }
+
     public void SetPromisedDelivery(DateTime? promisedDeliveryAt)
     {
         PromisedDeliveryAt = promisedDeliveryAt;

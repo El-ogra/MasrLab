@@ -23,6 +23,7 @@ public class VisitRepository : GenericRepository<PatientVisit>, IVisitRepository
     {
         return await _context.PatientVisits
             .Where(v => v.PatientId == patientId)
+            .Include(v => v.VisitTests)
             .ToListAsync(cancellationToken);
     }
 
@@ -30,6 +31,7 @@ public class VisitRepository : GenericRepository<PatientVisit>, IVisitRepository
     {
         return await _context.PatientVisits
             .Where(v => v.VisitDate >= start && v.VisitDate <= end)
+            .Include(v => v.VisitTests)
             .ToListAsync(cancellationToken);
     }
 

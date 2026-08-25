@@ -208,33 +208,37 @@ public class AddTestsToVisitCommandHandlerTests
     }
 
     [Fact]
-    public async Task DirectSource_DuplicateTestIds_Throws()
+    public async Task DirectSource_DuplicateTestIds_AreSilentlySkipped()
     {
         var visit = CreateVisit();
         SetupVisit(visit);
+        SetupDefaultPriceList();
+        SetupPrice(5, 10, 150m);
+        var test = CreateTest(5);
+        _testRepo.Setup(r => r.GetAllWithComponentsAsync(It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new List<Test> { test });
 
-        var ex = await Assert.ThrowsAsync<BusinessRuleViolationException>(
-            () => CreateHandler().Handle(
-                new AddTestsToVisitCommand(1, "Direct", null, null, "5,5", false),
-                CancellationToken.None));
+        await CreateHandler().Handle(
+            new AddTestsToVisitCommand(1, "Direct", null, null, "5,5", false),
+            CancellationToken.None);
 
-        Assert.Contains("Duplicate tests", ex.Message);
+        Assert.Single(visit.VisitTests);
+        Assert.Equal(5, visit.VisitTests.Single().TestId);
     }
 
     [Fact]
-    public async Task DirectSource_ExistingTestOnVisit_Throws()
+    public async Task DirectSource_ExistingTestOnVisit_IsSilentlySkipped()
     {
         var visit = CreateVisit();
-        var existingTest = CreateTest(5);
         visit.VisitTests.Add(new VisitTest(1, 5, 100m, false));
         SetupVisit(visit);
 
-        var ex = await Assert.ThrowsAsync<BusinessRuleViolationException>(
-            () => CreateHandler().Handle(
-                new AddTestsToVisitCommand(1, "Direct", null, null, "5", false),
-                CancellationToken.None));
+        await CreateHandler().Handle(
+            new AddTestsToVisitCommand(1, "Direct", null, null, "5", false),
+            CancellationToken.None);
 
-        Assert.Contains("Duplicate tests", ex.Message);
+        Assert.Single(visit.VisitTests);
+        _unitOfWork.Verify(u => u.SaveChangesAsync(It.IsAny<CancellationToken>()), Times.Never);
     }
 
     [Fact]
