@@ -1,4 +1,5 @@
 using MasrLab.Domain.Common.Enums;
+using MasrLab.Domain.Entities.Administrative;
 using MasrLab.Domain.Entities.Culture;
 using MasrLab.Domain.Entities.Core;
 using Microsoft.EntityFrameworkCore;
@@ -16,21 +17,39 @@ public class PerOrganismSensitivityIntegrationTests
         int cultureId;
         await using (var setup = database.CreateContext())
         {
+            var user = new User { Username = "tech", Password = "pwd", IsActive = true };
+            setup.Users.Add(user);
+            await setup.SaveChangesAsync(CancellationToken.None);
+
+            var visit = PatientVisit.Create(1, user.Id, "L1", null, null);
+            setup.PatientVisits.Add(visit);
+            await setup.SaveChangesAsync(CancellationToken.None);
+
+            var test = new Test
+            {
+                Name = "Culture", ReportName = "Culture Report", ReceiptName = "Culture Receipt",
+                Group = "Micro", TurnaroundTime = "1 day", Unit = "unit", Price = 100m
+            };
+            setup.Tests.Add(test);
+            await setup.SaveChangesAsync(CancellationToken.None);
+
+            var component = TestComponent.Create(test.Id, "Urine Component", "unit", 1);
+            setup.TestComponents.Add(component);
+            await setup.SaveChangesAsync(CancellationToken.None);
+
             var visitTestResultItem = new VisitTestResultItem
             {
                 Id = 0,
-                VisitTestId = 1,
-                SourceTestComponentId = 1,
+                SourceTestComponentId = component.Id,
                 ComponentName = "Urine Culture",
                 ResultEntryKind = ResultEntryKind.CultureDetail
             };
-            var visitTest = new VisitTest(1, 777, 120m, false)
+            var visitTest = new VisitTest(visit.Id, 777, 120m, false)
             {
                 TestNameSnapshot = "CULT",
                 ReportNameSnapshot = "Culture",
                 ReceiptNameSnapshot = "CULT"
             };
-            typeof(Domain.Common.BaseEntity).GetProperty(nameof(Domain.Common.BaseEntity.Id))!.SetValue(visitTest, 1);
             visitTest.ResultItems.Add(visitTestResultItem);
             setup.VisitTests.Add(visitTest);
             await setup.SaveChangesAsync(CancellationToken.None);

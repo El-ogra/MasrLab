@@ -23,23 +23,32 @@ public class ConsolidatedReportIntegrationTests
             await setup.SaveChangesAsync(CancellationToken.None);
 
             var visit = PatientVisit.Create(patient.Id, user.Id, "L4", null, null);
-            visit.Id = 1;
             setup.PatientVisits.Add(visit);
             await setup.SaveChangesAsync(CancellationToken.None);
 
+            var test = new Test
+            {
+                Name = "CBC", ReportName = "CBC Report", ReceiptName = "CBC Receipt",
+                Group = "Blood", TurnaroundTime = "1 day", Unit = "count", Price = 100m
+            };
+            setup.Tests.Add(test);
+            await setup.SaveChangesAsync(CancellationToken.None);
+
+            var component = TestComponent.Create(test.Id, "Hemoglobin", "g/dL", 1);
+            setup.TestComponents.Add(component);
+            await setup.SaveChangesAsync(CancellationToken.None);
+
             // Test A (entered, with a group title), Test B (un-entered → placeholder).
-            var testA = new VisitTest(1, 1, 50m, false)
+            var testA = new VisitTest(visit.Id, 1, 50m, false)
             {
                 TestNameSnapshot = "HGB",
                 ReportNameSnapshot = "Hemoglobin",
                 ReceiptNameSnapshot = "HGB",
                 TestGroupNameSnapshot = "Complete Blood Count"
             };
-            typeof(Domain.Common.BaseEntity).GetProperty(nameof(Domain.Common.BaseEntity.Id))!.SetValue(testA, 100);
             var itemA = new VisitTestResultItem
             {
-                VisitTestId = 100,
-                SourceTestComponentId = 1,
+                SourceTestComponentId = component.Id,
                 ComponentName = "Hemoglobin",
                 ComponentUnit = "g/dL",
                 DisplayOrder = 1,
@@ -47,14 +56,12 @@ public class ConsolidatedReportIntegrationTests
                 IncludeInPrint = true
             };
             testA.ResultItems.Add(itemA);
-            var testB = new VisitTest(1, 2, 75m, false)
+            var testB = new VisitTest(visit.Id, 2, 75m, false)
             {
                 TestNameSnapshot = "LFT",
                 ReportNameSnapshot = "Liver Function",
                 ReceiptNameSnapshot = "LFT"
             };
-            typeof(Domain.Common.BaseEntity).GetProperty(nameof(Domain.Common.BaseEntity.Id))!.SetValue(testB, 200);
-
             setup.VisitTests.AddRange(testA, testB);
             await setup.SaveChangesAsync(CancellationToken.None);
 
@@ -62,9 +69,9 @@ public class ConsolidatedReportIntegrationTests
             await setup.SaveChangesAsync(CancellationToken.None);
 
             // Composition order: un-entered test FIRST (user ordering), then the entered one.
-            var report = ConsolidatedReport.Create(1, printGroupSubtitles: true);
-            report.AddItem(200);
-            report.AddItem(100);
+            var report = ConsolidatedReport.Create(visit.Id, printGroupSubtitles: true);
+            report.AddItem(testB.Id);
+            report.AddItem(testA.Id);
             setup.ConsolidatedReports.Add(report);
             await setup.SaveChangesAsync(CancellationToken.None);
 

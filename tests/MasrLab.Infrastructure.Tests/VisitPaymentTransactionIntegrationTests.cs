@@ -10,16 +10,20 @@ namespace MasrLab.Infrastructure.Tests;
 // for the per-visit payment transaction log (M2-BR-07).
 public class VisitPaymentTransactionIntegrationTests
 {
-    private static Receipt CreateIssuedReceipt(int patientVisitId, int createdByUserId, decimal totalPrice)
+    private static async Task<Receipt> CreateIssuedReceipt(MasrLab.Infrastructure.Persistence.MasrLabDbContext context, int createdByUserId, decimal totalPrice)
     {
+        var visit = PatientVisit.Create(1, createdByUserId, "L1", null, null);
+        context.PatientVisits.Add(visit);
+        await context.SaveChangesAsync(CancellationToken.None);
+
         var receipt = new Receipt
         {
-            PatientVisitId = patientVisitId,
+            PatientVisitId = visit.Id,
             IssueDate = DateTime.UtcNow,
             ReceiveTime = DateTime.UtcNow,
             CreatedByUserId = createdByUserId
         };
-        receipt.AddVisitTest(new VisitTest(patientVisitId, 1, totalPrice, false)
+        receipt.AddVisitTest(new VisitTest(visit.Id, 1, totalPrice, false)
         {
             TestNameSnapshot = "CBC",
             ReportNameSnapshot = "CBC",
@@ -44,7 +48,7 @@ public class VisitPaymentTransactionIntegrationTests
             setup.Users.Add(user);
             await setup.SaveChangesAsync(CancellationToken.None);
 
-            var receipt = CreateIssuedReceipt(1, user.Id, 100m);
+            var receipt = await CreateIssuedReceipt(setup, user.Id, 100m);
             setup.Receipts.Add(receipt);
             await setup.SaveChangesAsync(CancellationToken.None);
 
@@ -114,7 +118,7 @@ public class VisitPaymentTransactionIntegrationTests
             setup.Users.Add(user);
             await setup.SaveChangesAsync(CancellationToken.None);
 
-            var receipt = CreateIssuedReceipt(1, user.Id, 100m);
+            var receipt = await CreateIssuedReceipt(setup, user.Id, 100m);
             setup.Receipts.Add(receipt);
             await setup.SaveChangesAsync(CancellationToken.None);
 

@@ -47,10 +47,22 @@ public class VisitReportPrintReaderIntegrationTests
             setup.VisitTests.Add(visitTest);
             await setup.SaveChangesAsync(CancellationToken.None);
 
+            var test = new Test
+            {
+                Name = "CBC", ReportName = "CBC Report", ReceiptName = "CBC Receipt",
+                Group = "Blood", TurnaroundTime = "1 day", Unit = "count", Price = 100m
+            };
+            setup.Tests.Add(test);
+            await setup.SaveChangesAsync(CancellationToken.None);
+
+            var component = TestComponent.Create(test.Id, "Hemoglobin", "g/dL", 1);
+            setup.TestComponents.Add(component);
+            await setup.SaveChangesAsync(CancellationToken.None);
+
             var item = new VisitTestResultItem
             {
                 VisitTestId = visitTest.Id,
-                SourceTestComponentId = 1,
+                SourceTestComponentId = component.Id,
                 ComponentName = "Hemoglobin",
                 ComponentUnit = "g/dL",
                 DisplayOrder = 1,
@@ -61,6 +73,7 @@ public class VisitReportPrintReaderIntegrationTests
             await setup.SaveChangesAsync(CancellationToken.None);
 
             var result = TestResult.Enter(item.Id, "13.5", user.Id);
+            result.OverrideStatus(ResultStatus.Normal, user.Id);
             setup.TestResults.Add(result);
             await setup.SaveChangesAsync(CancellationToken.None);
             (visitTestId, resultId) = (visitTest.Id, result.Id);

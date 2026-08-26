@@ -14,12 +14,17 @@ public class VisitAccountReaderIntegrationTests
     {
         await using var database = await LocalDbTestDatabase.CreateMigratedDatabaseAsync("M2Slice4Acct");
 
-        int visitId = 1;
+        int visitId = 0;
         await using (var setup = database.CreateContext())
         {
             var user = new User { Username = "receptionist", Password = "pwd", IsActive = true };
             setup.Users.Add(user);
             await setup.SaveChangesAsync(CancellationToken.None);
+
+            var visit = PatientVisit.Create(1, user.Id, "L1", null, null);
+            setup.PatientVisits.Add(visit);
+            await setup.SaveChangesAsync(CancellationToken.None);
+            visitId = visit.Id;
 
             var receipt = new Receipt
             {

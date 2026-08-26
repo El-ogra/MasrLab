@@ -21,11 +21,10 @@ public class PrintInclusionFlagsIntegrationTests
             await setup.SaveChangesAsync(CancellationToken.None);
 
             var visit = PatientVisit.Create(1, user.Id, "L1", null, null);
-            visit.Id = 1;
             setup.PatientVisits.Add(visit);
             await setup.SaveChangesAsync(CancellationToken.None);
 
-            var visitTest = new VisitTest(1, 1, 50m, false)
+            var visitTest = new VisitTest(visit.Id, 1, 50m, false)
             {
                 TestNameSnapshot = "CBC",
                 ReportNameSnapshot = "CBC",
@@ -34,11 +33,23 @@ public class PrintInclusionFlagsIntegrationTests
             setup.VisitTests.Add(visitTest);
             await setup.SaveChangesAsync(CancellationToken.None);
 
+            var test = new Test
+            {
+                Name = "CBC", ReportName = "CBC Report", ReceiptName = "CBC Receipt",
+                Group = "Blood", TurnaroundTime = "1 day", Unit = "count", Price = 100m
+            };
+            setup.Tests.Add(test);
+            await setup.SaveChangesAsync(CancellationToken.None);
+
+            var component = TestComponent.Create(test.Id, "Hemoglobin", "g/dL", 1);
+            setup.TestComponents.Add(component);
+            await setup.SaveChangesAsync(CancellationToken.None);
+
             var item = new VisitTestResultItem
             {
                 Id = 0,
                 VisitTestId = visitTest.Id,
-                SourceTestComponentId = 1,
+                SourceTestComponentId = component.Id,
                 ComponentName = "Hemoglobin",
                 ComponentUnit = "g/dL",
                 DisplayOrder = 1,

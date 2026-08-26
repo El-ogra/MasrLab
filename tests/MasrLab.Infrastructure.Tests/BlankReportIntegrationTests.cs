@@ -23,11 +23,10 @@ public class BlankReportIntegrationTests
             await setup.SaveChangesAsync(CancellationToken.None);
 
             var visit = PatientVisit.Create(patient.Id, user.Id, "L9", null, null);
-            visit.Id = 1;
             setup.PatientVisits.Add(visit);
             await setup.SaveChangesAsync(CancellationToken.None);
 
-            visit.AddVisitTest(new VisitTest(1, 1, 50m, false)
+            visit.AddVisitTest(new VisitTest(visit.Id, 1, 50m, false)
             {
                 TestNameSnapshot = "CBC",
                 ReportNameSnapshot = "CBC",
@@ -36,7 +35,7 @@ public class BlankReportIntegrationTests
             setup.VisitTests.AddRange(visit.VisitTests);
             await setup.SaveChangesAsync(CancellationToken.None);
 
-            var report = BlankReport.Create(1, "تقرير فارغ", "ملاحظة", "يتبع");
+            var report = BlankReport.Create(visit.Id, "تقرير فارغ", "ملاحظة", "يتبع");
             report.AddRow("صورة دم", "", "", "", "");
             setup.BlankReports.Add(report);
             await setup.SaveChangesAsync(CancellationToken.None);

@@ -23,14 +23,18 @@ public class ReceiptSettlementIntegrationTests
             setup.Users.Add(user);
             await setup.SaveChangesAsync(CancellationToken.None);
 
+            var visit = PatientVisit.Create(1, user.Id, "L1", null, null);
+            setup.PatientVisits.Add(visit);
+            await setup.SaveChangesAsync(CancellationToken.None);
+
             var receipt = new Receipt
             {
-                PatientVisitId = 1,
+                PatientVisitId = visit.Id,
                 IssueDate = DateTime.UtcNow,
                 ReceiveTime = DateTime.UtcNow,
                 CreatedByUserId = user.Id
             };
-            receipt.AddVisitTest(new VisitTest(1, 1, 100m, false)
+            receipt.AddVisitTest(new VisitTest(visit.Id, 1, 100m, false)
             {
                 TestNameSnapshot = "CBC",
                 ReportNameSnapshot = "CBC",
