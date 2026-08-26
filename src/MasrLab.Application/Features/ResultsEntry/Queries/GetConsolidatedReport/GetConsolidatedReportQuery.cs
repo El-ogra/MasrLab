@@ -10,7 +10,8 @@ public sealed record ConsolidatedReportLineDto(
     string Value,
     string Unit,
     string ReferenceRange,
-    string Flag)
+    string Flag,
+    string Comment = "")
 {
     public const string NotEnteredPlaceholder = "لم يُدخل بعد";
 

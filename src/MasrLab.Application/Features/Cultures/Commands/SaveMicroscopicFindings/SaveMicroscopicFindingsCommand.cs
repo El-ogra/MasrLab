@@ -11,7 +11,7 @@ public sealed record SaveMicroscopicFindingsCommand(
     int CultureId,
     IReadOnlyList<MicroscopicFindingRowInput> Findings) : IRequest;
 
-public sealed record MicroscopicFindingRowInput(MicroscopicFindingRow RowKey, string Value);
+public sealed record MicroscopicFindingRowInput(MicroscopicFindingRow RowKey, string Value, bool IncludeInPrint = true);
 
 public class SaveMicroscopicFindingsCommandHandler : IRequestHandler<SaveMicroscopicFindingsCommand>
 {
@@ -34,6 +34,9 @@ public class SaveMicroscopicFindingsCommandHandler : IRequestHandler<SaveMicrosc
             if (finding.RowKey == MicroscopicFindingRow.Bacteria)
                 continue; // system-derived — silently ignored for user saves.
             culture.SetMicroscopicFinding(finding.RowKey, finding.Value);
+            var persisted = culture.MicroscopicFindings.FirstOrDefault(f => f.RowKey == finding.RowKey);
+            if (persisted is not null)
+                persisted.IncludeInPrint = finding.IncludeInPrint;
         }
 
         await _unitOfWork.SaveChangesAsync(cancellationToken);

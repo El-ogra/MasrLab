@@ -20,9 +20,9 @@ public class CultureConfiguration : IEntityTypeConfiguration<Domain.Entities.Cul
         builder.Property(e => e.OrganismC).HasMaxLength(200);
         builder.Property(e => e.CultureCondition).HasMaxLength(200).IsRequired();
         builder.Property(e => e.ColonyCount).IsRequired();
-        builder.Property(e => e.ShowSensitivityInReport).IsRequired();
-        builder.Property(e => e.ShowReferenceInReport).IsRequired();
-        builder.Property(e => e.ShowCommercialNameInReport).IsRequired();
+        builder.Property(e => e.ShowSensitivityInReport).IsRequired().HasDefaultValue(true);
+        builder.Property(e => e.ShowReferenceInReport).IsRequired().HasDefaultValue(true);
+        builder.Property(e => e.ShowCommercialNameInReport).IsRequired().HasDefaultValue(true);
 
         builder.HasOne<VisitTestResultItem>()
             .WithMany()

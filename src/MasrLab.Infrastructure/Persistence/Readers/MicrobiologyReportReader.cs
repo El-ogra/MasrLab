@@ -43,10 +43,11 @@ public sealed class MicrobiologyReportReader : IMicrobiologyReportReader
             .FirstOrDefaultAsync(cancellationToken);
 
         // M4-BR-17 microscopic block (Bacteria included — it is system-derived).
+        // OQ-M4-5: unchecked microscopic rows are excluded from every rendered report.
         var microscopicRows = await _context.MicroscopicFindings.AsNoTracking()
-            .Where(f => f.CultureId == cultureId)
+            .Where(f => f.CultureId == cultureId && !f.IsDeleted && f.IncludeInPrint)
             .OrderBy(f => f.RowKey)
-            .Select(f => new { f.RowKey, f.Value, f.ReferenceRange, f.IncludeInPrint })
+            .Select(f => new { f.RowKey, f.Value, f.ReferenceRange })
             .ToListAsync(cancellationToken);
 
         // OQ-M4-13: one four-category block per recorded organism slot.

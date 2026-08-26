@@ -67,7 +67,7 @@ public sealed class ClinicalReportReader : IClinicalReportReader
         var resultsByItemId = await (
                 from result in _context.TestResults.AsNoTracking()
                 where itemIds.Contains(result.VisitTestResultItemId) && !result.IsDeleted
-                select new { result.VisitTestResultItemId, result.Value, result.Unit, result.ReferenceRange, result.Status })
+                select new { result.VisitTestResultItemId, result.Value, result.Unit, result.ReferenceRange, result.Status, result.Comment, result.IncludeCommentInPrint })
             .ToDictionaryAsync(r => r.VisitTestResultItemId, cancellationToken);
 
         var lines = new List<ConsolidatedReportLineDto>();
@@ -94,12 +94,14 @@ public sealed class ClinicalReportReader : IClinicalReportReader
                 if (!resultsByItemId.TryGetValue(resultItemId, out var result))
                     continue;
                 enteredRows++;
+                var comment = result.IncludeCommentInPrint ? result.Comment ?? string.Empty : string.Empty;
                 lines.Add(new ConsolidatedReportLineDto(
                     testName,
                     result.Value,
                     result.Unit,
                     result.ReferenceRange,
-                    result.Status == ResultStatus.Normal ? string.Empty : result.Status.ToString()));
+                    result.Status == ResultStatus.Normal ? string.Empty : result.Status.ToString(),
+                    comment));
             }
 
             // OQ-M4-14 binding rule: an un-entered test prints blank with the placeholder.

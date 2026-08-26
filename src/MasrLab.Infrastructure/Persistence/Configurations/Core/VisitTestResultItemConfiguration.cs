@@ -31,5 +31,7 @@ public class VisitTestResultItemConfiguration : IEntityTypeConfiguration<VisitTe
         builder.HasIndex(e => new { e.VisitTestId, e.SourceTestComponentId })
             .IsUnique()
             .HasFilter("[IsDeleted] = 0");
+
+        builder.Property(e => e.IncludeInPrint).IsRequired().HasDefaultValue(true);
     }
 }

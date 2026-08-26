@@ -30,7 +30,7 @@ public sealed record ClinicalReportPrintDto : IPrintPayload
     public string DoctorSignatureLine { get; init; } = string.Empty;
 }
 
-public sealed record ClinicalResultLineDto(string TestName, string Value, string Unit, string ReferenceRange, string Flag = "");
+public sealed record ClinicalResultLineDto(string TestName, string Value, string Unit, string ReferenceRange, string Flag = "", string Comment = "");
 
 public interface IEnvelopePrintDataReader
 {

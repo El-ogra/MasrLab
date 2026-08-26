@@ -13,6 +13,8 @@ public class CultureRepository : GenericRepository<Domain.Entities.Culture.Cultu
     public async Task<Domain.Entities.Culture.Culture?> GetWithSensitivitiesAsync(int cultureId, CancellationToken cancellationToken = default)
     {
         return await _context.Cultures
+            .Include(c => c.Sensitivities)
+            .Include(c => c.MicroscopicFindings)
             .FirstOrDefaultAsync(c => c.Id == cultureId, cancellationToken);
     }
 

@@ -12,7 +12,9 @@ namespace MasrLab.Application.Services;
 ///   "INR"        = (PatientPT / ControlPT) ^ ISI          — siblings: PT, Control PT, ISI
 ///   "X/Y"        = X / Y                                   — e.g. "AST/ALT", "A/G"
 ///   "X/Y RATIO"  = X / Y                                   — e.g. "AST/ALT Ratio"
-///   "CONCENTRATION (OF Y IN X)" style targets are covered by the generic ratio rule.
+///   "CONCENTRATION" — reserved slot (DerivedFormulaKind.Concentration), intentionally
+///                     unregistered/inactive until project owner supplies an explicit
+///                     documented formula. DO NOT invent a clinical calculation.
 /// </summary>
 public sealed class DerivedResultCalculator : IDerivedResultCalculator
 {
@@ -25,6 +27,10 @@ public sealed class DerivedResultCalculator : IDerivedResultCalculator
             return false;
         if (normalized == InrTarget)
             return true;
+        // Concentration is reserved but inactive — must not be recognized until a
+        // documented formula is supplied (safety constraint: never guess a clinical formula).
+        if (IsConcentrationKind(normalized))
+            return false;
         return TrySplitRatio(normalized, out _, out _);
     }
 
@@ -38,9 +44,26 @@ public sealed class DerivedResultCalculator : IDerivedResultCalculator
         if (normalized == InrTarget)
             return TryComputeInr(siblingValues, out computedValue);
 
+        if (IsConcentrationKind(normalized))
+            return TryComputeConcentration(siblingValues, out computedValue);
+
         if (TrySplitRatio(normalized, out var numeratorName, out var denominatorName))
             return TryComputeRatio(numeratorName, denominatorName, siblingValues, out computedValue);
 
+        return false;
+    }
+
+    // Reserved Concentration slot — inactive. Returns false until an explicit
+    // documented formula is provided by the project owner.
+    private static bool IsConcentrationKind(string normalized) =>
+        normalized.Contains("CONCENTRATION", StringComparison.Ordinal);
+
+    private static bool TryComputeConcentration(IReadOnlyList<DerivedResultInput> siblings, out string computedValue)
+    {
+        computedValue = string.Empty;
+        // SAFETY: no clinical formula is guessed here. This slot is wired for
+        // future configuration-driven implementation once the owner specifies
+        // the exact Concentration definition.
         return false;
     }
 

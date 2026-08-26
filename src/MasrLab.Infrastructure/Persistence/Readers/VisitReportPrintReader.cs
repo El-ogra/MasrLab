@@ -160,12 +160,15 @@ public sealed class VisitReportPrintReader : IVisitReportPrintReader
             if (!resultsById.TryGetValue(item.Id, out var result))
                 continue;
             enteredResultIds.Add(result.Id);
+            // OQ-M4-5: comment blocks suppressed when IncludeCommentInPrint is false.
+            var comment = result.IncludeCommentInPrint ? result.Comment ?? string.Empty : string.Empty;
             lines.Add(new ClinicalResultLineDto(
                 item.ComponentName,
                 result.Value,
                 string.IsNullOrEmpty(result.Unit) ? item.ComponentUnit : result.Unit,
                 result.ReferenceRange,
-                result.Status == ResultStatus.Normal ? string.Empty : result.Status.ToString()));
+                result.Status == ResultStatus.Normal ? string.Empty : result.Status.ToString(),
+                comment));
 
             if (result.PrintCount > 0 && result.PrintedAt is not null &&
                 (lastPrintedAt is null || result.PrintedAt > lastPrintedAt))
@@ -187,8 +190,8 @@ public sealed class VisitReportPrintReader : IVisitReportPrintReader
 
         var lines = dto.Lines
             .Select(l => l.Flag == "SUBTITLE"
-                ? new ClinicalResultLineDto(l.TestName, string.Empty, string.Empty, string.Empty, "SUBTITLE")
-                : new ClinicalResultLineDto(l.TestName, l.Value, l.Unit, l.ReferenceRange))
+                ? new ClinicalResultLineDto(l.TestName, string.Empty, string.Empty, string.Empty, "SUBTITLE", string.Empty)
+                : new ClinicalResultLineDto(l.TestName, l.Value, l.Unit, l.ReferenceRange, string.Empty, l.Comment))
             .ToList();
 
         var meta = await _context.ConsolidatedReports.AsNoTracking()

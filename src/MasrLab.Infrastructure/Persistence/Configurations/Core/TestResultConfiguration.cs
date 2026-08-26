@@ -41,5 +41,7 @@ public class TestResultConfiguration : IEntityTypeConfiguration<TestResult>
         builder.HasIndex(e => new { e.VisitTestResultItemId })
             .IsUnique()
             .HasFilter("[IsDeleted] = 0");
+
+        builder.Property(e => e.IncludeCommentInPrint).IsRequired().HasDefaultValue(true);
     }
 }
